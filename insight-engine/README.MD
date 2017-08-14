@@ -5,7 +5,7 @@ Alfresco Insight Engine using Alfresco and Apache Solr
 ### Get the code
 
 Git:
-	git clone https://gitlab.alfresco.com/search_discovery/insight-engine.git
+	git clone https://git.alfresco.com/search_discovery/InsightEngine
 
 ### Use Maven
 1. Build
