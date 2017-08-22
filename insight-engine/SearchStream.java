@@ -166,7 +166,7 @@ public class SearchStream extends TupleStream implements Expressible  {
         }
 
         // zkHost
-        expression.addParameter(new StreamExpressionNamedParameter("zkHost", zkHost));
+        //expression.addParameter(new StreamExpressionNamedParameter("zkHost", zkHost));
 
         return expression;
     }
