@@ -104,7 +104,7 @@ public class AlfrescoStreamHandler extends StreamHandler
 
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
 
-        Pair<String, String> fieldNameAndEnding = QueryParserUtils.extractFieldNameAndEnding(field);
+        Pair<String, String> fieldNameAndEnding = QueryParserUtils.extractFieldNameAndEnding(field.replace('_', ':'));
         PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, dataModel.getNamespaceDAO(), dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT), fieldNameAndEnding.getFirst());
 
         if(propertyDef != null)
