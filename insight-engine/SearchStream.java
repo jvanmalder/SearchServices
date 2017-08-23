@@ -50,6 +50,7 @@ import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 
@@ -217,6 +218,12 @@ public class SearchStream extends TupleStream implements Expressible  {
                 String shardsParam = getShardString(shardsMap.get(collection));
                 paramsLoc.add("shards", shardsParam);
                 paramsLoc.add("distrib", "true");
+            }
+
+            String fieldsList = paramsLoc.get(CommonParams.FL);
+            if (fieldsList != null && !fieldsList.contains("[cached]"))
+            {
+                paramsLoc.set(CommonParams.FL, fieldsList+",[cached]");
             }
         }
 
