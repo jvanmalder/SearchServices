@@ -104,7 +104,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
           .withFunctionName("gteq", GreaterThanEqualToEvaluator.class);
 
   private static final String DEFAULT_QUERY = "*";
-  public static final int DEFAULT_LIMIT = 100;
+  public static final int DEFAULT_LIMIT = 1000;
 
   private final String collection;
   private final SolrSchema schema;
@@ -170,7 +170,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
 
     try {
       if (metricPairs.isEmpty() && buckets.isEmpty()) {
-        tupleStream = handleSelect(zk, collection, q, fields, orders, limit);
+        tupleStream = handleSelect(zk, collection, q, fields, orders, limitInt);
       } else {
         if(buckets.isEmpty()) {
           tupleStream = handleStats(zk, collection, q, metricPairs, fields);
@@ -318,7 +318,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                    String query,
                                    List<Map.Entry<String, Class>> fields,
                                    List<Pair<String, String>> orders,
-                                   String limit) throws IOException {
+                                   int limit) throws IOException {
 
     ModifiableSolrParams params = new ModifiableSolrParams();
     params.add(CommonParams.Q, query);
@@ -326,9 +326,6 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
     //Validate the fields
     for(Map.Entry<String, Class> entry : fields) {
       String fname = entry.getKey();
-      if(limit == null && "score".equals(fname)) {
-        throw new IOException("score is not a valid field for unlimited queries.");
-      }
 
       if(fname.contains("*")) {
         throw new IOException("* is not supported for column selection.");
@@ -342,26 +339,16 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
     if(orders.size() > 0) {
       params.add(SORT, getSort(orders));
     } else {
-      if(limit == null) {
-        params.add(SORT, "_version_ desc");
-        fl = fl+",_version_";
-      } else {
-        params.add(SORT, "score desc");
-        if(fl.indexOf("score") == -1) {
-          fl = fl + ",score";
-        }
+      params.add(SORT, "score desc");
+      if(fl.indexOf("score") == -1) {
+        fl = fl + ",score";
       }
     }
 
     fl=fl+",[cached]";
     params.add(CommonParams.FL, fl);
-
-    if (limit != null) {
-      params.add(CommonParams.ROWS, limit);
-      return new LimitStream(new SearchStream(zk, collection, params), Integer.parseInt(limit));
-    }
-
-    return null;
+    params.add(CommonParams.ROWS, String.valueOf(limit));
+    return new AlfrescoExpressionStream(new LimitStream(new SearchStream(zk, collection, params), limit));
   }
 
   private String getSort(List<Pair<String, String>> orders) {
