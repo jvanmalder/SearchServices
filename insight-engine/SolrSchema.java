@@ -17,7 +17,9 @@
 package org.alfresco.solr.sql;
 
 import com.google.common.collect.ImmutableMap;
+import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.alfresco.service.namespace.QName;
 import org.apache.calcite.rel.type.*;
 import org.apache.calcite.schema.Table;
 import org.apache.calcite.schema.impl.AbstractSchema;
@@ -91,13 +93,32 @@ class SolrSchema extends AbstractSchema {
         default:
           type = typeFactory.createJavaType(String.class);
       }
-
-      fieldInfo.add(entry.getKey(), type).nullable(true);
-    }
+        addFieldInfo(fieldInfo, entry, type);
+      }
     fieldInfo.add("_query_",typeFactory.createJavaType(String.class));
     fieldInfo.add("score",typeFactory.createJavaType(Double.class));
 
     return RelDataTypeImpl.proto(fieldInfo.build());
+  }
+
+  private void addFieldInfo(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type) {
+    fieldInfo.add(entry.getKey(), type).nullable(true);
+
+    try {
+      String[] withPrefix = QName.splitPrefixedQName(entry.getKey());
+      String prefix = withPrefix[0];
+      if (prefix != null && !prefix.isEmpty())
+      {
+        fieldInfo.add(withPrefix[0]+"_"+withPrefix[1], type).nullable(true);
+      }
+
+      //Potentially remove prefix, just shortname if unique
+      //QueryParserUtils.matchPropertyDefinition will throw an error if duplicate
+
+    } catch (NamespaceException e) {
+      //ignore invalid qnames
+    }
+
   }
 
   private Map<String, String> getIndexedFieldsInfo() throws RuntimeException {
