@@ -214,8 +214,9 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       //Turn the TupleStream into StreamExpression.
       StreamExpression streamExpression = (StreamExpression)((Expressible)tupleStream).toExpression(streamFactory);
 
-      //Wrap it in an AlfrescoExpressionStream.
-      //The AlfrescoExpressionStream does the hard work.
+      //A Streaming expression expects the first argument "streamExpression" to be its own actual representation
+      //eg. LimitStream expects limit() or SearchStream expects search()
+      //so we are "double wrapping" the AlfrescoExpressionStream in this way so the first arg is "alfrescoExpr()"
       tupleStream = new AlfrescoExpressionStream(streamExpression, streamFactory);
       tupleStream.setStreamContext(streamContext);
 
@@ -658,7 +659,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       tupleStream = new LimitStream(tupleStream, limit);
     }
 
-    return tupleStream;
+    return new AlfrescoExpressionStream(tupleStream);
   }
 
   private TupleStream handleSelectDistinctMapReduce(final String zkHost,
