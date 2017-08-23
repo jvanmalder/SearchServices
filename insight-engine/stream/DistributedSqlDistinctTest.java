@@ -45,22 +45,29 @@ public class DistributedSqlDistinctTest extends AbstractStreamTest
         assertTrue(tuples.size() == 2);
         assertFalse(tuples.get(0).get("ACLID").toString().equals(tuples.get(1).get("ACLID").toString()));
 
-        tuples = sqlQuery("select distinct ACLID from alfresco limit 10", alfrescoJson);
+        tuples = sqlQuery("select distinct ACLID from alfresco", alfrescoJson);
         assertTrue(tuples.size() == 2);
         
         tuples = sqlQuery("select distinct ACLID,DBID from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
         assertTrue(tuples.size() == 4);
         
-        tuples = sqlQuery("select distinct `cm:name` from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
+        tuples = sqlQuery("select distinct cm_name from alfresco where cm_content = 'world'", alfrescoJson);
         assertTrue(tuples.size() == 3);
-        
-        tuples = sqlQuery("select distinct `cm:title` from alfresco limit 10 ", alfrescoJson);
+
+        tuples = sqlQuery("select distinct `cm:name` from alfresco where `cm:content` = 'world' limit 1", alfrescoJson);
+        assertTrue(tuples.size() == 1);
+        assertTrue("name1".equals(tuples.get(0).getString(("cm:name"))));
+
+        tuples = sqlQuery("select distinct cm_name from alfresco where cm_content = 'world'", alfrescoJson);
+        assertTrue(tuples.size() == 3);
+
+        tuples = sqlQuery("select distinct cm_title from alfresco", alfrescoJson);
         assertTrue(tuples.size() == 2);
         
-        tuples = sqlQuery("select distinct `cm:creator` from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
+        tuples = sqlQuery("select distinct cm_creator from alfresco where `cm:content` = 'world'", alfrescoJson);
         assertTrue(tuples.size() == 3);
         
-        tuples = sqlQuery("select distinct owner from alfresco where `cm:content` = 'world' limit 10 ", alfrescoJson);
+        tuples = sqlQuery("select distinct owner from alfresco where cm_content = 'world'", alfrescoJson);
         assertTrue(tuples.size() == 1);
     }
 

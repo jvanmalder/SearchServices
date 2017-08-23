@@ -80,9 +80,17 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue(tuples.get(2).getDouble("rating") == 20);
         assertTrue(tuples.get(2).getLong(("track")) == 4);
 
-        //created doesn't work but cm:created works
-        //min('cm:created') returns an error so need to use backticks
-        sql = "select `exif:manufacturer` as manu, count(*) as tot, max(`cm:fiveStarRatingSchemeTotal`) AS cre from alfresco where `cm:content` = 'world' group by `exif:manufacturer` order by tot asc";
+        sql = "select cm_fiveStarRatingSchemeTotal, avg(audio_trackNumber) as track from alfresco where cm_content = 'world' group by cm_fiveStarRatingSchemeTotal";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 3);
+        assertTrue(tuples.get(0).getDouble("cm_fiveStarRatingSchemeTotal") == 10);
+        assertTrue(tuples.get(0).getLong(("track")) == 9);
+        assertTrue(tuples.get(1).getDouble("cm_fiveStarRatingSchemeTotal") == 15);
+        assertTrue(tuples.get(1).getLong(("track")) == 8);
+        assertTrue(tuples.get(2).getDouble("cm_fiveStarRatingSchemeTotal") == 20);
+        assertTrue(tuples.get(2).getLong(("track")) == 4);
+
+        sql = "select exif_manufacturer as manu, count(*) as tot, max(cm_fiveStarRatingSchemeTotal) AS cre from alfresco where cm_content = 'world' group by exif_manufacturer order by tot asc";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 2);
         assertTrue("canon".equals(tuples.get(0).getString(("manu"))));
@@ -92,8 +100,7 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue(tuples.get(1).getLong("tot") == 3);
         assertTrue(tuples.get(1).getDouble("cre") == 20);
 
-
-        sql = "select `exif:manufacturer` as manu, sum(`cm:fiveStarRatingSchemeTotal`), min(`cm:fiveStarRatingSchemeTotal`) from alfresco where `cm:content` = 'world' group by `exif:manufacturer` order by manu asc";
+        sql = "select exif_manufacturer as manu, sum(cm_fiveStarRatingSchemeTotal), min(cm_fiveStarRatingSchemeTotal) from alfresco where cm_content = 'world' group by exif_manufacturer order by manu asc";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 2);
         assertTrue("canon".equals(tuples.get(0).getString(("manu"))));
@@ -102,6 +109,17 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue("nikon".equals(tuples.get(1).getString(("manu"))));
         assertTrue(tuples.get(1).getDouble("EXPR$1") == 45);
         assertTrue(tuples.get(1).getDouble("EXPR$2") == 10);
+
+        sql = "select cm_creator, count(*) from alfresco group by cm_creator having count(*) = 2";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
+        assertTrue("creator1".equals(tuples.get(0).getString(("cm_creator"))));
+
+        sql = "select `cm_content.mimetype`, count(*) from alfresco group by `cm_content.mimetype` having count(*) > 1";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
+        assertTrue("text/plain".equals(tuples.get(0).getString(("cm_content.mimetype"))));
+
     }
 
 }

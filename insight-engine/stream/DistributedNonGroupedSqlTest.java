@@ -62,7 +62,7 @@ public class DistributedNonGroupedSqlTest extends AbstractStreamTest
         assertTrue(tuples.get(0).getDouble("maxResult") == 15);
 
         // Test min
-        sql = "select min(`cm:fiveStarRatingSchemeTotal`) from alfresco where `cm:content` = 'world'";
+        sql = "select min(cm_fiveStarRatingSchemeTotal) from alfresco where `cm:content` = 'world'";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
         assertTrue(tuples.get(0).getDouble("EXPR$0") == 10);
