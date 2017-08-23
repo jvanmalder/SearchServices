@@ -46,10 +46,34 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 4);
         assertNodes(tuples, node1, node2, node3, node4);
         assertFieldNotNull(tuples, "LID");
+
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 2);
         assertNodes(tuples, node1, node2);
+        assertFieldNotNull(tuples, "LID");
+
+        sql = "select DBID, LID from alfresco where `cm:content` = 'world' order by DBID limit 1";
+        tuples = sqlQuery(sql, alfrescoJson2);
+        assertTrue(tuples.size() == 1);
+        assertFieldNotNull(tuples, "DBID");
+        assertFieldNotNull(tuples, "LID");
+
+        sql = "select DBID, LID from alfresco where `cm:content` = 'world' order by DBID";
+        tuples = sqlQuery(sql, alfrescoJson2);
+        assertTrue(tuples.size() == 2);
+        assertFieldNotNull(tuples, "DBID");
+        assertFieldNotNull(tuples, "LID");
+
+        sql = "select DBID, LID from alfresco where `cm:content` = 'world'";
+        tuples = sqlQuery(sql, alfrescoJson2);
+        assertTrue(tuples.size() == 2);
+        assertFieldNotNull(tuples, "DBID");
+        assertFieldNotNull(tuples, "LID");
+
+        sql = "select DBID, LID from alfresco";
+        assertTrue(tuples.size() == 2);
+        assertFieldNotNull(tuples, "DBID");
         assertFieldNotNull(tuples, "LID");
     }
 
