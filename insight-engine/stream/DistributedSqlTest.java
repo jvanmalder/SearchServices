@@ -33,7 +33,7 @@ import org.junit.Test;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedSqlTest extends AbstractStreamTest
 {
-    private String sql = "select DBID, LID from alfresco where `cm:content` = 'world' order by DBID limit 10 ";
+    private String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
     
     @Rule
     public JettyServerRule jetty = new JettyServerRule(2, this);
@@ -72,9 +72,20 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertFieldNotNull(tuples, "LID");
 
         sql = "select DBID, LID from alfresco";
+        tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 2);
         assertFieldNotNull(tuples, "DBID");
         assertFieldNotNull(tuples, "LID");
+
+        sql = "select TYPE, SITE from alfresco";
+        tuples = sqlQuery(sql, alfrescoJson2);
+        assertTrue(tuples.size() == 2);
+/**
+        sql = "select cm_creator, cm_title, `exif:manufacturer`, audio_trackNumber from alfresco";
+        tuples = sqlQuery(sql, alfrescoJson2);
+        assertTrue(tuples.size() == 2);
+        assertFieldNotNull(tuples, "cm_creator");
+ **/
     }
 
 }
