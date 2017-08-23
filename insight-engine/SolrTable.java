@@ -346,7 +346,6 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       }
     }
 
-    fl=fl+",[cached]";
     params.add(CommonParams.FL, fl);
     params.add(CommonParams.ROWS, String.valueOf(limit));
     return new AlfrescoExpressionStream(new LimitStream(new SearchStream(zk, collection, params), limit));
