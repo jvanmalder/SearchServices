@@ -53,6 +53,9 @@ public class AlfrescoExpressionStream extends TupleStream implements Expressible
         if(streamExpressions.size() != 1) {
             throw new IOException("AlfrescoExprStream expects a single TupleStream parameter, found:"+streamExpressions.size());
         }
+        if(!"alfrescoExpr".equals(expression.getFunctionName())) {
+            throw new IOException("AlfrescoExpressionStream expects a single TupleStream parameter called alfrescoExpr, found: "+expression.getFunctionName());
+        }
 
         StreamExpression streamExpression = processor.process(streamExpressions);
         init(factory.constructStream(streamExpression));
