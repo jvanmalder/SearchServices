@@ -115,10 +115,20 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 1);
         assertTrue("creator1".equals(tuples.get(0).getString(("cm_creator"))));
 
-        sql = "select `cm_content.mimetype`, count(*) from alfresco group by `cm_content.mimetype` having count(*) > 1";
+        sql = "select `cm_content.mimetype`, count(*) from alfresco group by `cm_content.mimetype` having count(*) < 4 order by count(*) asc";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 2);
+        assertTrue("text/javascript".equals(tuples.get(0).getString(("cm_content.mimetype"))));
+        assertTrue(tuples.get(0).getDouble("EXPR$1") == 1);
+
+        assertTrue("text/plain".equals(tuples.get(1).getString(("cm_content.mimetype"))));
+        assertTrue(tuples.get(1).getDouble("EXPR$1") == 3);
+
+        sql = "select `cm_content.mimetype`, count(*) as mcount from alfresco group by `cm_content.mimetype` having count(*) = 3";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
         assertTrue("text/plain".equals(tuples.get(0).getString(("cm_content.mimetype"))));
+        assertTrue(tuples.get(0).getDouble("mcount") == 3);
 
     }
 
