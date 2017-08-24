@@ -134,7 +134,7 @@ public class DistributedSqlTest extends AbstractStreamTest
             assertTrue(sqe.getMessage().contains("no viable alternative at input"));
         }
 
-        sql = "select DBID from alfresco where `cm:content.size` = '<0 TO *]'";
+        sql = "select DBID from alfresco where `cm:content.size` = '[1 TO *]'";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
 
