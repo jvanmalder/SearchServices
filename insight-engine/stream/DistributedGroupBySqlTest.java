@@ -130,6 +130,15 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue("text/plain".equals(tuples.get(0).getString(("cm_content.mimetype"))));
         assertTrue(tuples.get(0).getDouble("mcount") == 3);
 
+        sql = "select cm_name, count(*) from alfresco where `cm:name` = 'name*' group by cm_name";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 3);
+        tuples.forEach(tuple -> assertTrue(tuple.getString("cm_name").startsWith("name")));
+
+        sql = "select cm_name, count(*) from alfresco where cm_name = '*3' group by cm_name";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
+        assertTrue("name3".equals(tuples.get(0).getString(("cm_name"))));
     }
 
 }
