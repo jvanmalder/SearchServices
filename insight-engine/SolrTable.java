@@ -333,9 +333,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       }
     }
 
-
     String fl = getFields(fields);
-
 
     if(orders.size() > 0) {
       params.add(SORT, getSort(orders));
