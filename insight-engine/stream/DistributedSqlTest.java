@@ -18,13 +18,14 @@
  */
 package org.alfresco.solr.query.stream;
 
-import java.util.List;
-
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Joel
@@ -80,12 +81,69 @@ public class DistributedSqlTest extends AbstractStreamTest
         sql = "select TYPE, SITE from alfresco";
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 2);
-/**
+        assertFieldNotNull(tuples, "TYPE");
+        assertFieldNotNull(tuples, "SITE");
+
+        sql = "select DBID from alfresco where cm_creator = 'creator1'";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 2);
+
+        sql = "select DBID from alfresco where `cm:creator` = 'creator1'";
+        List<Tuple> tuplesAgain = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuplesAgain.size() == 2);
+
+        sql = "select DBID from alfresco where cm_created = '[2000 TO 2001]'";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 4);
+
+        sql = "select DBID from alfresco where cm_fiveStarRatingSchemeTotal = '[4 TO 21]'";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 4);
+
+        sql = "select DBID from alfresco where audio_trackNumber = '[5 TO 10>'";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 2);
+
+        sql = "select DBID from alfresco where `audio:trackNumber` = '[4 TO 12]'";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 4);
+
+        sql = "select DBID from alfresco where audio_trackNumber = '[5 TO 10]' AND cm_fiveStarRatingSchemeTotal = '[10 TO 12]'";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
+
+        //It will return null but, in the debugger, the syntax looks right.
+        sql = "select DBID from alfresco where TYPE = 'content' AND NOT TYPE = 'fm:post'";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 0);
+
+        sql = "select DBID from alfresco where `cm_content.mimetype` = 'text/plain'";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 3);
+
+        sql = "select DBID from alfresco where `cm:content.mimetype` = 'text/javascript'";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
+
+        try {
+            sql = "select DBID from alfresco where `cm:content.size` > 0";
+            tuples = sqlQuery(sql, alfrescoJson);
+            assertFalse("Should never get here",true);
+        } catch (IOException sqe) {
+            //The sql above produces the following invalid query q=(cm:content.size:+{+0+TO+*+])
+            assertTrue(sqe.getMessage().contains("no viable alternative at input"));
+        }
+
+        sql = "select DBID from alfresco where `cm:content.size` = '<0 TO *]'";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
+
+        /**
         sql = "select cm_creator, cm_title, `exif:manufacturer`, audio_trackNumber from alfresco";
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 2);
         assertFieldNotNull(tuples, "cm_creator");
- **/
+         **/
     }
 
 }

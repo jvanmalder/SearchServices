@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
 
@@ -157,6 +158,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData4.getProperties().put(PROP_TRACK, new StringPropertyValue("4"));
         nodeMetaData4.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
         nodeMetaData4.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator3"));
+        nodeMetaData4.getProperties().put(ContentModel.PROP_CONTENT, new ContentPropertyValue(Locale.FRENCH, 5l, "UTF-8", "text/javascript", null));
 
         //Index the transaction, nodes, and nodeMetaDatas.
         //Note that the content is automatically created by the test framework.
