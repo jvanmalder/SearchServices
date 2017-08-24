@@ -270,9 +270,16 @@ public class SearchStream extends TupleStream implements Expressible  {
     }
 
     private void fill(Map map, SolrDocument doc) {
-        for(String key : this.fieldList) {
-            Object o = doc.getFieldValue(key.replace(':','_'));
-            map.put(key, o);
+        if (this.fieldList != null) {
+            for(String key : this.fieldList) {
+                Object o = doc.getFieldValue(key.replace(':','_'));
+                map.put(key, o);
+            }
+        } else {
+            for(String key : doc.getFieldNames()) {
+                Object o = doc.getFieldValue(key);
+                map.put(key, o);
+            }
         }
     }
 
