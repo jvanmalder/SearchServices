@@ -138,14 +138,53 @@ public class DistributedSqlTest extends AbstractStreamTest
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
 
-        sql = "select cm_creator, cm_name, `exif:manufacturer`, audio_trackNumber from alfresco order by `audio:trackNumber`";
+        sql = "select cm_creator, cm_name, `exif:manufacturer`, audio_trackNumber from alfresco order by `audio:trackNumber` asc";
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 2);
-        assertFieldNotNull(tuples, "cm_creator");
-        assertFieldNotNull(tuples, "cm_name");
-        assertFieldNotNull(tuples, "exif:manufacturer");
-        assertFieldNotNull(tuples, "audio_trackNumber");
-        assertFieldIsLong (tuples, "audio_trackNumber");
+
+        for(Tuple tuple : tuples) {
+            assertTrue(tuple.get("audio_trackNumber") instanceof Long);
+            assertTrue(tuple.get("cm_creator") instanceof String);
+            assertTrue(tuple.get("exif:manufacturer") instanceof String);
+            assertTrue(tuple.get("cm_name") instanceof String);
+        }
+
+        Tuple t = tuples.get(0);
+        assertTrue(t.getLong("audio_trackNumber") == 8);
+        assertTrue(t.getString("exif:manufacturer").equals("Nikon"));
+        assertTrue(t.getString("cm_creator").equals("creator1"));
+        assertTrue(t.getString("cm_name").equals("name2"));
+
+        t = tuples.get(1);
+        assertTrue(t.getLong("audio_trackNumber") == 12);
+        assertTrue(t.getString("exif:manufacturer").equals("Nikon"));
+        assertTrue(t.getString("cm_creator").equals("creator1"));
+        assertTrue(t.getString("cm_name").equals("name1"));
+
+
+        sql = "select cm_creator, cm_name, `exif:manufacturer`, audio_trackNumber as atrack from alfresco order by `audio:trackNumber` desc";
+        tuples = sqlQuery(sql, alfrescoJson2);
+        assertTrue(tuples.size() == 2);
+
+        for(Tuple tuple : tuples) {
+            assertTrue(tuple.get("atrack") instanceof Long);
+            assertTrue(tuple.get("cm_creator") instanceof String);
+            assertTrue(tuple.get("exif:manufacturer") instanceof String);
+            assertTrue(tuple.get("cm_name") instanceof String);
+        }
+
+        t = tuples.get(0);
+        assertTrue(t.getLong("atrack") == 12);
+        assertTrue(t.getString("exif:manufacturer").equals("Nikon"));
+        assertTrue(t.getString("cm_creator").equals("creator1"));
+        assertTrue(t.getString("cm_name").equals("name1"));
+
+        t = tuples.get(1);
+        assertTrue(t.getLong("atrack") == 8);
+        assertTrue(t.getString("exif:manufacturer").equals("Nikon"));
+        assertTrue(t.getString("cm_creator").equals("creator1"));
+        assertTrue(t.getString("cm_name").equals("name2"));
+
 
         sql = "select `cm:name`, `cm:fiveStarRatingSchemeTotal` from alfresco";
         tuples = sqlQuery(sql, alfrescoJson2);
