@@ -63,6 +63,7 @@ public class SearchStream extends TupleStream implements Expressible  {
     private StreamContext streamContext;
     private Iterator<Tuple> tuples;
     protected transient CloudSolrClient cloudSolrClient;
+    private String[] fieldList;
 
 
     public SearchStream(String zkHost,
@@ -220,10 +221,16 @@ public class SearchStream extends TupleStream implements Expressible  {
                 paramsLoc.add("distrib", "true");
             }
 
-            String fieldsList = paramsLoc.get(CommonParams.FL);
-            if (fieldsList != null && !fieldsList.contains("[cached]"))
-            {
-                paramsLoc.set(CommonParams.FL, fieldsList+",[cached]");
+            String fieldsListParam = paramsLoc.get(CommonParams.FL);
+            if (fieldsListParam != null) {
+
+                this.fieldList = fieldsListParam.split(",");
+                fieldsListParam = fieldsListParam.replace(':','_');
+
+                if (!fieldsListParam.contains("[cached]"))
+                {
+                    paramsLoc.set(CommonParams.FL, fieldsListParam+",[cached]");
+                }
             }
         }
 
@@ -263,9 +270,8 @@ public class SearchStream extends TupleStream implements Expressible  {
     }
 
     private void fill(Map map, SolrDocument doc) {
-        Collection<String> keys = doc.getFieldNames();
-        for(String key : keys) {
-            Object o = doc.getFieldValue(key);
+        for(String key : this.fieldList) {
+            Object o = doc.getFieldValue(key.replace(':','_'));
             map.put(key, o);
         }
     }
