@@ -138,12 +138,21 @@ public class DistributedSqlTest extends AbstractStreamTest
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
 
-        /**
-        sql = "select cm_creator, cm_title, `exif:manufacturer`, audio_trackNumber from alfresco";
+        sql = "select cm_creator, cm_name, `exif:manufacturer`, audio_trackNumber from alfresco order by `audio:trackNumber`";
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 2);
         assertFieldNotNull(tuples, "cm_creator");
-         **/
+        assertFieldNotNull(tuples, "cm_name");
+        assertFieldNotNull(tuples, "exif:manufacturer");
+        assertFieldNotNull(tuples, "audio_trackNumber");
+        assertFieldIsLong (tuples, "audio_trackNumber");
+
+        sql = "select `cm:name`, `cm:fiveStarRatingSchemeTotal` from alfresco";
+        tuples = sqlQuery(sql, alfrescoJson2);
+        assertTrue(tuples.size() == 2);
+        assertFieldNotNull(tuples, "cm:name");
+        assertFieldIsDouble(tuples, "cm:fiveStarRatingSchemeTotal");
+
     }
 
 }
