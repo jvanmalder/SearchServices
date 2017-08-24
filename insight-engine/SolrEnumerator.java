@@ -84,6 +84,14 @@ class SolrEnumerator implements Enumerator<Object> {
       if(val instanceof Double) {
         return this.getRealVal(val);
       }
+
+      if (val instanceof String) {
+        try {
+          return Long.valueOf((String) val);
+        } catch (NumberFormatException e) {
+          //If we can't convert it to a long then just return the val "as-is"
+        }
+      }
       return val;
     }
 
@@ -101,6 +109,17 @@ class SolrEnumerator implements Enumerator<Object> {
     if(val instanceof Float) {
       return ((Float) val).doubleValue();
     }
+
+    if(clazz.equals(Double.class)) {
+      if (val instanceof String) {
+        try {
+          return Double.valueOf((String) val);
+        } catch (NumberFormatException e) {
+          //If we can't convert it to a Double then just return the val "as-is"
+        }
+      }
+    }
+
     return val;
   }
 
