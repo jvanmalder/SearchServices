@@ -201,22 +201,6 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         }
     }
 
-    protected void assertFieldIsDouble(List<Tuple> tuples, String field) throws Exception  {
-        for(Tuple tuple : tuples) {
-            if(tuple.getDouble(field) == null) {
-                throw new Exception("Found unexpected field:"+field);
-            }
-        }
-    }
-
-    protected void assertFieldIsLong(List<Tuple> tuples, String field) throws Exception  {
-        for(Tuple tuple : tuples) {
-            if(tuple.getLong(field) == null) {
-                throw new Exception("Found unexpected field:"+field);
-            }
-        }
-    }
-
     protected Date getDate(int year, int month, int day)
     {
         return new Date(new GregorianCalendar(year, month, day, 10, 0).getTimeInMillis());

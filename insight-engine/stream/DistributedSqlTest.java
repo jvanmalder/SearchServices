@@ -189,9 +189,10 @@ public class DistributedSqlTest extends AbstractStreamTest
         sql = "select `cm:name`, `cm:fiveStarRatingSchemeTotal` from alfresco";
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 2);
-        assertFieldNotNull(tuples, "cm:name");
-        assertFieldIsDouble(tuples, "cm:fiveStarRatingSchemeTotal");
-
+        for(Tuple tuple : tuples) {
+            assertTrue(tuple.get("cm:fiveStarRatingSchemeTotal") instanceof Double);
+            assertTrue(tuple.get("cm:name") instanceof String);
+        }
     }
 
 }
