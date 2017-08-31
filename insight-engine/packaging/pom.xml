@@ -88,7 +88,7 @@
                   <configuration>
                      <target>
                         <copy
-                           file="${project.build.directory}/../../alfresco-insight-engine/src/main/resources/solr/solrconfig_extra.xml"
+                           file="${project.build.directory}/../../alfresco-insight-engine/src/main/resources/solr/solrconfig_insight.xml"
                            todir="${project.build.directory}/dependency/${alfresco.search.dependency.name}/solrhome/templates/rerank/conf/" />
                      </target>
                   </configuration>
