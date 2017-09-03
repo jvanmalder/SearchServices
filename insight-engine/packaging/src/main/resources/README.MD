@@ -1,5 +1,5 @@
 ## Alfresco Insight Engine
-Alfresco Insight Engine ${project.version} using Alfresco ${alfresco-solr.version} and Apache Solr ${solr.version}
+Alfresco Insight Engine ${project.version} based on Search Service ${alfresco.search.dependency.version} and Apache Solr ${solr.version}
 
 ## Solr 6
 Solr 6 is now available as a drop in replacement for Solr 4 with Alfresco 5.2.
