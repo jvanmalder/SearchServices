@@ -35,6 +35,7 @@
                      <goal>copy</goal>
                   </goals>
                   <configuration>
+                     <useBaseVersion>true</useBaseVersion>
                      <artifactItems>
                         <artifactItem>
                            <groupId>org.alfresco</groupId>
