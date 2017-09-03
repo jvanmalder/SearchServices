@@ -43,6 +43,11 @@
                            <version>${alfresco.search.dependency.version}</version>
                            <type>zip</type>
                         </artifactItem>
+                        <artifactItem>
+                           <groupId>org.alfresco</groupId>
+                           <artifactId>alfresco-insight-engine</artifactId>
+                           <version>${project.version}</version>
+                        </artifactItem>
                      </artifactItems>
                   </configuration>
                </execution>
@@ -63,6 +68,20 @@
                         <unzip
                            src="${project.build.directory}/dependency/${alfresco.search.dependency.name}-${alfresco.search.dependency.version}.zip"
                            dest="${project.build.directory}/dependency/" />
+                     </target>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>copy-insight-engine-lib</id>
+                  <phase>compile</phase>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+                  <configuration>
+                     <target>
+                        <copy
+                           file="${project.build.directory}/dependency/alfresco-insight-engine-${project.version}.jar"
+                           todir="${project.build.directory}/dependency/${alfresco.search.dependency.name}/solr/server/solr-webapp/webapp/WEB-INF/lib/" />
                      </target>
                   </configuration>
                </execution>
@@ -94,35 +113,26 @@
                      </target>
                   </configuration>
                </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
                <execution>
-                  <id>copy-readme</id>
-                  <phase>compile</phase>
+                  <id>make-assembly</id>
+                  <phase>package</phase>
                   <goals>
-                     <goal>run</goal>
+                     <goal>single</goal>
                   </goals>
-                  <configuration>
-                     <target>
-                        <copy
-                           file="${project.build.directory}/classes/README.MD"
-                           todir="${project.build.directory}/dependency/${alfresco.search.dependency.name}" />
-                     </target>
-                  </configuration>
-               </execution>
-               <execution>
-                  <id>zip-artifact</id>
-                  <phase>compile</phase>
-                  <goals>
-                     <goal>run</goal>
-                  </goals>
-                  <configuration>
-                     <target>
-                        <zip
-                           destfile="${project.build.directory}/${project.build.finalName}.zip"
-                           basedir="${project.build.directory}/dependency/${alfresco.search.dependency.name}" />
-                     </target>
-                  </configuration>
                </execution>
             </executions>
+            <configuration>
+               <appendAssemblyId>false</appendAssemblyId>
+               <descriptors>
+                  <descriptor>src/assembly/insight-engine-distribution.xml</descriptor>
+               </descriptors>
+            </configuration>
          </plugin>
       </plugins>
    </build>
