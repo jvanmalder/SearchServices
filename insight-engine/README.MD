@@ -1,17 +1,25 @@
 ## Alfresco Insight Engine Implementation
 
-Alfresco Insight Engine using Alfresco and Apache Solr
+Alfresco Insight Engine using Alfresco Search Services and Apache Solr
 
 ### Get the code
 
 Git:
-	git clone https://git.alfresco.com/search_discovery/InsightEngine
+
+   git clone https://git.alfresco.com/search_discovery/InsightEngine.git
 
 ### Use Maven
 1. Build
 
 ```
 mvn clean install
+```
+
+### Docker
+To build the docker image:
+```
+cd packaging/src/docker
+docker build --build-arg url=https://nightlybuilds.alfresco.com/InsightEngine/develop/LATEST/Distribution/alfresco-insight-engine-distribution-1.0.0-SNAPSHOT.zip -t insight-engine:myimage .
 ```
 
 ### License
