@@ -23,7 +23,7 @@ docker run --rm "$dockerImage" grep -q LOG4J_CONFIG /opt/alfresco-insight-engine
 docker run --rm "$dockerImage" [ -e /opt/alfresco-insight-engine/solrhome/conf/shared.properties ] || (echo "shared.properties does not exist" && exit 1)
 docker run --rm "$dockerImage" /opt/alfresco-insight-engine/solr/bin/solr start
 
-if [ "${nicebranch}" == "local" ]
+if [ "${nicebranch}" = "local" ]
 then
     echo "Skipping docker publish for local build"
 else
