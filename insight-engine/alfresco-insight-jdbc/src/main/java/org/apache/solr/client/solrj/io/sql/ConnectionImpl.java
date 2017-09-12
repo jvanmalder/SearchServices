@@ -56,7 +56,8 @@ class ConnectionImpl implements Connection {
 
   ConnectionImpl(String url, String zkHost, String collection, Properties properties) throws SQLException {
     this.url = url;
-    // FIXME: this.client = this.solrClientCache.getCloudSolrClient(zkHost);
+    // FIXME: This was the only change needed in this class
+    // this.client = this.solrClientCache.getCloudSolrClient(zkHost);
     this.client = null;
     this.collection = collection;
     this.properties = properties;

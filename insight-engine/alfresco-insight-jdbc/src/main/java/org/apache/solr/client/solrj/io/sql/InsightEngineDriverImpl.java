@@ -1,7 +1,6 @@
 package org.apache.solr.client.solrj.io.sql;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -14,11 +13,11 @@ import org.apache.http.client.utils.URLEncodedUtils;
 /**
  * A Jdbc driver class for the Insight Engine
  */
-public class InsightDriverImpl extends DriverImpl
+public class InsightEngineDriverImpl extends DriverImpl
 {
     static {
         try {
-            DriverManager.registerDriver(new InsightDriverImpl());
+            DriverManager.registerDriver(new InsightEngineDriverImpl());
         } catch (SQLException e) {
             throw new RuntimeException("Can't register insight driver!", e);
         }
@@ -37,7 +36,10 @@ public class InsightDriverImpl extends DriverImpl
           throw new SQLException("The connection url has no connection properties. At a mininum the collection must be specified.");
         }
 
-        url = rewriteUrl(uri, props);
+        // *****************************************************
+        // This is the only change needed in this method
+        // *****************************************************
+        url = createHttpUrl(uri, props);
 
         String collection = (String) props.remove("collection");
 
@@ -53,7 +55,7 @@ public class InsightDriverImpl extends DriverImpl
         return new ConnectionImpl(url, zkHost, collection, props);
       }
 
-    private String rewriteUrl(URI uri, Properties props)
+    private String createHttpUrl(URI uri, Properties props)
     {
         StringBuilder url = new StringBuilder();
         url
@@ -69,25 +71,10 @@ public class InsightDriverImpl extends DriverImpl
     @Override
     public boolean acceptsURL(String url)
     {
+        // *************************************************************************
+        // We need to check if the driver connection URL starts with "jdbc:alfresco"
+        // *************************************************************************
         return url != null && url.startsWith("jdbc:alfresco");
-    }
-
-    @Override
-    protected URI processUrl(String url) throws SQLException {
-        URI uri;
-        try {
-            uri = new URI(url.replaceFirst("jdbc:", ""));
-        } catch (URISyntaxException e) {
-            throw new SQLException(e);
-        }
-
-        /*
-        if (uri.getAuthority() == null) {
-          throw new SQLException("The zkHost must not be null");
-        }
-        */
-
-        return uri;
     }
 
     private void loadParams(URI uri, Properties props) throws SQLException {
