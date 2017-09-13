@@ -19,6 +19,7 @@
 package org.apache.solr.client.solrj.io.sql;
 
 import java.io.IOException;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -78,7 +79,18 @@ class StatementImpl implements Statement {
           params.set(propertyName, this.connection.getProperties().getProperty(propertyName));
         }
 
-        return new AlfrescoSolrStream(this.connection.getUrl(), params);
+        URI uri = new URI(this.connection.getUrl().replaceFirst("jdbc:", ""));
+        StringBuilder url = new StringBuilder();
+        url
+            .append("http://")
+            .append(uri.getHost())
+            .append(":")
+            .append(uri.getPort())
+            .append("/solr/")
+            // FIXME!!!
+            .append(uri.getQuery().split("=")[1]);
+
+        return new AlfrescoSolrStream(url.toString(), params);
       } catch (Exception e) {
         throw new IOException(e);
       }
