@@ -13,6 +13,7 @@
    <name>Alfresco Insight Engine JDBC Driver</name>
    <properties>
       <solr.version>6.6.0</solr.version>
+      <alfresco.insight.engine.version>1.0.0-SNAPSHOT</alfresco.insight.engine.version>
    </properties>
    <build>
       <plugins>
@@ -25,6 +26,25 @@
                   <goals>
                      <goal>shade</goal>
                   </goals>
+                  <configuration>
+                     <artifactSet>
+                        <includes>
+                           <include>org.apache.solr:solr-solrj</include>
+                           <include>commons-io:commons-io</include>
+                           <include>org.apache.commons:commons-math3</include>
+                           <include>org.apache.httpcomponents:httpclient</include>
+                           <include>org.apache.httpcomponents:httpcore</include>
+                           <include>org.apache.httpcomponents:httpmime</include>
+                           <include>org.apache.zookeeper:zookeeper</include>
+                           <include>org.codehaus.woodstox:stax2-api</include>
+                           <include>org.codehaus.woodstox:woodstox-core-asl</include>
+                           <include>org.noggit:noggit</include>
+                           <include>org.slf4j:jcl-over-slf4j</include>
+                           <include>org.slf4j:slf4j-api</include>
+                           <include>org.alfresco:*</include>
+                        </includes>
+                     </artifactSet>
+                  </configuration>
                </execution>
             </executions>
          </plugin>
@@ -35,6 +55,11 @@
          <groupId>org.apache.solr</groupId>
          <artifactId>solr-solrj</artifactId>
          <version>${solr.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>alfresco-insight-engine</artifactId>
+         <version>${alfresco.insight.engine.version}</version>
       </dependency>
    </dependencies>
 </project>
