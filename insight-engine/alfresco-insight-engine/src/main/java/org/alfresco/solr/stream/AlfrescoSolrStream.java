@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
  *  Queries a single Solr instance and maps SolrDocs to a Stream of Tuples.
  **/
 
-public class AlfrescoSolrStream extends TupleStream {
+public class AlfrescoSolrStream extends SolrStream {
 
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -77,6 +77,7 @@ public class AlfrescoSolrStream extends TupleStream {
      */
 
     public AlfrescoSolrStream(String baseUrl, SolrParams params) {
+        super(baseUrl, params);
         this.baseUrl = baseUrl;
         this.params = params;
     }
@@ -115,7 +116,7 @@ public class AlfrescoSolrStream extends TupleStream {
         }
 
         try {
-            tupleStreamParser = constructParser(client, loadParams(params));
+            tupleStreamParser = constructAlfrescoParser(client, loadParams(params));
         } catch (Exception e) {
             throw new IOException("params " + params, e);
         }
@@ -255,7 +256,7 @@ public class AlfrescoSolrStream extends TupleStream {
     }
 
     // temporary...
-    public TupleStreamParser constructParser(SolrClient server, SolrParams requestParams) throws IOException, SolrServerException {
+    public TupleStreamParser constructAlfrescoParser(SolrClient server, SolrParams requestParams) throws IOException, SolrServerException {
         String p = requestParams.get("qt");
         if (p != null) {
             ModifiableSolrParams modifiableSolrParams = (ModifiableSolrParams) requestParams;

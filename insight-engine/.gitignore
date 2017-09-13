@@ -8,6 +8,7 @@ target
 alf_data_dev
 alfresco.log*
 solr.log*
+alfresco-insight-engine/bin/
 # OS generated files #
 ######################
 .DS_Store
