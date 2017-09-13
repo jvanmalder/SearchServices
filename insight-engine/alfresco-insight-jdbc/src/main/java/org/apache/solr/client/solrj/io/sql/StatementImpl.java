@@ -131,7 +131,11 @@ class StatementImpl implements Statement {
             // FIXME!!!
             .append(uri.getQuery().split("=")[1]);
 
-        return new AlfrescoSolrStream(url.toString(), params);
+        AlfrescoSolrStream alfrescoSolrStream = new AlfrescoSolrStream(url.toString(), params);
+        // FIXME!!!
+        alfrescoSolrStream.setJson(params.get("body"));
+
+        return alfrescoSolrStream;
       } catch (Exception e) {
         throw new IOException(e);
       }
