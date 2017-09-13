@@ -69,7 +69,48 @@ class StatementImpl implements Statement {
     }
   }
 
+  // ******************************************************
+  // ******************************************************
+  // This is the only place which we had to do some changes
+  // ******************************************************
+  // ******************************************************
   protected SolrStream constructStream(String sql) throws IOException {
+      // *************
+      // *************
+      // Original code
+      // *************
+      // *************
+      /*
+      try {
+          ZkStateReader zkStateReader = this.connection.getClient().getZkStateReader();
+          Collection<Slice> slices = CloudSolrStream.getSlices(this.connection.getCollection(), zkStateReader, true);
+
+          List<Replica> shuffler = new ArrayList<>();
+          for(Slice slice : slices) {
+            Collection<Replica> replicas = slice.getReplicas();
+            for (Replica replica : replicas) {
+              shuffler.add(replica);
+            }
+          }
+
+          Collections.shuffle(shuffler, new Random());
+
+          ModifiableSolrParams params = new ModifiableSolrParams();
+          params.set(CommonParams.QT, "/sql");
+          params.set("stmt", sql);
+          for(String propertyName : this.connection.getProperties().stringPropertyNames()) {
+            params.set(propertyName, this.connection.getProperties().getProperty(propertyName));
+          }
+
+          Replica rep = shuffler.get(0);
+          ZkCoreNodeProps zkProps = new ZkCoreNodeProps(rep);
+          String url = zkProps.getCoreUrl();
+          return new SolrStream(url, params);
+        } catch (Exception e) {
+          throw new IOException(e);
+        }
+      */
+
       try {
 
         ModifiableSolrParams params = new ModifiableSolrParams();
