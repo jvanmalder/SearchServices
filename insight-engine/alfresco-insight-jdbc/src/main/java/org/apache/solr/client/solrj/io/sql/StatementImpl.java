@@ -123,17 +123,16 @@ class StatementImpl implements Statement {
         URI uri = new URI(this.connection.getUrl().replaceFirst("jdbc:", ""));
         StringBuilder url = new StringBuilder();
         url
+            // TODO: Hard coded as "http://" for the time being. This will be addressed with SEARCH-552
             .append("http://")
             .append(uri.getHost())
             .append(":")
             .append(uri.getPort())
             .append("/solr/")
-            // FIXME!!!
-            .append(uri.getQuery().split("=")[1]);
+            .append(this.connection.getCollection());
 
         AlfrescoSolrStream alfrescoSolrStream = new AlfrescoSolrStream(url.toString(), params);
-        // FIXME!!!
-        alfrescoSolrStream.setJson(params.get("body"));
+        alfrescoSolrStream.setJson(params.get("json"));
 
         return alfrescoSolrStream;
       } catch (Exception e) {
