@@ -1,25 +1,24 @@
-## Alfresco Insight Engine Implementation
+## Alfresco Insight Engine
+Alfresco Insight Engine ${project.version} based on Search Service ${alfresco.search.dependency.version} and Apache Solr ${solr.version}
 
-Alfresco Insight Engine using Alfresco Search Services and Apache Solr
+## Solr 6
+Solr 6 is now available as a drop in replacement for Solr 4 with Alfresco 5.2.
 
-### Get the code
+Solr 6 brings with it a number of new features:
 
-Git:
+ - SHARDING by DATE, PROPERTY & DBID
+ - FINGERPRINTS to find similar documents
+ - Indexing Multiple Document Versions
+ - Full SSL support with sharding
 
-   git clone https://git.alfresco.com/search_discovery/InsightEngine.git
+Find out more about Solr 6 and how it differs here: http://docs.alfresco.com/5.2/concepts/solr6-home.html
 
-### Use Maven
-1. Build
+### Install & Run
+**Please read the [Installation Documentation](http://docs.alfresco.com/5.2/concepts/solr6-install-config.html).**
 
+To run, unzip then
 ```
-mvn clean install
-```
-
-### Docker
-To build the docker image:
-```
-cd packaging/src/docker
-docker build --build-arg url=https://nightlybuilds.alfresco.com/InsightEngine/develop/LATEST/Distribution/alfresco-insight-engine-distribution-1.0.0-SNAPSHOT.zip -t insight-engine:myimage .
+solr/bin/solr start
 ```
 
 ### License
@@ -42,3 +41,5 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+
+#### Build ${project.build.key} ${project.timestamp} ${project.revision.key}
