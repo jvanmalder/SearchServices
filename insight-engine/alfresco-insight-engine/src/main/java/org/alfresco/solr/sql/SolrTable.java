@@ -16,10 +16,40 @@
  */
 package org.alfresco.solr.sql;
 
+import static org.apache.solr.common.params.CommonParams.SORT;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.alfresco.solr.query.AbstractQParser;
 import org.alfresco.solr.stream.AlfrescoExpressionStream;
+import org.alfresco.solr.stream.AlfrescoFacetStream;
+import org.alfresco.solr.stream.AlfrescoStatsStream;
+import org.alfresco.solr.stream.AlfrescoStreamHandler;
+import org.alfresco.solr.stream.AlfrescoTimeSeriesStream;
+import org.alfresco.solr.stream.FacetStream;
+import org.alfresco.solr.stream.LimitStream;
+import org.alfresco.solr.stream.SearchStream;
+import org.alfresco.solr.stream.StatsStream;
+import org.alfresco.solr.stream.TimeSeriesStream;
 import org.apache.calcite.adapter.java.AbstractQueryableTable;
-import org.apache.calcite.linq4j.*;
+import org.apache.calcite.linq4j.AbstractEnumerable;
+import org.apache.calcite.linq4j.Enumerable;
+import org.apache.calcite.linq4j.Enumerator;
+import org.apache.calcite.linq4j.QueryProvider;
+import org.apache.calcite.linq4j.Queryable;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
@@ -47,30 +77,28 @@ import org.apache.solr.client.solrj.io.eval.LessThanEvaluator;
 import org.apache.solr.client.solrj.io.eval.NotEvaluator;
 import org.apache.solr.client.solrj.io.eval.OrEvaluator;
 import org.apache.solr.client.solrj.io.eval.RawValueEvaluator;
-import org.apache.solr.client.solrj.io.stream.TupleStream;
-import org.apache.solr.client.solrj.io.stream.StreamContext;
-import org.apache.solr.client.solrj.io.stream.HavingStream;
-import org.apache.solr.client.solrj.io.stream.RollupStream;
-import org.apache.solr.client.solrj.io.stream.ParallelStream;
 import org.apache.solr.client.solrj.io.stream.CloudSolrStream;
-import org.apache.solr.client.solrj.io.stream.UniqueStream;
+import org.apache.solr.client.solrj.io.stream.HavingStream;
+import org.apache.solr.client.solrj.io.stream.ParallelStream;
 import org.apache.solr.client.solrj.io.stream.RankStream;
+import org.apache.solr.client.solrj.io.stream.RollupStream;
+import org.apache.solr.client.solrj.io.stream.StreamContext;
+import org.apache.solr.client.solrj.io.stream.TupleStream;
+import org.apache.solr.client.solrj.io.stream.UniqueStream;
 import org.apache.solr.client.solrj.io.stream.expr.Expressible;
 import org.apache.solr.client.solrj.io.stream.expr.StreamExpression;
 import org.apache.solr.client.solrj.io.stream.expr.StreamExpressionParser;
 import org.apache.solr.client.solrj.io.stream.expr.StreamFactory;
-import org.apache.solr.client.solrj.io.stream.metrics.*;
-import org.alfresco.solr.stream.*;
+import org.apache.solr.client.solrj.io.stream.metrics.Bucket;
+import org.apache.solr.client.solrj.io.stream.metrics.CountMetric;
+import org.apache.solr.client.solrj.io.stream.metrics.MaxMetric;
+import org.apache.solr.client.solrj.io.stream.metrics.MeanMetric;
+import org.apache.solr.client.solrj.io.stream.metrics.Metric;
+import org.apache.solr.client.solrj.io.stream.metrics.MinMetric;
+import org.apache.solr.client.solrj.io.stream.metrics.SumMetric;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.handler.StreamHandler;
-import org.apache.solr.request.SolrRequestHandler;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
-import static org.apache.solr.common.params.CommonParams.SORT;
 
 /**
  * Table based on a Solr collection
@@ -105,6 +133,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
 
   private static final String DEFAULT_QUERY = "*";
   public static final int DEFAULT_LIMIT = 1000;
+  private static Pattern p = Pattern.compile("_query_:\"([^\"]*)\"");
 
   private final String collection;
   private final SolrSchema schema;
@@ -162,6 +191,13 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       } else {
         q = query;
       }
+    }
+    if(q.contains("_query_:")) {
+        //The _query_ placeholder needs to be stripped for the query to work.
+        Matcher m = p.matcher(q);
+        while (m.find()) {
+          q = m.group(1);
+        }
     }
 
     TupleStream tupleStream;
