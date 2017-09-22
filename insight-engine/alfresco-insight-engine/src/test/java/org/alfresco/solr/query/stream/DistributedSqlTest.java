@@ -193,6 +193,16 @@ public class DistributedSqlTest extends AbstractStreamTest
             assertTrue(tuple.get("cm:fiveStarRatingSchemeTotal") instanceof Double);
             assertTrue(tuple.get("cm:name") instanceof String);
         }
+        
+        //Test sql and solr predicate
+        sql = "select cm_creator from alfresco where _query_ = 'cm_creator:creator1'";
+        tuples = sqlQuery(sql, alfrescoJson2);
+        assertNotNull(tuples);
+        assertTrue(tuples.size() == 2);
+        for(Tuple tuple : tuples) {
+            assertTrue(tuple.get("cm_creator") instanceof String);
+            assertEquals("creator1", tuple.get("cm_creator"));
+        }
     }
 
 }
