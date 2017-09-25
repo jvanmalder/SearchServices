@@ -1,0 +1,3 @@
+**
+!Dockerfile
+!${project.artifactId}-${project.version}.war
