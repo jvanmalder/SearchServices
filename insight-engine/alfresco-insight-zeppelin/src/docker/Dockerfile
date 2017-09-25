@@ -92,17 +92,22 @@ RUN echo "$LOG_TAG Download Zeppelin binary" && \
     rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
     mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME}
 
-#RUN echo "$LOG_TAG Backup Zeppelin" && \
-#    cd ${Z_HOME} && \
-#    mv zeppelin-web-${Z_VERSION}.war zeppelin-web-${Z_VERSION}.war.back
+RUN echo "$LOG_TAG Backup original Zeppelin WAR file" && \
+    cd ${Z_HOME} && \
+    mv zeppelin-web-${Z_VERSION}.war zeppelin-web-${Z_VERSION}.war.back
 
-#COPY ${project.artifactId}-${project.version}.war ${Z_HOME}/zeppelin-web-${apache.zeppelin.version}.war
+COPY ${project.artifactId}-${project.version}.war ${Z_HOME}/zeppelin-web-${Z_VERSION}.war
+
+RUN echo "$LOG_TAG Create zeppelin-evn file" && \
+    cd ${Z_HOME}/conf && \
+    cp zeppelin-env.sh.template zeppelin-env.sh && \
+    echo "\nexport ZEPPELIN_PORT=${apache.zeppelin.port}\n" >> zeppelin-env.sh
 
 RUN echo "$LOG_TAG Cleanup" && \
     apt-get autoclean && \
     apt-get clean
 
-EXPOSE 8080
+EXPOSE ${apache.zeppelin.port}
 
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
 WORKDIR ${Z_HOME}
