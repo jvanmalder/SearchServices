@@ -101,7 +101,9 @@ COPY ${project.artifactId}-${project.version}.war ${Z_HOME}/zeppelin-web-${Z_VER
 RUN echo "$LOG_TAG Create zeppelin-evn file" && \
     cd ${Z_HOME}/conf && \
     cp zeppelin-env.sh.template zeppelin-env.sh && \
-    echo "\nexport ZEPPELIN_PORT=${apache.zeppelin.port}\n" >> zeppelin-env.sh
+    echo "\nexport ZEPPELIN_PORT=${apache.zeppelin.port}" >> zeppelin-env.sh && \
+    echo "\nexport ZEPPELIN_LOG_DIR=logs" >> zeppelin-env.sh && \
+    echo "\nexport ZEPPELIN_NOTEBOOK_DIR=notebook\n" >> zeppelin-env.sh
 
 RUN echo "$LOG_TAG Cleanup" && \
     apt-get autoclean && \
@@ -111,4 +113,8 @@ EXPOSE ${apache.zeppelin.port}
 
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
 WORKDIR ${Z_HOME}
+
+VOLUME logs
+VOLUME notebook
+
 CMD ["bin/zeppelin.sh"]
