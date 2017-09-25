@@ -37,7 +37,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     private String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
     
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(2, this);
+    public JettyServerRule jetty = new JettyServerRule(1, this);
     
     @Test
     public void testSearch() throws Exception
