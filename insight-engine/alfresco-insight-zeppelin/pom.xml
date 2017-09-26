@@ -15,6 +15,8 @@
    <properties>
       <apache.zeppelin.version>0.7.3</apache.zeppelin.version>
       <apache.zeppelin.port>9090</apache.zeppelin.port>
+      <alfresco-insight-jdbc.name>alfresco-insight-jdbc</alfresco-insight-jdbc.name>
+      <alfresco-insight-jdbc.version>1.0.0-SNAPSHOT</alfresco-insight-jdbc.version>
    </properties>
    <build>
       <plugins>
@@ -47,6 +49,10 @@
                            <directory>src/docker</directory>
                            <filtering>true</filtering>
                         </resource>
+                        <resource>
+                           <directory>src/zeppelin</directory>
+                           <filtering>true</filtering>
+                        </resource>
                      </resources>
                   </configuration>
                </execution>
@@ -66,8 +72,8 @@
                      <artifactItems>
                         <artifactItem>
                            <groupId>org.alfresco</groupId>
-                           <artifactId>alfresco-insight-jdbc</artifactId>
-                           <version>1.0.0-SNAPSHOT</version>
+                           <artifactId>${alfresco-insight-jdbc.name}</artifactId>
+                           <version>${alfresco-insight-jdbc.version}</version>
                         </artifactItem>
                      </artifactItems>
                      <outputDirectory>${project.build.directory}</outputDirectory>
