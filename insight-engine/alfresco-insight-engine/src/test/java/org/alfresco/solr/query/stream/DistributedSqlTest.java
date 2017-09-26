@@ -193,6 +193,8 @@ public class DistributedSqlTest extends AbstractStreamTest
             assertTrue(tuple.get("cm:fiveStarRatingSchemeTotal") instanceof Double);
             assertTrue(tuple.get("cm:name") instanceof String);
         }
+
+        assert(false);
     }
 
 }

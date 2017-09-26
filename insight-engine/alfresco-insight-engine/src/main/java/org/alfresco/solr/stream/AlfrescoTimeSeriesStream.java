@@ -134,9 +134,18 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
             }
         }
 
-        String field = timeSeriesStream.getField();
+        String vfield = timeSeriesStream.getField();
+        String field = null;
+        if(vfield.endsWith("_day")) {
+            field = vfield.replace("_day", "");
+        } else if(vfield.endsWith("_month")) {
+            field = vfield.replace("_month", "");
+        } else if(vfield.endsWith("_year")) {
+            field = vfield.replace("_year", "");
+        }
+
         String newField = AlfrescoStreamHandler.getIndexedField(field);
-        reverseLookup.put(newField, field);
+        reverseLookup.put(newField, vfield);
         timeSeriesStream.setField(newField);
         this.timeSeriesStream.open();
     }
@@ -157,6 +166,7 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
 
             Map newMap = new HashMap();
             for(String fieldName : fieldNames) {
+                System.out.println("### Fieldname:"+fieldName+":"+reverseLookup.get(fieldName));
                 if(reverseLookup.containsKey(fieldName)) {
                     Object o = fields.get(fieldName);
                     newMap.put(reverseLookup.get(fieldName), o);

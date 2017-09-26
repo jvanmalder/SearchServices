@@ -66,6 +66,9 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     protected Node node2;
     protected Node node3;
     protected Node node4;
+
+    protected Acl acl;
+    protected Acl acl2;
     
     protected static final QName PROP_RATING = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "fiveStarRatingSchemeTotal");
     protected static final QName PROP_TRACK  = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "trackNumber");
@@ -80,8 +83,8 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
 
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
-        Acl acl = getAcl(aclChangeSet);
-        Acl acl2 = getAcl(aclChangeSet);
+        acl = getAcl(aclChangeSet);
+        acl2 = getAcl(aclChangeSet);
 
         AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
         AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, list("jim"), list("phil"), null);

@@ -30,6 +30,7 @@ import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.TranslatableTable;
 import org.apache.calcite.schema.impl.AbstractTableQueryable;
 import org.apache.calcite.util.Pair;
+import org.apache.lucene.search.Query;
 import org.apache.solr.client.solrj.io.comp.ComparatorOrder;
 import org.apache.solr.client.solrj.io.comp.FieldComparator;
 import org.apache.solr.client.solrj.io.comp.MultipleFieldComparator;
@@ -65,7 +66,11 @@ import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.handler.StreamHandler;
+import org.apache.solr.parser.SolrQueryParserBase;
+import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrRequestHandler;
+import org.apache.solr.search.QParser;
+import org.apache.solr.search.QParserPlugin;
 
 import java.io.IOException;
 import java.util.*;
@@ -129,7 +134,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
   
   private Enumerable<Object> query(final Properties properties) {
     return query(properties, Collections.emptyList(), null, Collections.emptyList(), Collections.emptyList(),
-        Collections.emptyList(), null, null, null);
+            Collections.emptyList(), null, null, null, null);
   }
 
   /** Executes a Solr query on the underlying table.
@@ -147,7 +152,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                    final List<Pair<String, String>> metricPairs,
                                    final String limit,
                                    final String negativeQuery,
-                                   final String havingPredicate) {
+                                   final String havingPredicate,
+                                   final String filterData) {
     // SolrParams should be a ModifiableParams instead of a map
     boolean mapReduce = "map_reduce".equals(properties.getProperty("aggregationMode"));
     boolean negative = Boolean.parseBoolean(negativeQuery);
@@ -187,15 +193,39 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                                  limit,
                                                  havingPredicate);
           } else {
-            tupleStream = handleGroupByFacet(zk,
-                                             collection,
-                                             fields,
-                                             q,
-                                             orders,
-                                             buckets,
-                                             metricPairs,
-                                             limitInt,
-                                             havingPredicate);
+
+            boolean timeSeries = false;
+            if(buckets.size() == 1) {
+              String bucket = buckets.get(0);
+              if(bucket.endsWith("_day") || bucket.endsWith("_month") || bucket.endsWith("_year")) {
+                timeSeries = true;
+              }
+            }
+
+            if(timeSeries) {
+              tupleStream = handleTimeSeries(zk,
+                      collection,
+                      fields,
+                      q,
+                      orders,
+                      buckets,
+                      metricPairs,
+                      limitInt,
+                      havingPredicate,
+                      filterData);
+            } else {
+
+              tupleStream = handleGroupByFacet(zk,
+                      collection,
+                      fields,
+                      q,
+                      orders,
+                      buckets,
+                      metricPairs,
+                      limitInt,
+                      havingPredicate);
+
+            }
           }
         }
       }
@@ -659,6 +689,97 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
     return new AlfrescoExpressionStream(tupleStream);
   }
 
+  private TupleStream handleTimeSeries(String zkHost,
+                                       String collection,
+                                       final List<Map.Entry<String, Class>> fields,
+                                       final String query,
+                                       final List<Pair<String, String>> orders,
+                                       final List<String> bucketFields,
+                                       final List<Pair<String, String>> metricPairs,
+                                       final int limit,
+                                       final String havingPredicate,
+                                       final String filterData) throws IOException {
+
+
+
+    System.out.println("######### Filter data:" + filterData);
+    System.out.println("######### Query:" + query);
+
+    FilterData fdata  = new FilterData(filterData);
+
+    Map<String, Class> fmap = new HashMap();
+    for(Map.Entry<String, Class> f : fields) {
+      fmap.put(f.getKey(), f.getValue());
+    }
+
+    ModifiableSolrParams solrParams = new ModifiableSolrParams();
+    solrParams.add(CommonParams.Q, query);
+
+    Metric[] metrics = buildMetrics(metricPairs, true).toArray(new Metric[0]);
+    if(metrics.length == 0) {
+      metrics = new Metric[1];
+      metrics[0] = new CountMetric();
+    } else {
+      for(Metric metric : metrics) {
+        Class c = fmap.get(metric.getIdentifier());
+        if(Long.class.equals(c)) {
+          metric.outputLong = true;
+        }
+      }
+    }
+
+    String bucket = bucketFields.get(0);
+
+    String start = null;
+    String end = null;
+    String gap = null;
+    String field = null;
+    String format = null;
+
+    if(bucket.endsWith("_day")) {
+      gap = "+1DAY";
+      field = bucket.replace("_day", "");
+      format = "YYYYMMDD";
+    } else if(bucket.endsWith("_month")) {
+      gap = "+1MONTH";
+      field = bucket.replace("_month", "");
+      format = "YYYYMM";
+    } else if(bucket.endsWith("_year")) {
+      gap = "+1YEAR";
+      field = bucket.replace("_year", "");
+      format = "YYYY";
+    }
+
+    System.out.println("############ Filter field:"+field);
+
+    FilterData.Filter filter = fdata.getFilter(field);
+
+    start = filter.getStart();
+    end = filter.getEnd();
+
+    start = start.replace("'", "");
+    end = end.replace("'", "");
+
+    System.out.println("############ Start / End:"+start+":"+end);
+
+
+    TupleStream tupleStream = new TimeSeriesStream(zkHost, collection, solrParams, metrics, bucket, start, end, gap, format);
+
+    if(havingPredicate != null) {
+      BooleanEvaluator booleanOperation = (BooleanEvaluator)streamFactory.constructEvaluator(StreamExpressionParser.parse(havingPredicate));
+      tupleStream = new HavingStream(tupleStream, booleanOperation);
+    }
+
+    if(limit > 0)
+    {
+      tupleStream = new LimitStream(tupleStream, limit);
+    }
+
+    return new AlfrescoExpressionStream(tupleStream);
+  }
+
+
+
   private TupleStream handleSelectDistinctMapReduce(final String zkHost,
                                                     final String collection,
                                                     final Properties properties,
@@ -861,8 +982,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
      */
     @SuppressWarnings("UnusedDeclaration")
     public Enumerable<Object> query(List<Map.Entry<String, Class>> fields, String query, List<Pair<String, String>> order,
-                                    List<String> buckets, List<Pair<String, String>> metricPairs, String limit, String negativeQuery, String havingPredicate) {
-      return getTable().query(getProperties(), fields, query, order, buckets, metricPairs, limit, negativeQuery, havingPredicate);
+                                    List<String> buckets, List<Pair<String, String>> metricPairs, String limit, String negativeQuery, String havingPredicate, String filterData) {
+      return getTable().query(getProperties(), fields, query, order, buckets, metricPairs, limit, negativeQuery, havingPredicate, filterData);
     }
   }
 
