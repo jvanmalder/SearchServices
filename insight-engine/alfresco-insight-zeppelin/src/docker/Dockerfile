@@ -91,8 +91,11 @@ RUN echo "$LOG_TAG Create zeppelin-evn file" && \
 
 RUN echo "$LOG_TAG Create folder" && \
     cd ${Z_HOME} && \
-    mkdir alfresco
+    mkdir alfresco && \
+    cd ${Z_HOME}/notebook && \
+    mkdir 2CVRR91J2
 
+COPY note.json ${Z_HOME}/notebook/2CVRR91J2
 COPY alfresco-insight-jdbc-1.0.0-SNAPSHOT.jar ${Z_HOME}/alfresco
 COPY interpreter.json ${Z_HOME}/conf
 

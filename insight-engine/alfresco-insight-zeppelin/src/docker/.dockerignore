@@ -3,3 +3,4 @@
 !${project.artifactId}-${project.version}.war
 !alfresco-insight-jdbc-1.0.0-SNAPSHOT.jar
 !interpreter.json
+!note.json

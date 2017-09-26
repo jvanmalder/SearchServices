@@ -469,7 +469,7 @@
         {
           "name": "spark",
           "class": "org.apache.zeppelin.spark.SparkInterpreter",
-          "defaultInterpreter": true,
+          "defaultInterpreter": false,
           "editor": {
             "language": "scala"
           }
@@ -549,7 +549,7 @@
         {
           "name": "spark",
           "class": "org.apache.zeppelin.livy.LivySparkInterpreter",
-          "defaultInterpreter": true,
+          "defaultInterpreter": false,
           "editor": {
             "language": "scala",
             "editOnDblClick": false
@@ -728,7 +728,7 @@
         {
           "name": "sql",
           "class": "org.apache.zeppelin.jdbc.JDBCInterpreter",
-          "defaultInterpreter": false,
+          "defaultInterpreter": true,
           "editor": {
             "language": "sql",
             "editOnDblClick": false
@@ -859,51 +859,8 @@
     }
   },
   "interpreterBindings": {
-    "2CU21V7WK": [
-      "2CUZK9W4Z",
-      "2CV35F98V",
-      "2CVAY6EYZ",
-      "2CV9W1CM8",
-      "2CT6ACN52",
-      "2CWP1CYF9",
-      "2CTAVGYNN",
-      "2CUXH7SWR",
-      "2CV5Z7N16",
-      "2CTKYWYKU",
-      "2CWSBK9XP",
-      "2CUAEX4EZ",
-      "2CTHAGMS8",
-      "2CVE4CET6",
-      "2CWFVQ5SE",
-      "2CWMP9XMZ",
-      "4TAQP3E1S",
-      "2CVWUYWH5",
-      "2CTA34VFN",
-      "2CUCUKP32",
-      "2CVKNMMBE"
-    ],
-    "2CW12T6PB": [
-      "4TAQP3E1S",
-      "2CV35F98V",
-      "2CVAY6EYZ",
-      "2CV9W1CM8",
-      "2CT6ACN52",
-      "2CWP1CYF9",
-      "2CTAVGYNN",
-      "2CUXH7SWR",
-      "2CV5Z7N16",
-      "2CTKYWYKU",
-      "2CWSBK9XP",
-      "2CUAEX4EZ",
-      "2CTHAGMS8",
-      "2CVE4CET6",
-      "2CWFVQ5SE",
-      "2CWMP9XMZ",
-      "2CUZK9W4Z",
-      "2CVWUYWH5",
-      "2CTA34VFN",
-      "2CUCUKP32",
-      "2CVKNMMBE"
+    "2CVRR91J2": [
+      "2CUZK9W4Z"
     ]
   },
   "interpreterRepositories": [
@@ -927,7 +884,7 @@
     {
       "id": "local",
       "type": "default",
-      "url": "file:///Users/taksoy/.m2/repository",
+      "url": "",
       "releasePolicy": {
         "enabled": true,
         "updatePolicy": "daily",
