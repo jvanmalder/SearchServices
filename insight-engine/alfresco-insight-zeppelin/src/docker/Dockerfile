@@ -89,6 +89,13 @@ RUN echo "$LOG_TAG Create zeppelin-evn file" && \
     cp zeppelin-env.sh.template zeppelin-env.sh && \
     echo "\nexport ZEPPELIN_PORT=${apache.zeppelin.port}" >> zeppelin-env.sh
 
+RUN echo "$LOG_TAG Create folder" && \
+    cd ${Z_HOME} && \
+    mkdir alfresco
+
+COPY alfresco-insight-jdbc-1.0.0-SNAPSHOT.jar ${Z_HOME}/alfresco
+COPY interpreter.json ${Z_HOME}/conf
+
 RUN echo "$LOG_TAG Cleanup" && \
     apt-get autoclean && \
     apt-get clean
