@@ -1,0 +1,6 @@
+**
+!Dockerfile
+!alfresco-insight-zeppelin-1.0.0-SNAPSHOT.war
+!alfresco-insight-jdbc-1.0.0-SNAPSHOT.jar
+!interpreter.json
+!note.json
