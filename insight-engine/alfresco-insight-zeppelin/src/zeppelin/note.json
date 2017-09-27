@@ -533,7 +533,7 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Note 1",
+  "name": "Alfresco Sample Queries",
   "id": "2CVRR91J2",
   "angularObjects": {
     "2CUZK9W4Z:shared_process": []
