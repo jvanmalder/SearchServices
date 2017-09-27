@@ -718,7 +718,7 @@
         "zeppelin.jdbc.principal": "",
         "default.user": "gpadmin",
         "default.driver": "org.apache.solr.client.solrj.io.sql.InsightEngineDriverImpl",
-        "default.url": "jdbc:alfresco://localhost:8983?collection\u003dalfresco",
+        "default.url": "jdbc:alfresco://solr6:8983?collection\u003dalfresco",
         "zeppelin.jdbc.keytab.location": "",
         "zeppelin.jdbc.concurrent.use": "true",
         "zeppelin.jdbc.concurrent.max_connection": "10"
