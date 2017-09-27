@@ -700,11 +700,6 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                        final String havingPredicate,
                                        final String filterData) throws IOException {
 
-
-
-    System.out.println("######### Filter data:" + filterData);
-    System.out.println("######### Query:" + query);
-
     FilterData fdata  = new FilterData(filterData);
 
     Map<String, Class> fmap = new HashMap();
@@ -739,18 +734,16 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
     if(bucket.endsWith("_day")) {
       gap = "+1DAY";
       field = bucket.replace("_day", "");
-      format = "YYYYMMDD";
+      format = "YYYY-MM-dd";
     } else if(bucket.endsWith("_month")) {
       gap = "+1MONTH";
       field = bucket.replace("_month", "");
-      format = "YYYYMM";
+      format = "YYYY-MM";
     } else if(bucket.endsWith("_year")) {
       gap = "+1YEAR";
       field = bucket.replace("_year", "");
       format = "YYYY";
     }
-
-    System.out.println("############ Filter field:"+field);
 
     FilterData.Filter filter = fdata.getFilter(field);
 
@@ -759,9 +752,6 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
 
     start = start.replace("'", "");
     end = end.replace("'", "");
-
-    System.out.println("############ Start / End:"+start+":"+end);
-
 
     TupleStream tupleStream = new TimeSeriesStream(zkHost, collection, solrParams, metrics, bucket, start, end, gap, format);
 

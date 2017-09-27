@@ -62,14 +62,45 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
         loadTimeSeriesData();
 
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
-        sql = "select cm_created_day, count(*) from alfresco where cm_created >= '2000-02-01T01:01:01Z' and cm_created <= '2000-02-12T23:59:59Z' group by cm_created_day";
+        sql = "select cm_created_day, count(*), sum(cm_fiveStarRatingSchemeTotal), avg(cm_fiveStarRatingSchemeTotal), min(cm_fiveStarRatingSchemeTotal), max(cm_fiveStarRatingSchemeTotal) from alfresco where cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
-        System.out.println("####### tuples:"+tuples.size());
+
+        assertTrue(tuples.size() == 14);
+
         for(Tuple tuple : tuples) {
-            System.out.println("####### tuple:" + tuple.fields.toString());
+            String dayString = tuple.getString("cm_created_day");
+            int day = Integer.parseInt(dayString.split("-")[2]);
+            int indexedCount = dayCount.get(day);
+            long count = tuple.getLong("EXPR$1");
+            double sum = tuple.getDouble("EXPR$2");
+            double avg = tuple.getDouble("EXPR$3");
+            double min = tuple.getDouble("EXPR$4");
+            double max = tuple.getDouble("EXPR$5");
+            assertEquals(indexedCount, count);
+            assertEquals(indexedCount*10, sum, 0);
+            assertEquals(avg, 10, 0);
+            assertEquals(min, 10, 0);
+            assertEquals(max, 10, 0);
         }
 
-        assertTrue(tuples.size() == 4);
+        sql = "select cm_created_day, count(*) as ct, sum(cm_fiveStarRatingSchemeTotal) as sm, avg(cm_fiveStarRatingSchemeTotal) as av, min(cm_fiveStarRatingSchemeTotal) as mn, max(cm_fiveStarRatingSchemeTotal) as mx from alfresco where cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 14);
+        for(Tuple tuple : tuples) {
+            String dayString = tuple.getString("cm_created_day");
+            int day = Integer.parseInt(dayString.split("-")[2]);
+            int indexedCount = dayCount.get(day);
+            long count = tuple.getLong("ct");
+            double sum = tuple.getDouble("sm");
+            double avg = tuple.getDouble("av");
+            double min = tuple.getDouble("mn");
+            double max = tuple.getDouble("mx");
+            assertEquals(indexedCount, count);
+            assertEquals(indexedCount*10, sum, 0);
+            assertEquals(avg, 10, 0);
+            assertEquals(min, 10, 0);
+            assertEquals(max, 10, 0);
+        }
     }
 
     private void loadTimeSeriesData() throws Exception {
@@ -94,7 +125,7 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
                 dayCount.put(day, 1);
             }
 
-            Date date1 = getDate(2000, 1, day);
+            Date date1 = getDate(2010, 1, day);
             nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED, new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
             nodeMetaData1.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
             nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue("12"));

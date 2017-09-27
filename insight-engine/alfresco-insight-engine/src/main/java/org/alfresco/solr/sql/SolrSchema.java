@@ -103,7 +103,7 @@ class SolrSchema extends AbstractSchema {
         addFieldInfo(fieldInfo, entry, type, null);
         if(isDate) {
           isDate = false;
-          addTimeFields(fieldInfo, entry, typeFactory.createJavaType(Long.class));
+          addTimeFields(fieldInfo, entry, typeFactory.createJavaType(String.class));
         }
       }
     fieldInfo.add("_query_",typeFactory.createJavaType(String.class));
