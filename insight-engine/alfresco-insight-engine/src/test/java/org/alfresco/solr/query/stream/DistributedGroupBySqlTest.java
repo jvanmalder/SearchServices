@@ -34,7 +34,7 @@ import org.junit.Test;
 public class DistributedGroupBySqlTest extends AbstractStreamTest
 {
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(2, this);
+    public JettyServerRule jetty = new JettyServerRule(1, this);
     
     @Test
     public void testSearch() throws Exception

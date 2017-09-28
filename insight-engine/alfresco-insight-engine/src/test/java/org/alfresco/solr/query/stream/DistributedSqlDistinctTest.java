@@ -36,7 +36,7 @@ public class DistributedSqlDistinctTest extends AbstractStreamTest
     private String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
     
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(2, this);
+    public JettyServerRule jetty = new JettyServerRule(1, this);
 
     @Test
     public void testSearch() throws Exception
