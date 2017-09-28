@@ -1,20 +1,6 @@
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 FROM ubuntu:16.04
-MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
+# Original Apache Zeppelin Docker Image has been copied and modified.
+# This docker file will be maintained by Alfresco Software Ltd.
 
 # `Z_VERSION` will be updated by `dev/change_zeppelin_version.sh`
 ENV Z_VERSION="${apache.zeppelin.version}"
@@ -92,18 +78,34 @@ RUN echo "$LOG_TAG Download Zeppelin binary" && \
     rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
     mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME}
 
-#RUN echo "$LOG_TAG Backup Zeppelin" && \
-#    cd ${Z_HOME} && \
-#    mv zeppelin-web-${Z_VERSION}.war zeppelin-web-${Z_VERSION}.war.back
+RUN echo "$LOG_TAG Backup original Zeppelin WAR file" && \
+    cd ${Z_HOME} && \
+    mv zeppelin-web-${Z_VERSION}.war zeppelin-web-${Z_VERSION}.war.back
 
-#COPY ${project.artifactId}-${project.version}.war ${Z_HOME}/zeppelin-web-${apache.zeppelin.version}.war
+COPY ${project.artifactId}-${project.version}.war ${Z_HOME}/zeppelin-web-${Z_VERSION}.war
+
+RUN echo "$LOG_TAG Create zeppelin-evn file" && \
+    cd ${Z_HOME}/conf && \
+    cp zeppelin-env.sh.template zeppelin-env.sh && \
+    echo "\nexport ZEPPELIN_PORT=${apache.zeppelin.port}" >> zeppelin-env.sh
+
+RUN echo "$LOG_TAG Create folder" && \
+    cd ${Z_HOME} && \
+    mkdir alfresco && \
+    cd ${Z_HOME}/notebook && \
+    mkdir 2CVRR91J2
+
+COPY note.json ${Z_HOME}/notebook/2CVRR91J2
+COPY alfresco-insight-jdbc-1.0.0-SNAPSHOT.jar ${Z_HOME}/alfresco
+COPY interpreter.json ${Z_HOME}/conf
 
 RUN echo "$LOG_TAG Cleanup" && \
     apt-get autoclean && \
     apt-get clean
 
-EXPOSE 8080
+EXPOSE ${apache.zeppelin.port}
 
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
 WORKDIR ${Z_HOME}
+
 CMD ["bin/zeppelin.sh"]
