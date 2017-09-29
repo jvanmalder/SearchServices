@@ -16,30 +16,37 @@
  */
 package org.alfresco.solr.sql;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
+import org.alfresco.repo.dictionary.DictionaryComponent;
+import org.alfresco.service.cmr.dictionary.ModelDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceException;
-import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.service.namespace.QName;
-import org.apache.calcite.rel.type.*;
+import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.rel.type.RelDataTypeImpl;
+import org.apache.calcite.rel.type.RelDataTypeSystem;
+import org.apache.calcite.rel.type.RelProtoDataType;
 import org.apache.calcite.schema.Table;
 import org.apache.calcite.schema.impl.AbstractSchema;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.LeafReader;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.apache.solr.client.solrj.request.LukeRequest;
-import org.apache.solr.client.solrj.response.LukeResponse;
-import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.schema.FieldType;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.RefCounted;
-
-import java.io.IOException;
-import java.util.*;
 
 class SolrSchema extends AbstractSchema {
   final Properties properties;
@@ -65,7 +72,12 @@ class SolrSchema extends AbstractSchema {
     final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
 
     Map<String, String> fields = getIndexedFieldsInfo();
-
+    Collection<QName> aspect = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getAllAspects();
+    for(QName name : aspect) 
+    {
+        Map<QName,PropertyDefinition> map = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getPropertyDefs(name);
+        map.forEach((k,v)-> fields.put(k.getPrefixString(), v.getDataType().getJavaClassName()));
+    }
     Set<Map.Entry<String, String>> set = fields.entrySet();
 
       for(Map.Entry<String, String> entry : set) {
@@ -90,6 +102,12 @@ class SolrSchema extends AbstractSchema {
         case "solr.TrieIntField":
           type = typeFactory.createJavaType(Long.class);
           break;
+        case "java.lang.Integer":
+            type = typeFactory.createJavaType(Long.class);
+          break;
+        case "java.lang.Float":
+            type = typeFactory.createJavaType(Double.class);
+            break;
         default:
           type = typeFactory.createJavaType(String.class);
       }
