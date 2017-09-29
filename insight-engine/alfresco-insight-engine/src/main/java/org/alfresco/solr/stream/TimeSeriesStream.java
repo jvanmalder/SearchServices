@@ -414,6 +414,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         buf.append('"');
         buf.append(":{");
         buf.append("\"type\":\"range\"");
+        buf.append(",\"include\":\"upper\"");
         buf.append(",\"field\":\""+field+"\"");
         buf.append(",\"start\":\""+start+"\"");
         buf.append(",\"end\":\""+end+"\"");

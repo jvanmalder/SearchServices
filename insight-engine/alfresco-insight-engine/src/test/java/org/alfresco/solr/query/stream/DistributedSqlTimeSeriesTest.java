@@ -33,11 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
@@ -52,6 +48,8 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
 {
     private String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
     private Map<Integer, Integer> dayCount = new HashMap();
+    private Map<String, Integer> dayCount2 = new HashMap();
+
 
     @Rule
     public JettyServerRule jetty = new JettyServerRule(2, this);
@@ -101,6 +99,21 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             assertEquals(min, 10, 0);
             assertEquals(max, 10, 0);
         }
+
+        loadTimeSeriesData2();
+
+        //Test the date math
+        sql = "select cm_created_day, count(*) as ct from alfresco where cm_created >= 'NOW-12DAYS' and cm_created <= 'NOW' group by cm_created_day";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 12);
+
+        for(Tuple tuple : tuples) {
+            String dayString = tuple.getString("cm_created_day");
+            int indexedCount = dayCount2.get(dayString);
+            long count = tuple.getLong("ct");
+            assertEquals(indexedCount, count);
+        }
+
     }
 
     private void loadTimeSeriesData() throws Exception {
@@ -138,9 +151,65 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
         }
 
         indexTransaction(txn, nodes, nodeMetaDatas);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numDocs+4, 80000);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numDocs + 4, 80000);
 
     }
+
+    private void loadTimeSeriesData2() throws Exception {
+
+        int numDocs = 250;
+
+        Transaction txn = getTransaction(0, numDocs);
+
+        List<Node> nodes = new ArrayList();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+
+        for(int i=0; i<numDocs; i++) {
+            Node node = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
+            nodes.add(node);
+            NodeMetaData nodeMetaData1 = getNodeMetaData(node, txn, acl, "mike", null, false);
+            int day = (i%14);
+
+            GregorianCalendar calendar = new GregorianCalendar();
+            calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+            calendar.add(calendar.DAY_OF_YEAR, -day);
+            String key=calendar.get(calendar.YEAR)+"-"+pad((calendar.get(Calendar.MONTH) + 1))+"-"+pad(calendar.get(Calendar.DAY_OF_MONTH));
+
+            if(dayCount2.containsKey(key)) {
+                Integer count = dayCount2.get(key);
+                dayCount2.put(key, count.intValue() + 1);
+            } else {
+                dayCount2.put(key, 1);
+            }
+
+            Date date = calendar.getTime();
+
+            nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED, new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date)));
+            nodeMetaData1.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
+            nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue("12"));
+            nodeMetaData1.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name1"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("michael"));
+            nodeMetaDatas.add(nodeMetaData1);
+        }
+
+        indexTransaction(txn, nodes, nodeMetaDatas);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), (numDocs*2)+4, 80000);
+
+    }
+
+    private String pad(int i) {
+        String s = Integer.toString(i);
+        if(s.length() == 1) {
+            s="0"+s;
+        }
+
+        return s;
+    }
+
+
 
 
 }
