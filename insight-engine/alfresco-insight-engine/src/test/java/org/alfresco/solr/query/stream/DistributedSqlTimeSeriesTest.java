@@ -49,6 +49,8 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
     private String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
     private Map<Integer, Integer> dayCount = new HashMap();
     private Map<String, Integer> dayCount2 = new HashMap();
+    private Map<String, Integer> yearCount = new HashMap();
+
 
 
     @Rule
@@ -100,12 +102,11 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             assertEquals(max, 10, 0);
         }
 
-        loadTimeSeriesData2();
-
         //Test the date math
         sql = "select cm_created_day, count(*) as ct from alfresco where cm_created >= 'NOW-12DAYS' and cm_created <= 'NOW' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 12);
+
 
         for(Tuple tuple : tuples) {
             String dayString = tuple.getString("cm_created_day");
@@ -114,6 +115,18 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             assertEquals(indexedCount, count);
         }
 
+        //Test year time grain
+        sql = "select cm_created_year, count(*) as ct from alfresco where cm_created >= 'NOW-32YEARS' and cm_created <= 'NOW-20YEARS' group by cm_created_year";
+        tuples = sqlQuery(sql, alfrescoJson);
+
+        assertTrue(tuples.size() == 12);
+
+        for(Tuple tuple : tuples) {
+            String dayString = tuple.getString("cm_created_year");
+            int indexedCount = yearCount.get(dayString);
+            long count = tuple.getLong("ct");
+            assertEquals(indexedCount, count);
+        }
     }
 
     private void loadTimeSeriesData() throws Exception {
@@ -151,13 +164,12 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
         }
 
         indexTransaction(txn, nodes, nodeMetaDatas);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numDocs + 4, 80000);
-
+        loadTimeSeriesData2(numDocs);
+        loadTimeSeriesData3(numDocs);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), (numDocs * 3) + 4, 80000);
     }
 
-    private void loadTimeSeriesData2() throws Exception {
-
-        int numDocs = 250;
+    private void loadTimeSeriesData2(int numDocs) throws Exception {
 
         Transaction txn = getTransaction(0, numDocs);
 
@@ -196,8 +208,49 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
         }
 
         indexTransaction(txn, nodes, nodeMetaDatas);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), (numDocs*2)+4, 80000);
 
+    }
+
+
+    private void loadTimeSeriesData3(int numDocs) throws Exception {
+
+        Transaction txn = getTransaction(0, numDocs);
+
+        List<Node> nodes = new ArrayList();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+
+        for(int i=0; i<numDocs; i++) {
+            Node node = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
+            nodes.add(node);
+            NodeMetaData nodeMetaData1 = getNodeMetaData(node, txn, acl, "mike", null, false);
+            int year = (i%14);
+
+            GregorianCalendar calendar = new GregorianCalendar();
+            calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+            calendar.add(calendar.YEAR, -(year+20));
+            String key=Integer.toString(calendar.get(calendar.YEAR));
+
+            if(yearCount.containsKey(key)) {
+                Integer count = yearCount.get(key);
+                yearCount.put(key, count.intValue() + 1);
+            } else {
+                yearCount.put(key, 1);
+            }
+
+            Date date = calendar.getTime();
+
+            nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED, new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date)));
+            nodeMetaData1.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
+            nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue("12"));
+            nodeMetaData1.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name1"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("michael"));
+            nodeMetaDatas.add(nodeMetaData1);
+        }
+
+        indexTransaction(txn, nodes, nodeMetaDatas);
     }
 
     private String pad(int i) {
@@ -208,9 +261,5 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
 
         return s;
     }
-
-
-
-
 }
 
