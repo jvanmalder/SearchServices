@@ -14,7 +14,6 @@
    <name>Alfresco Insight Zeppelin</name>
    <properties>
       <apache.zeppelin.version>0.7.3</apache.zeppelin.version>
-      <apache.zeppelin.port>9090</apache.zeppelin.port>
       <alfresco-insight-jdbc.name>alfresco-insight-jdbc</alfresco-insight-jdbc.name>
       <alfresco-insight-jdbc.version>1.0.0-SNAPSHOT</alfresco-insight-jdbc.version>
    </properties>

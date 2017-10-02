@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 services:
   platform:
     image: docker-internal.alfresco.com/platform:5.2.3-SNAPSHOT
