@@ -732,10 +732,25 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
     String field = null;
     String format = null;
 
+
+
     if(bucket.endsWith("_day")) {
       gap = "+1DAY";
       field = bucket.replace("_day", "");
       format = "YYYY-MM-dd";
+
+      FilterData.Filter filter = fdata.getFilter(field);
+      start = filter.getStart();
+      end = filter.getEnd();
+      start = start.replace("'", "");
+      if(end != null) {
+        end = end.replace("'", "");
+      } else {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(new Date());
+        end = cal.get(Calendar.YEAR)+"-"+pad((cal.get(Calendar.MONTH)+1))+"-"+pad(cal.get(Calendar.DAY_OF_MONTH))+"T01:01:01Z";
+      }
+
     } else if(bucket.endsWith("_month")) {
       gap = "+1MONTH";
       field = bucket.replace("_month", "");
@@ -743,16 +758,21 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
     } else if(bucket.endsWith("_year")) {
       gap = "+1YEAR";
       field = bucket.replace("_year", "");
+
+      FilterData.Filter filter = fdata.getFilter(field);
+      start = filter.getStart();
+      end = filter.getEnd();
+      start = start.replace("'", "");
+      if(end != null) {
+        end = end.replace("'", "");
+      } else {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(new Date());
+        end = cal.get(Calendar.YEAR)+"-12-31T23:59:59Z";
+      }
+
       format = "YYYY";
     }
-
-    FilterData.Filter filter = fdata.getFilter(field);
-
-    start = filter.getStart();
-    end = filter.getEnd();
-
-    start = start.replace("'", "");
-    end = end.replace("'", "");
 
     TupleStream tupleStream = new TimeSeriesStream(zkHost, collection, solrParams, metrics, bucket, start, end, gap, format);
 
@@ -770,6 +790,14 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
   }
 
 
+  private String pad(int i) {
+    String s = Integer.toString(i);
+    if(s.length() == 1) {
+      return "0"+s;
+    } else {
+      return s;
+    }
+  }
 
   private TupleStream handleSelectDistinctMapReduce(final String zkHost,
                                                     final String collection,

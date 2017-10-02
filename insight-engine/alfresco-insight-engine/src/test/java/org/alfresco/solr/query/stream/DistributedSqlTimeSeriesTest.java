@@ -64,7 +64,7 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
 
         //Time period 2010
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
-        sql = "select cm_created_day, count(*), sum(cm_fiveStarRatingSchemeTotal), avg(cm_fiveStarRatingSchemeTotal), min(cm_fiveStarRatingSchemeTotal), max(cm_fiveStarRatingSchemeTotal) from alfresco where cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day";
+        sql = "select cm_created_day, count(*), sum(cm_fiveStarRatingSchemeTotal), avg(cm_fiveStarRatingSchemeTotal), min(cm_fiveStarRatingSchemeTotal), max(cm_fiveStarRatingSchemeTotal) from alfresco where cm_owner='jim' and cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
 
         assertTrue(tuples.size() == 14);
@@ -85,7 +85,7 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             assertEquals(max, 10, 0);
         }
 
-        sql = "select cm_created_day, count(*) as ct, sum(cm_fiveStarRatingSchemeTotal) as sm, avg(cm_fiveStarRatingSchemeTotal) as av, min(cm_fiveStarRatingSchemeTotal) as mn, max(cm_fiveStarRatingSchemeTotal) as mx from alfresco where cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day";
+        sql = "select cm_created_day, count(*) as ct, sum(cm_fiveStarRatingSchemeTotal) as sm, avg(cm_fiveStarRatingSchemeTotal) as av, min(cm_fiveStarRatingSchemeTotal) as mn, max(cm_fiveStarRatingSchemeTotal) as mx from alfresco where cm_owner='jim' and cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 14);
         for(Tuple tuple : tuples) {
@@ -105,36 +105,28 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
         }
 
         //Test the date math
-        // Time period NOW-12DAYS
-        sql = "select cm_created_day, count(*) as ct from alfresco where cm_created >= 'NOW-12DAYS' and cm_created <= 'NOW' group by cm_created_day";
+        sql = "select cm_created_day, count(*) as ct from alfresco where cm_owner='vigo' and cm_created >= 'NOW/DAY-11DAYS' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 12);
-
-        System.out.println("########daycount2:"+dayCount2);
 
         for(Tuple tuple : tuples) {
             String dayString = tuple.getString("cm_created_day");
             int indexedCount = dayCount2.get(dayString);
             long count = tuple.getLong("ct");
-            System.out.println("########tuple:"+dayString+":"+indexedCount+":"+count);
             assertEquals(indexedCount, count);
         }
 
         //Test year time grain
-        // Time period 1990's
-        sql = "select cm_created_year, count(*) as ct from alfresco where cm_created >= '1990-01-01T01:01:01Z' and cm_created <= '1999-12-31T23:59:59Z' group by cm_created_year";
+
+        sql = "select cm_created_year, count(*) as ct from alfresco where cm_owner = 'morton' and cm_created >= 'NOW/YEAR-4YEARS' group by cm_created_year";
         tuples = sqlQuery(sql, alfrescoJson);
 
-        System.out.println("########year count:"+yearCount);
-
-
-        assertTrue(tuples.size() == 10);
+        assertTrue(tuples.size() == 5);
 
         for(Tuple tuple : tuples) {
             String dayString = tuple.getString("cm_created_year");
             int indexedCount = yearCount.get(dayString);
             long count = tuple.getLong("ct");
-            System.out.println("########tuple:"+dayString+":"+indexedCount+":"+count);
             assertEquals(indexedCount, count);
         }
     }
@@ -169,7 +161,7 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             nodeMetaData1.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name1"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
-            nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("michael"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("jim"));
             nodeMetaDatas.add(nodeMetaData1);
         }
 
@@ -193,7 +185,9 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             int day = (i%14);
 
             GregorianCalendar calendar = new GregorianCalendar();
-            calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+            calendar.setTime(new Date());
+            //calendar.clear();
+            calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 01, 01, 01);
             calendar.add(calendar.DAY_OF_YEAR, -day);
             String key=calendar.get(calendar.YEAR)+"-"+pad((calendar.get(Calendar.MONTH) + 1))+"-"+pad(calendar.get(Calendar.DAY_OF_MONTH));
 
@@ -204,21 +198,23 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
                 dayCount2.put(key, 1);
             }
 
-            Date date = calendar.getTime();
-
-            nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED, new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date)));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED, new StringPropertyValue(getSolrDay(calendar)));
             nodeMetaData1.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
             nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue("12"));
             nodeMetaData1.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name1"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
-            nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("michael"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("vigo"));
             nodeMetaDatas.add(nodeMetaData1);
         }
 
         indexTransaction(txn, nodes, nodeMetaDatas);
 
+    }
+
+    private String getSolrDay(Calendar cal) {
+        return cal.get(Calendar.YEAR) + "-" + pad((cal.get(Calendar.MONTH)+1))+"-"+pad(cal.get(Calendar.DAY_OF_MONTH))+"T01:01:01Z";
     }
 
 
@@ -233,12 +229,12 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             Node node = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData1 = getNodeMetaData(node, txn, acl, "mike", null, false);
-            int year = (i%10);
+            int year = (i%5);
 
             GregorianCalendar calendar = new GregorianCalendar();
-            calendar.set(1990, calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
-            calendar.add(calendar.YEAR, year);
-            String key=Integer.toString(calendar.get(calendar.YEAR));
+            calendar.set(calendar.get(Calendar.YEAR), 11, 31, 23, 59, 59);
+            calendar.add(calendar.YEAR, -year);
+            String key = Integer.toString(calendar.get(calendar.YEAR));
 
             if(yearCount.containsKey(key)) {
                 Integer count = yearCount.get(key);
@@ -247,21 +243,23 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
                 yearCount.put(key, 1);
             }
 
-            Date date = calendar.getTime();
-
-            nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED, new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date)));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED, new StringPropertyValue(getSolrDay(calendar)));
             nodeMetaData1.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
             nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue("12"));
             nodeMetaData1.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name1"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
-            nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("michael"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("morton"));
             nodeMetaDatas.add(nodeMetaData1);
         }
 
         indexTransaction(txn, nodes, nodeMetaDatas);
     }
+
+
+
+
 
     private String pad(int i) {
         String s = Integer.toString(i);

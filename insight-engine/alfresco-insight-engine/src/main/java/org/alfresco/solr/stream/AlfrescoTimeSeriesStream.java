@@ -171,7 +171,6 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
 
             Map newMap = new HashMap();
             for(String fieldName : fieldNames) {
-                System.out.println("### Fieldname:"+fieldName+":"+reverseLookup.get(fieldName));
                 if(reverseLookup.containsKey(fieldName)) {
                     Object o = fields.get(fieldName);
                     newMap.put(reverseLookup.get(fieldName), o);
