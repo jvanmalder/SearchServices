@@ -3,31 +3,35 @@
 This projects takes the Apache Zeppelin project and customizes it for our own purposes.
 
 ### Get the code
-
 Git:
 
-   git@git.alfresco.com:search_discovery/InsightZeppelin.git
+<code>
+git clone git.alfresco.com:search_discovery/InsightZeppelin.git
+</code>
 
 ### Use Maven
-1. Build
+Build project:
 
-```
+<code>
 mvn clean install
-```
+</code>
 
 This will create a modified Zeppelin WAR file. Apart from that it will make files available in the target folder for the Docker image.
 
 ### Docker
 To build the docker image:
-```
+
+<code>
 cd target
+
 docker build -t insightzeppelin:develop .
-```
+</code>
 
 To run the docker image:
-```
+
+<code>
 docker run -p 9090:9090 insightzeppelin:develop
-```
+</code>
 
 ### License
 Copyright (C) 2005 - 2017 Alfresco Software Limited
