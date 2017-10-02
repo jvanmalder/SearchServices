@@ -61,6 +61,8 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
     {
         loadTimeSeriesData();
 
+
+        //Time period 2010
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         sql = "select cm_created_day, count(*), sum(cm_fiveStarRatingSchemeTotal), avg(cm_fiveStarRatingSchemeTotal), min(cm_fiveStarRatingSchemeTotal), max(cm_fiveStarRatingSchemeTotal) from alfresco where cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
@@ -103,28 +105,36 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
         }
 
         //Test the date math
+        // Time period NOW-12DAYS
         sql = "select cm_created_day, count(*) as ct from alfresco where cm_created >= 'NOW-12DAYS' and cm_created <= 'NOW' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 12);
 
+        System.out.println("########daycount2:"+dayCount2);
 
         for(Tuple tuple : tuples) {
             String dayString = tuple.getString("cm_created_day");
             int indexedCount = dayCount2.get(dayString);
             long count = tuple.getLong("ct");
+            System.out.println("########tuple:"+dayString+":"+indexedCount+":"+count);
             assertEquals(indexedCount, count);
         }
 
         //Test year time grain
-        sql = "select cm_created_year, count(*) as ct from alfresco where cm_created >= 'NOW-32YEARS' and cm_created <= 'NOW-20YEARS' group by cm_created_year";
+        // Time period 1990's
+        sql = "select cm_created_year, count(*) as ct from alfresco where cm_created >= '1990-01-01T01:01:01Z' and cm_created <= '1999-12-31T23:59:59Z' group by cm_created_year";
         tuples = sqlQuery(sql, alfrescoJson);
 
-        assertTrue(tuples.size() == 12);
+        System.out.println("########year count:"+yearCount);
+
+
+        assertTrue(tuples.size() == 10);
 
         for(Tuple tuple : tuples) {
             String dayString = tuple.getString("cm_created_year");
             int indexedCount = yearCount.get(dayString);
             long count = tuple.getLong("ct");
+            System.out.println("########tuple:"+dayString+":"+indexedCount+":"+count);
             assertEquals(indexedCount, count);
         }
     }
@@ -223,11 +233,11 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             Node node = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData1 = getNodeMetaData(node, txn, acl, "mike", null, false);
-            int year = (i%14);
+            int year = (i%10);
 
             GregorianCalendar calendar = new GregorianCalendar();
-            calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
-            calendar.add(calendar.YEAR, -(year+20));
+            calendar.set(1990, calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+            calendar.add(calendar.YEAR, year);
             String key=Integer.toString(calendar.get(calendar.YEAR));
 
             if(yearCount.containsKey(key)) {
