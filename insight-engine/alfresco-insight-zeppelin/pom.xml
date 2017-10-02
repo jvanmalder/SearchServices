@@ -17,6 +17,22 @@
       <alfresco-insight-jdbc.name>alfresco-insight-jdbc</alfresco-insight-jdbc.name>
       <alfresco-insight-jdbc.version>1.0.0-SNAPSHOT</alfresco-insight-jdbc.version>
    </properties>
+   <distributionManagement>
+      <repository>
+         <id>alfresco-internal</id>
+         <url>https://artifacts.alfresco.com/nexus/content/repositories/internal-releases/</url>
+      </repository>
+      <snapshotRepository>
+         <id>alfresco-internal-snapshots</id>
+         <url>https://artifacts.alfresco.com/nexus/content/repositories/internal-snapshots/</url>
+      </snapshotRepository>
+   </distributionManagement>
+   <scm>
+      <connection>scm:git:https://git.alfresco.com/search_discovery/InsightZeppelin.git</connection>
+      <developerConnection>scm:git:https://git.alfresco.com/search_discovery/InsightZeppelin.git</developerConnection>
+      <url>https://git.alfresco.com/search_discovery/InsightZeppelin.git</url>
+      <tag>HEAD</tag>
+   </scm>
    <build>
       <plugins>
          <plugin>
