@@ -16,30 +16,34 @@
  */
 package org.alfresco.solr.sql;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceException;
-import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.service.namespace.QName;
-import org.apache.calcite.rel.type.*;
+import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.rel.type.RelDataTypeImpl;
+import org.apache.calcite.rel.type.RelDataTypeSystem;
+import org.apache.calcite.rel.type.RelProtoDataType;
 import org.apache.calcite.schema.Table;
 import org.apache.calcite.schema.impl.AbstractSchema;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.LeafReader;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.apache.solr.client.solrj.request.LukeRequest;
-import org.apache.solr.client.solrj.response.LukeResponse;
-import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.schema.FieldType;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.RefCounted;
-
-import java.io.IOException;
-import java.util.*;
 
 class SolrSchema extends AbstractSchema {
   final Properties properties;
@@ -63,38 +67,50 @@ class SolrSchema extends AbstractSchema {
 
     final RelDataTypeFactory typeFactory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
     final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
-
+    //Add fields from schema.
     Map<String, String> fields = getIndexedFieldsInfo();
-
+    //Add properties from data model.
+    Collection<QName> properties = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getAllProperties(null);
+    properties.forEach(property -> 
+    {
+        PropertyDefinition def = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getProperty(property);
+        fields.put(property.getPrefixString(), def.getDataType().getJavaClassName());
+    });
+    
     Set<Map.Entry<String, String>> set = fields.entrySet();
-
-      for(Map.Entry<String, String> entry : set) {
-      String ltype = entry.getValue();
-
-      RelDataType type;
-      switch (ltype) {
-        case "solr.StrField":
-        case "solr.TextField":
-        case "org.alfresco.solr.AlfrescoFieldType":
-          type = typeFactory.createJavaType(String.class);
-          break;
-        case "solr.TrieLongField":
-          type = typeFactory.createJavaType(Long.class);
-          break;
-        case "solr.TrieDoubleField":
-          type = typeFactory.createJavaType(Double.class);
-          break;
-        case "solr.TrieFloatField":
-          type = typeFactory.createJavaType(Double.class);
-          break;
-        case "solr.TrieIntField":
-          type = typeFactory.createJavaType(Long.class);
-          break;
-        default:
-          type = typeFactory.createJavaType(String.class);
-      }
-        addFieldInfo(fieldInfo, entry, type);
-      }
+    for(Map.Entry<String, String> entry : set) {
+        String ltype = entry.getValue();
+        RelDataType type;
+        switch (ltype) 
+        {
+            case "solr.StrField":
+            case "solr.TextField":
+            case "org.alfresco.solr.AlfrescoFieldType":
+              type = typeFactory.createJavaType(String.class);
+              break;
+            case "solr.TrieLongField":
+              type = typeFactory.createJavaType(Long.class);
+              break;
+            case "solr.TrieDoubleField":
+              type = typeFactory.createJavaType(Double.class);
+              break;
+            case "solr.TrieFloatField":
+              type = typeFactory.createJavaType(Double.class);
+              break;
+            case "solr.TrieIntField":
+              type = typeFactory.createJavaType(Long.class);
+              break;
+            case "java.lang.Integer":
+                type = typeFactory.createJavaType(Long.class);
+              break;
+            case "java.lang.Float":
+                type = typeFactory.createJavaType(Double.class);
+                break;
+            default:
+              type = typeFactory.createJavaType(String.class);
+        }
+    addFieldInfo(fieldInfo, entry, type);
+    }
     fieldInfo.add("_query_",typeFactory.createJavaType(String.class));
     fieldInfo.add("score",typeFactory.createJavaType(Double.class));
 
