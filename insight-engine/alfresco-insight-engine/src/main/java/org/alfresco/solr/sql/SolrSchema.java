@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
-import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
@@ -70,22 +69,12 @@ class SolrSchema extends AbstractSchema {
     final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
     //Add fields from schema.
     Map<String, String> fields = getIndexedFieldsInfo();
-    //Add aspects from data model.
-    Collection<QName> aspects = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getAllAspects();
-    aspects.forEach(aspect -> 
+    //Add properties from data model.
+    Collection<QName> properties = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getAllProperties(null);
+    properties.forEach(property -> 
     {
-        Map<QName,PropertyDefinition> map = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getPropertyDefs(aspect);
-        map.forEach((k,v)-> fields.put(k.getPrefixString(), v.getDataType().getJavaClassName()));
-    });
-    //Add models.
-    Collection<QName> models = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getAllModels();
-    models.forEach(model->
-    {
-        ModelDefinition md = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getModel(model);
-        if(md != null) 
-        {
-            fields.put(md.getName().toString(), md.getClass().getTypeName());
-        }
+        PropertyDefinition def = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getProperty(property);
+        fields.put(property.getPrefixString(), def.getDataType().getJavaClassName());
     });
     
     Set<Map.Entry<String, String>> set = fields.entrySet();
