@@ -147,6 +147,8 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
             field = vfield.replace("_month", "");
         } else if(vfield.endsWith("_year")) {
             field = vfield.replace("_year", "");
+        } else {
+            field = vfield;
         }
 
         String newField = AlfrescoStreamHandler.getIndexedField(field);

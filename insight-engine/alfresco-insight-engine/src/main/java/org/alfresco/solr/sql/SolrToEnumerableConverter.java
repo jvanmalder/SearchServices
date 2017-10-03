@@ -57,6 +57,12 @@ class SolrToEnumerableConverter extends ConverterImpl implements EnumerableRel {
     final SolrRel.Implementor solrImplementor = new SolrRel.Implementor();
     solrImplementor.visitChild(0, getInput());
     FilterData filterData = solrImplementor.getFilterData();
+    String serializedFilterData = null;
+    if(filterData != null) {
+      serializedFilterData = filterData.toString();
+    } else {
+      serializedFilterData = "";
+    }
     final RelDataType rowType = getRowType();
     final PhysType physType = PhysTypeImpl.of(implementor.getTypeFactory(), rowType, pref.prefer(JavaRowFormat.ARRAY));
     final Expression table = list.append("table", solrImplementor.table.getExpression(SolrTable.SolrQueryable.class));
@@ -83,7 +89,7 @@ class SolrToEnumerableConverter extends ConverterImpl implements EnumerableRel {
     final Expression limit = list.append("limit", Expressions.constant(solrImplementor.limitValue));
     final Expression negativeQuery = list.append("negativeQuery", Expressions.constant(Boolean.toString(solrImplementor.negativeQuery), String.class));
     final Expression havingPredicate = list.append("havingTest", Expressions.constant(solrImplementor.havingPredicate, String.class));
-    final Expression fdata = list.append("filterData", Expressions.constant(filterData.toString(), String.class));
+    final Expression fdata = list.append("filterData", Expressions.constant(serializedFilterData, String.class));
 
     Expression enumerable = list.append("enumerable", Expressions.call(table, SolrMethod.SOLR_QUERYABLE_QUERY.method,
         fields, query, orders, buckets, metricPairs, limit, negativeQuery, havingPredicate, fdata));
