@@ -754,6 +754,18 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
     } else if(bucket.endsWith("_month")) {
       gap = "+1MONTH";
       field = bucket.replace("_month", "");
+      FilterData.Filter filter = fdata.getFilter(field);
+      start = filter.getStart();
+      end = filter.getEnd();
+      start = start.replace("'", "");
+      if(end != null) {
+        end = end.replace("'", "");
+      } else {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(new Date());
+        end = cal.get(Calendar.YEAR)+"-"+(cal.get(Calendar.MONTH)+1)+"-"+cal.getActualMaximum(cal.DAY_OF_MONTH)+"T23:59:59Z";
+      }
+
       format = "YYYY-MM";
     } else if(bucket.endsWith("_year")) {
       gap = "+1YEAR";

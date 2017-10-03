@@ -33,7 +33,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
@@ -50,6 +52,8 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
     private Map<Integer, Integer> dayCount = new HashMap();
     private Map<String, Integer> dayCount2 = new HashMap();
     private Map<String, Integer> yearCount = new HashMap();
+    private Map<String, Integer> monthCount = new HashMap();
+
 
 
 
@@ -129,6 +133,19 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             long count = tuple.getLong("ct");
             assertEquals(indexedCount, count);
         }
+
+        //Test month time grain
+        sql = "select cm_created_month, count(*) as ct from alfresco where cm_owner = 'jimmy' and cm_created >= 'NOW/MONTH-6MONTHS' group by cm_created_month";
+        tuples = sqlQuery(sql, alfrescoJson);
+
+        assertTrue(tuples.size() == 7);
+
+        for(Tuple tuple : tuples) {
+            String monthString = tuple.getString("cm_created_month");
+            int indexedCount = monthCount.get(monthString);
+            long count = tuple.getLong("ct");
+            assertEquals(indexedCount, count);
+        }
     }
 
     private void loadTimeSeriesData() throws Exception {
@@ -168,7 +185,8 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
         indexTransaction(txn, nodes, nodeMetaDatas);
         loadTimeSeriesData2(numDocs);
         loadTimeSeriesData3(numDocs);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), (numDocs * 3) + 4, 80000);
+        loadTimeSeriesData4(numDocs);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), (numDocs * 4) + 4, 80000);
     }
 
     private void loadTimeSeriesData2(int numDocs) throws Exception {
@@ -184,7 +202,7 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             NodeMetaData nodeMetaData1 = getNodeMetaData(node, txn, acl, "mike", null, false);
             int day = (i%14);
 
-            GregorianCalendar calendar = new GregorianCalendar();
+            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             calendar.setTime(new Date());
             //calendar.clear();
             calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 01, 01, 01);
@@ -231,7 +249,8 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             NodeMetaData nodeMetaData1 = getNodeMetaData(node, txn, acl, "mike", null, false);
             int year = (i%5);
 
-            GregorianCalendar calendar = new GregorianCalendar();
+            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            calendar.setTime(new Date());
             calendar.set(calendar.get(Calendar.YEAR), 11, 31, 23, 59, 59);
             calendar.add(calendar.YEAR, -year);
             String key = Integer.toString(calendar.get(calendar.YEAR));
@@ -251,6 +270,47 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             nodeMetaData1.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("morton"));
+            nodeMetaDatas.add(nodeMetaData1);
+        }
+
+        indexTransaction(txn, nodes, nodeMetaDatas);
+    }
+
+
+    private void loadTimeSeriesData4(int numDocs) throws Exception {
+
+        Transaction txn = getTransaction(0, numDocs);
+
+        List<Node> nodes = new ArrayList();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+
+        for(int i=0; i<numDocs; i++) {
+            Node node = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
+            nodes.add(node);
+            NodeMetaData nodeMetaData1 = getNodeMetaData(node, txn, acl, "mike", null, false);
+            int month = (i%12);
+
+            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            calendar.setTime(new Date());
+            calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), 1);
+            calendar.add(calendar.MONTH, -month);
+            String key=calendar.get(calendar.YEAR)+"-"+pad((calendar.get(Calendar.MONTH) + 1));
+
+            if(monthCount.containsKey(key)) {
+                Integer count = monthCount.get(key);
+                monthCount.put(key, count.intValue() + 1);
+            } else {
+                monthCount.put(key, 1);
+            }
+
+            nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED, new StringPropertyValue(getSolrDay(calendar)));
+            nodeMetaData1.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
+            nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue("12"));
+            nodeMetaData1.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name1"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("jimmy"));
             nodeMetaDatas.add(nodeMetaData1);
         }
 
