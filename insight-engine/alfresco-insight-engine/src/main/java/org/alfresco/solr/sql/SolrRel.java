@@ -43,6 +43,7 @@ interface SolrRel extends RelNode {
     final List<Pair<String, String>> orders = new ArrayList<>();
     final List<String> buckets = new ArrayList<>();
     final List<Pair<String, String>> metricPairs = new ArrayList<>();
+    FilterData filterData;
 
     RelOptTable table;
     SolrTable solrTable;
@@ -53,6 +54,15 @@ interface SolrRel extends RelNode {
           this.fieldMappings.put(key, val);
         }
       }
+    }
+
+
+    void setFilterData(FilterData filterData) {
+      this.filterData = filterData;
+    }
+
+    public FilterData getFilterData() {
+      return this.filterData;
     }
 
     void addReverseAggMapping(String key, String val) {

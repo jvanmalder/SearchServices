@@ -115,7 +115,10 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
 
             String column = metric.getColumns()[0];
             String newColumn = AlfrescoStreamHandler.getIndexedField(column);
-            reverseLookup.put(newColumn, column);
+
+            newColumn = "field("+newColumn+")";
+
+
             if(metric.getFunctionName().equals("sum"))
             {
                 metrics[i] = new SumMetric(newColumn);
@@ -132,11 +135,24 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
             {
                 metrics[i] = new MeanMetric(newColumn);
             }
+
+            reverseLookup.put(metrics[i].getIdentifier(), metric.getIdentifier());
         }
 
-        String field = timeSeriesStream.getField();
+        String vfield = timeSeriesStream.getField();
+        String field = null;
+        if(vfield.endsWith("_day")) {
+            field = vfield.replace("_day", "");
+        } else if(vfield.endsWith("_month")) {
+            field = vfield.replace("_month", "");
+        } else if(vfield.endsWith("_year")) {
+            field = vfield.replace("_year", "");
+        } else {
+            field = vfield;
+        }
+
         String newField = AlfrescoStreamHandler.getIndexedField(field);
-        reverseLookup.put(newField, field);
+        reverseLookup.put(newField, vfield);
         timeSeriesStream.setField(newField);
         this.timeSeriesStream.open();
     }

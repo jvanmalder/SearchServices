@@ -414,6 +414,8 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         buf.append('"');
         buf.append(":{");
         buf.append("\"type\":\"range\"");
+        buf.append(",\"include\":\"upper\"");
+        buf.append(",\"limit\":1000");
         buf.append(",\"field\":\""+field+"\"");
         buf.append(",\"start\":\""+start+"\"");
         buf.append(",\"end\":\""+end+"\"");
@@ -460,7 +462,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         {
             NamedList bucket = (NamedList)allBuckets.get(b);
             Object val = bucket.get("val");
-            
+
             if(formatter != null)
             {
                 LocalDateTime localDateTime = LocalDateTime.ofInstant(((java.util.Date) val).toInstant(), ZoneOffset.UTC);

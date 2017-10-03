@@ -44,6 +44,7 @@ import java.util.*;
 class SolrSchema extends AbstractSchema {
   final Properties properties;
   final SolrCore core;
+  final String[] postfixes = {"_day", "_month", "_year"};
 
   SolrSchema(SolrCore core, Properties properties) {
     super();
@@ -65,51 +66,66 @@ class SolrSchema extends AbstractSchema {
     final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
 
     Map<String, String> fields = getIndexedFieldsInfo();
+    boolean isDate = false;
 
     Set<Map.Entry<String, String>> set = fields.entrySet();
 
       for(Map.Entry<String, String> entry : set) {
-      String ltype = entry.getValue();
+        String ltype = entry.getValue();
 
-      RelDataType type;
-      switch (ltype) {
-        case "solr.StrField":
-        case "solr.TextField":
-        case "org.alfresco.solr.AlfrescoFieldType":
-          type = typeFactory.createJavaType(String.class);
-          break;
-        case "solr.TrieLongField":
-          type = typeFactory.createJavaType(Long.class);
-          break;
-        case "solr.TrieDoubleField":
-          type = typeFactory.createJavaType(Double.class);
-          break;
-        case "solr.TrieFloatField":
-          type = typeFactory.createJavaType(Double.class);
-          break;
-        case "solr.TrieIntField":
-          type = typeFactory.createJavaType(Long.class);
-          break;
-        default:
-          type = typeFactory.createJavaType(String.class);
-      }
-        addFieldInfo(fieldInfo, entry, type);
+        RelDataType type;
+        switch (ltype) {
+          case "solr.StrField":
+          case "solr.TextField":
+          case "org.alfresco.solr.AlfrescoFieldType":
+            type = typeFactory.createJavaType(String.class);
+            break;
+          case "solr.TrieLongField":
+            type = typeFactory.createJavaType(Long.class);
+            break;
+          case "solr.TrieDoubleField":
+            type = typeFactory.createJavaType(Double.class);
+            break;
+          case "solr.TrieFloatField":
+            type = typeFactory.createJavaType(Double.class);
+            break;
+          case "solr.TrieIntField":
+            type = typeFactory.createJavaType(Long.class);
+            break;
+          case "solr.TrieDateField":
+            isDate = true;
+            type = typeFactory.createJavaType(String.class);
+            break;
+          default:
+            type = typeFactory.createJavaType(String.class);
+        }
+
+        addFieldInfo(fieldInfo, entry, type, null);
+        if(isDate) {
+          isDate = false;
+          addTimeFields(fieldInfo, entry, typeFactory.createJavaType(String.class));
+        }
       }
     fieldInfo.add("_query_",typeFactory.createJavaType(String.class));
-    fieldInfo.add("score",typeFactory.createJavaType(Double.class));
+    fieldInfo.add("score", typeFactory.createJavaType(Double.class));
 
     return RelDataTypeImpl.proto(fieldInfo.build());
   }
 
-  private void addFieldInfo(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type) {
-    fieldInfo.add(entry.getKey(), type).nullable(true);
+  private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type) {
+    for(String postfix : postfixes) {
+      addFieldInfo(fieldInfo, entry, type, postfix);
+    }
+  }
 
+  private void addFieldInfo(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type, String postfix) {
+    fieldInfo.add(entry.getKey()+getPostfix(postfix), type).nullable(true);
     try {
       String[] withPrefix = QName.splitPrefixedQName(entry.getKey());
       String prefix = withPrefix[0];
       if (prefix != null && !prefix.isEmpty())
       {
-        fieldInfo.add(withPrefix[0]+"_"+withPrefix[1], type).nullable(true);
+        fieldInfo.add(withPrefix[0]+"_"+withPrefix[1]+getPostfix(postfix), type).nullable(true);
       }
 
       //Potentially remove prefix, just shortname if unique
@@ -119,6 +135,14 @@ class SolrSchema extends AbstractSchema {
       //ignore invalid qnames
     }
 
+  }
+
+  private String getPostfix(String postfix) {
+    if(postfix != null) {
+      return postfix;
+    } else {
+      return "";
+    }
   }
 
   private Map<String, String> getIndexedFieldsInfo() throws RuntimeException {
