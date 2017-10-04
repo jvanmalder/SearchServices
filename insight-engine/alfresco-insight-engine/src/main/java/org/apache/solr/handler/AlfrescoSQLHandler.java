@@ -81,8 +81,6 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
   }
 
   public void handleRequestBody(SolrQueryRequest req, SolrQueryResponse rsp) throws Exception {
-    System.out.println("######### AFRESCO SQL #######");
-
     ModifiableSolrParams params = new ModifiableSolrParams(req.getParams());
     params = adjustParams(params);
     req.setParams(params);

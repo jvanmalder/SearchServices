@@ -217,6 +217,8 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
      * @throws IOException if error
      */
     public List<Tuple> sqlQuery(String sql, String alfrescoJson) throws IOException {
+        System.out.println("######### AFRESCO SQL #######");
+        System.out.println(sql);
         List<SolrClient> clusterClients = getClusterClients();
         String shards = getShardsString(clusterClients);
 

@@ -47,6 +47,8 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 4);
         assertNodes(tuples, node1, node2, node3, node4);
         assertFieldNotNull(tuples, "LID");
+        
+
 
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
         tuples = sqlQuery(sql, alfrescoJson2);
@@ -193,7 +195,6 @@ public class DistributedSqlTest extends AbstractStreamTest
             assertTrue(tuple.get("cm:fiveStarRatingSchemeTotal") instanceof Double);
             assertTrue(tuple.get("cm:name") instanceof String);
         }
-        
         //Test sql and solr predicate
         sql = "select cm_creator from alfresco where _query_ = 'cm_creator:creator1'";
         tuples = sqlQuery(sql, alfrescoJson2);
@@ -202,6 +203,20 @@ public class DistributedSqlTest extends AbstractStreamTest
         for(Tuple tuple : tuples) {
             assertTrue(tuple.get("cm_creator") instanceof String);
             assertEquals("creator1", tuple.get("cm_creator"));
+        }
+        //Select fields not indexed 
+        tuples = sqlQuery("select cm_lockOwner from alfresco", alfrescoJson);
+        assertTrue(tuples.size() == 4);
+        
+        try
+        {
+            tuples = sqlQuery("select bob from alfresco", alfrescoJson);
+            assertFalse("Should never get here",true);
+        }
+        catch (Exception e)
+        {
+            assertNotNull(e);
+            assertTrue(e.getLocalizedMessage().contains("Column 'bob' not found in any table"));
         }
     }
 
