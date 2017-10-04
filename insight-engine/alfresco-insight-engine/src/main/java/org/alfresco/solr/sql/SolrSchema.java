@@ -112,6 +112,10 @@ class SolrSchema extends AbstractSchema {
                 isDate = true;
                 type = typeFactory.createJavaType(String.class);
                 break;
+            case "java.util.Date":
+                isDate = true;
+                type = typeFactory.createJavaType(String.class);
+                break;
             default:
               type = typeFactory.createJavaType(String.class);
         }
