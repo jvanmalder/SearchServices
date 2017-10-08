@@ -150,6 +150,28 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             lastSum = sum;
         }
 
+        //Test having
+
+        //Get 1 record from the daySums
+
+        int havingValue = -1;
+        for(Map.Entry entry : daySum.entrySet()) {
+            Integer i = (Integer)entry.getValue();
+            havingValue = i.intValue();
+        }
+
+        sql = "select cm_created_day, sum(audio_trackNumber) as sm from alfresco where cm_owner='jim' and cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day having sum(audio_trackNumber) ="+havingValue;
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
+        for(Tuple tuple : tuples) {
+            String dayString = tuple.getString("cm_created_day");
+            int day = Integer.parseInt(dayString.split("-")[2]);
+            double indexSum = daySum.get(day).doubleValue();
+            double sum = tuple.getDouble("sm");
+            assertEquals(indexSum, sum, 0.0);
+        }
+
+
         //Test the date math
         sql = "select cm_created_day, count(*) as ct from alfresco where cm_owner='vigo' and cm_created >= 'NOW/DAY-11DAYS' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
