@@ -50,6 +50,8 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
 {
     private String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
     private Map<Integer, Integer> dayCount = new HashMap();
+    private Map<Integer, Integer> daySum = new HashMap();
+
     private Map<String, Integer> dayCount2 = new HashMap();
     private Map<String, Integer> yearCount = new HashMap();
     private Map<String, Integer> monthCount = new HashMap();
@@ -108,6 +110,46 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             assertEquals(max, 10, 0);
         }
 
+        // Test desc day order
+
+        sql = "select cm_created_day, count(*) as ct, sum(cm_fiveStarRatingSchemeTotal) as sm, avg(cm_fiveStarRatingSchemeTotal) as av, min(cm_fiveStarRatingSchemeTotal) as mn, max(cm_fiveStarRatingSchemeTotal) as mx from alfresco where cm_owner='jim' and cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day order by cm_created_day desc";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 14);
+        String lastDay = "3000-12-01";
+        for(Tuple tuple : tuples) {
+            String dayString = tuple.getString("cm_created_day");
+            assertTrue(dayString.compareTo(lastDay) < 0);
+            lastDay = dayString;
+            int day = Integer.parseInt(dayString.split("-")[2]);
+            int indexedCount = dayCount.get(day);
+            long count = tuple.getLong("ct");
+            double sum = tuple.getDouble("sm");
+            double avg = tuple.getDouble("av");
+            double min = tuple.getDouble("mn");
+            double max = tuple.getDouble("mx");
+            assertEquals(indexedCount, count);
+            assertEquals(indexedCount*10, sum, 0);
+            assertEquals(avg, 10, 0);
+            assertEquals(min, 10, 0);
+            assertEquals(max, 10, 0);
+        }
+
+        // Test desc aggregation order
+
+        sql = "select cm_created_day, sum(audio_trackNumber) as sm from alfresco where cm_owner='jim' and cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day order by sum(audio_trackNumber) desc";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 14);
+        double lastSum = Double.MAX_VALUE;
+        for(Tuple tuple : tuples) {
+            String dayString = tuple.getString("cm_created_day");
+            int day = Integer.parseInt(dayString.split("-")[2]);
+            double indexSum = daySum.get(day).doubleValue();
+            double sum = tuple.getDouble("sm");
+            assertEquals(indexSum, sum, 0.0);
+            assertTrue(lastSum > sum);
+            lastSum = sum;
+        }
+
         //Test the date math
         sql = "select cm_created_day, count(*) as ct from alfresco where cm_owner='vigo' and cm_created >= 'NOW/DAY-11DAYS' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
@@ -151,6 +193,7 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
     private void loadTimeSeriesData() throws Exception {
 
         int numDocs = 250;
+        Random random = random();
 
         Transaction txn = getTransaction(0, numDocs);
 
@@ -158,6 +201,8 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
         List<NodeMetaData> nodeMetaDatas = new ArrayList();
 
         for(int i=0; i<numDocs; i++) {
+            int track = random.nextInt(500);
+
             Node node = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData1 = getNodeMetaData(node, txn, acl, "mike", null, false);
@@ -170,10 +215,19 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
                 dayCount.put(day, 1);
             }
 
+            if(daySum.containsKey(day)) {
+                Integer sum = daySum.get(day);
+                daySum.put(day, sum.intValue()+track);
+            } else {
+                daySum.put(day, track);
+            }
+
             Date date1 = getDate(2010, 1, day);
+
+
             nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED, new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
             nodeMetaData1.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
-            nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue("12"));
+            nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue(Integer.toString(track)));
             nodeMetaData1.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name1"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));

@@ -133,7 +133,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
           .withFunctionName("gt", GreaterThanEvaluator.class)
           .withFunctionName("lt", LessThanEvaluator.class)
           .withFunctionName("lteq", LessThanEqualToEvaluator.class)
-          .withFunctionName("gteq", GreaterThanEqualToEvaluator.class);
+          .withFunctionName("gteq", GreaterThanEqualToEvaluator.class)
+          .withFunctionName("top", RankStream.class);
 
   private static final String DEFAULT_QUERY = "*";
   public static final int DEFAULT_LIMIT = 1000;
@@ -825,6 +826,11 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
     if(havingPredicate != null) {
       BooleanEvaluator booleanOperation = (BooleanEvaluator)streamFactory.constructEvaluator(StreamExpressionParser.parse(havingPredicate));
       tupleStream = new HavingStream(tupleStream, booleanOperation);
+    }
+
+    if(orders != null && orders.size() > 0) {
+      StreamComparator comp = getComp(orders);
+      tupleStream = new RankStream(tupleStream, 1000, comp);
     }
 
     if(limit > 0)
