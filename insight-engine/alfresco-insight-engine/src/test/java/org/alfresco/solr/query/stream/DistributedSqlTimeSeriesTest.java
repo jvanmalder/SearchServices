@@ -29,6 +29,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.io.Tuple;
+import org.joda.time.DateTime;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -210,6 +211,12 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             long count = tuple.getLong("ct");
             assertEquals(indexedCount, count);
         }
+
+        // SEARCH-639: Test sum(`cm:content.size`)
+        int numberOfYears = 4;
+        sql = String.format("select cm_created_month, sum(`cm:content.size`), max(`cm:content.size`) from alfresco where cm_created >= 'NOW/YEAR-%sYEARS' group by cm_created_month", numberOfYears);
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == (numberOfYears  * 12 + new DateTime().getMonthOfYear()));
     }
 
     private void loadTimeSeriesData() throws Exception {

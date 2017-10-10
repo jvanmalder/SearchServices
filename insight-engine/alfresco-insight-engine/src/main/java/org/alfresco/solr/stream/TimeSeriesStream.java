@@ -279,7 +279,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         expression.addParameter(new StreamExpressionNamedParameter("format", format));
         
         // zkHost
-        expression.addParameter(new StreamExpressionNamedParameter("zkHost", zkHost));
+        //expression.addParameter(new StreamExpressionNamedParameter("zkHost", zkHost));
         
         return expression;
     }
@@ -476,14 +476,18 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
                 String identifier = metric.getIdentifier();
                 if(!identifier.startsWith("count("))
                 {
-                    double d = (double)bucket.get("facet_"+m);
-                    if(metric.outputLong)
+                    Object facet = bucket.get("facet_"+m);
+                    if (facet != null)
                     {
-                        t.put(identifier, Math.round(d));
-                    } 
-                    else
-                    {
-                        t.put(identifier, d);
+                        double d = (double) facet;
+                        if(metric.outputLong)
+                        {
+                            t.put(identifier, Math.round(d));
+                        }
+                        else
+                        {
+                            t.put(identifier, d);
+                        }
                     }
                     ++m;
                 }
