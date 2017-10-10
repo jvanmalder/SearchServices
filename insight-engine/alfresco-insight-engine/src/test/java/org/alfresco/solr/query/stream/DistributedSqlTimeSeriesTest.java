@@ -150,6 +150,21 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             lastSum = sum;
         }
 
+        // In this test the range goes beyond the available data in the index. This will cause tuples to be generated for the full range, with
+        // null values in the aggregation fields for buckets with no data available.
+
+        sql = "select cm_created_day, sum(audio_trackNumber) as sm from alfresco where cm_owner='jim' and cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-27T23:59:59Z' group by cm_created_day order by sum(audio_trackNumber) desc";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 27);
+        for(Tuple tuple : tuples) {
+            String dayString = tuple.getString("cm_created_day");
+            assertTrue(tuple.fields.containsKey("sm"));
+            if(dayString.equals("2010-02-21")) {
+                assertTrue(tuple.get("sm") == null);
+            }
+        }
+
+
         //Test having
 
         //Get 1 record from the daySums
