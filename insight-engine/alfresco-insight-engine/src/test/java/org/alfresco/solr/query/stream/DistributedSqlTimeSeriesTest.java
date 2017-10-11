@@ -20,6 +20,7 @@ package org.alfresco.solr.query.stream;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.solr.client.ContentPropertyValue;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.StringPropertyValue;
@@ -57,6 +58,8 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
     private Map<String, Integer> yearCount = new HashMap();
     private Map<String, Integer> monthCount = new HashMap();
 
+    long contentSize = 100;
+    int numDocs = 250;
 
 
 
@@ -216,12 +219,42 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
         int numberOfYears = 4;
         sql = String.format("select cm_created_month, sum(`cm:content.size`), max(`cm:content.size`) from alfresco where cm_created >= 'NOW/YEAR-%sYEARS' group by cm_created_month", numberOfYears);
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == (numberOfYears  * 12 + new DateTime().getMonthOfYear()));
+        DateTime dateTime = new DateTime();
+        assertTrue(tuples.size() == (numberOfYears  * 12 + dateTime.getMonthOfYear()));
+
+        // We will only check last year as the content size is only added as part of loadTimeSeriesData3() which adds content
+        // every year in December. If we would use the current year the total sum would be different when the test is run in
+        // December this year. In order to avoid test failures we check documents created last year in December.
+        int lastYear = dateTime.getYear() - 1;
+        long sumTotal = 0;
+        long maxTotal = 0;
+
+        for (Tuple tuple : tuples)
+        {
+            Long sum = tuple.getLong("EXPR$1");
+            Long max = tuple.getLong("EXPR$2");
+
+            if (tuple.getString("cm_created_month").startsWith(String.valueOf(lastYear)))
+            {
+                if (sum != null)
+                {
+                    sumTotal += sum.longValue();
+                }
+                if (max != null)
+                {
+                    maxTotal += max.longValue();
+                }
+            }
+        }
+
+        // The number of documents created last year in December is "numDocs / (numberOfYears + 1)"
+        assertTrue((numDocs / (numberOfYears + 1)) * contentSize == sumTotal);
+        // The max total of documents added last year in December must be equal to the contentSize defined.
+        assertTrue(contentSize == maxTotal);
     }
 
     private void loadTimeSeriesData() throws Exception {
 
-        int numDocs = 250;
         Random random = random();
 
         Transaction txn = getTransaction(0, numDocs);
@@ -353,6 +386,7 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             nodeMetaData1.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("morton"));
+            nodeMetaData1.getProperties().put(ContentModel.PROP_CONTENT, new ContentPropertyValue(Locale.US, contentSize, "UTF-8", "text/plain", null));
             nodeMetaDatas.add(nodeMetaData1);
         }
 
