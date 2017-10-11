@@ -767,17 +767,24 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
     String field = null;
     String format = null;
 
-
-
     if(bucket.endsWith("_day")) {
       gap = "+1DAY";
       field = bucket.replace("_day", "");
       format = "YYYY-MM-dd";
 
       FilterData.Filter filter = fdata.getFilter(field);
-      start = filter.getStart();
-      end = filter.getEnd();
-      start = start.replace("'", "");
+
+        if(filter != null) {
+          start = filter.getStart();
+          end = filter.getEnd();
+        }
+
+        if(start != null) {
+            start = start.replace("'", "");
+        } else {
+            start = "NOW/DAY-30DAYS";
+        }
+
       if(end != null) {
         end = end.replace("'", "");
       } else {
@@ -787,38 +794,56 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       }
 
     } else if(bucket.endsWith("_month")) {
-      gap = "+1MONTH";
-      field = bucket.replace("_month", "");
-      FilterData.Filter filter = fdata.getFilter(field);
-      start = filter.getStart();
-      end = filter.getEnd();
-      start = start.replace("'", "");
-      if(end != null) {
-        end = end.replace("'", "");
-      } else {
-        GregorianCalendar cal = new GregorianCalendar();
-        cal.setTime(new Date());
-        end = cal.get(Calendar.YEAR)+"-"+(cal.get(Calendar.MONTH)+1)+"-"+cal.getActualMaximum(cal.DAY_OF_MONTH)+"T23:59:59Z";
-      }
+        gap = "+1MONTH";
+        field = bucket.replace("_month", "");
+        FilterData.Filter filter = fdata.getFilter(field);
 
-      format = "YYYY-MM";
+        if(filter != null) {
+            start = filter.getStart();
+            end = filter.getEnd();
+        }
+
+        if(start != null) {
+            start = start.replace("'", "");
+        } else {
+            start = "NOW/MONTH-24MONTHS";
+        }
+
+        if(end != null) {
+            end = end.replace("'", "");
+        } else {
+            GregorianCalendar cal = new GregorianCalendar();
+            cal.setTime(new Date());
+            end = cal.get(Calendar.YEAR)+"-"+(cal.get(Calendar.MONTH)+1)+"-"+cal.getActualMaximum(cal.DAY_OF_MONTH)+"T23:59:59Z";
+        }
+
+        format = "YYYY-MM";
     } else if(bucket.endsWith("_year")) {
       gap = "+1YEAR";
       field = bucket.replace("_year", "");
 
       FilterData.Filter filter = fdata.getFilter(field);
-      start = filter.getStart();
-      end = filter.getEnd();
-      start = start.replace("'", "");
-      if(end != null) {
-        end = end.replace("'", "");
-      } else {
-        GregorianCalendar cal = new GregorianCalendar();
-        cal.setTime(new Date());
-        end = cal.get(Calendar.YEAR)+"-12-31T23:59:59Z";
-      }
 
-      format = "YYYY";
+        if(filter != null) {
+            start = filter.getStart();
+            end = filter.getEnd();
+        }
+
+        if(start != null) {
+            start = start.replace("'", "");
+        } else {
+            start = "NOW/YEAR-5YEARS";
+        }
+
+        if(end != null) {
+            end = end.replace("'", "");
+        } else {
+            GregorianCalendar cal = new GregorianCalendar();
+            cal.setTime(new Date());
+            end = cal.get(Calendar.YEAR)+"-12-31T23:59:59Z";
+        }
+
+        format = "YYYY";
     }
 
     TupleStream tupleStream = new TimeSeriesStream(zkHost, collection, solrParams, metrics, bucket, start, end, gap, format);
