@@ -29,12 +29,14 @@ class FilterData {
     }
 
     public FilterData(String s) {
-        String[] parts = s.split("~:~");
-        for(String part : parts) {
-            String[] entry = part.split("=:=");
-            String key = entry[0];
-            String value = entry[1];
-            filters.put(key, new Filter(value));
+        if(s != null & s.length() > 0) {
+            String[] parts = s.split("~:~");
+            for (String part : parts) {
+                String[] entry = part.split("=:=");
+                String key = entry[0];
+                String value = entry[1];
+                filters.put(key, new Filter(value));
+            }
         }
     }
 

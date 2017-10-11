@@ -199,6 +199,21 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             assertEquals(indexedCount, count);
         }
 
+
+        //Test no date predicate / should default to past 30 days
+        sql = "select cm_created_day, count(*) as ct from alfresco where cm_owner='vigo' group by cm_created_day";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 31);
+
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        calendar.setTime(new Date());
+
+        for(int i=tuples.size()-1; i>=0; --i) {
+            Tuple t = tuples.get(i);
+            assertTrue(thisDay(t.getString("cm_created_day"), calendar));
+            calendar.add(Calendar.DAY_OF_MONTH, -1);
+        }
+
         //Test year time grain
 
         sql = "select cm_created_year, count(*) as ct from alfresco where cm_owner = 'morton' and cm_created >= 'NOW/YEAR-4YEARS' group by cm_created_year";
@@ -213,6 +228,23 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             assertEquals(indexedCount, count);
         }
 
+        //Test no start predicate
+
+        sql = "select cm_created_year, count(*) as ct from alfresco where cm_owner = 'morton' group by cm_created_year";
+        tuples = sqlQuery(sql, alfrescoJson);
+
+        assertTrue(tuples.size() == 6);
+
+        calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        calendar.setTime(new Date());
+
+        for(int i=tuples.size()-1; i>=0; --i) {
+            Tuple t = tuples.get(i);
+            assertTrue(thisYear(t.getString("cm_created_year"), calendar));
+            calendar.add(Calendar.YEAR, -1);
+        }
+
+
         //Test month time grain
         sql = "select cm_created_month, count(*) as ct from alfresco where cm_owner = 'jimmy' and cm_created >= 'NOW/MONTH-6MONTHS' group by cm_created_month";
         tuples = sqlQuery(sql, alfrescoJson);
@@ -225,7 +257,79 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             long count = tuple.getLong("ct");
             assertEquals(indexedCount, count);
         }
+
+        //Test no start predicate
+        sql = "select cm_created_month, count(*) as ct from alfresco where cm_owner = 'jimmy' group by cm_created_month";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 25);
+
+        calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        calendar.setTime(new Date());
+
+        for(int i=tuples.size()-1; i>=0; --i) {
+            Tuple t = tuples.get(i);
+            assertTrue(thisMonth(t.getString("cm_created_month"), calendar));
+            calendar.add(Calendar.MONTH, -1);
+        }
+
     }
+
+    private boolean thisDay(String YYYY_MM_DD, Calendar calendar) throws Exception {
+        String[] parts = YYYY_MM_DD.split("-");
+        int year = Integer.parseInt(parts[0]);
+        int month = Integer.parseInt(parts[1]);
+        int day = Integer.parseInt(parts[2]);
+
+        int _year = calendar.get(Calendar.YEAR);
+        int _month = calendar.get(Calendar.MONTH)+1;
+        int _day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        if(year != _year) {
+            throw new Exception("Invalid year:"+year);
+        }
+
+        if(month != _month) {
+            throw new Exception("Invalid year:"+month);
+        }
+
+        if(day != _day) {
+            throw new Exception("Invalid year:"+day);
+        }
+
+        return true;
+    }
+
+    private boolean thisMonth(String YYYY_MM, Calendar calendar) throws Exception {
+        String[] parts = YYYY_MM.split("-");
+        int year = Integer.parseInt(parts[0]);
+        int month = Integer.parseInt(parts[1]);
+
+        int _year = calendar.get(Calendar.YEAR);
+        int _month = calendar.get(Calendar.MONTH)+1;
+
+        if(year != _year) {
+            throw new Exception("Invalid year:"+year);
+        }
+
+        if(month != _month) {
+            throw new Exception("Invalid year:"+month);
+        }
+
+        return true;
+    }
+
+    private boolean thisYear(String YYYY, Calendar calendar) throws Exception {
+        int year = Integer.parseInt(YYYY);
+
+        int _year = calendar.get(Calendar.YEAR);
+
+        if(year != _year) {
+            throw new Exception("Invalid year:"+year);
+        }
+
+        return true;
+    }
+
 
     private void loadTimeSeriesData() throws Exception {
 
