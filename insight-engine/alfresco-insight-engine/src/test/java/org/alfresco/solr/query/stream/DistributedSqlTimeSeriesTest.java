@@ -26,6 +26,7 @@ import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
+import org.joda.time.DateTime;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.io.Tuple;
@@ -272,6 +273,11 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             calendar.add(Calendar.MONTH, -1);
         }
 
+        int numberOfYears = 4;
+        sql = String.format("select cm_created_month, sum(`cm:content.size`), max(`cm:content.size`) from alfresco where cm_created >= 'NOW/YEAR-%sYEARS' group by cm_created_month", numberOfYears);
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == (numberOfYears * 12 + new DateTime().getMonthOfYear()));
+        
     }
 
     private boolean thisDay(String YYYY_MM_DD, Calendar calendar) throws Exception {
