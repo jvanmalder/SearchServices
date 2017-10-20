@@ -788,9 +788,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       if(end != null) {
         end = end.replace("'", "");
       } else {
-        GregorianCalendar cal = new GregorianCalendar();
-        cal.setTime(new Date());
-        end = cal.get(Calendar.YEAR)+"-"+pad((cal.get(Calendar.MONTH)+1))+"-"+pad(cal.get(Calendar.DAY_OF_MONTH))+"T23:59:59Z";
+        end = "NOW/DAY+1DAY-1SECOND";
       }
 
     } else if(bucket.endsWith("_month")) {
