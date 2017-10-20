@@ -263,7 +263,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                       buckets,
                       metricPairs,
                       limitInt,
-                      havingPredicate);
+                      havingPredicate,
+                      timezone);
 
             }
           }
@@ -669,7 +670,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                          final List<String> bucketFields,
                                          final List<Pair<String, String>> metricPairs,
                                          final int limit,
-                                         final String havingPredicate) throws IOException {
+                                         final String havingPredicate,
+                                         final String timezone) throws IOException {
 
 
     Map<String, Class> fmap = new HashMap();
