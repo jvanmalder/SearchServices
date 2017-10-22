@@ -39,6 +39,8 @@ import org.apache.solr.client.solrj.io.stream.expr.*;
 import org.apache.solr.client.solrj.io.stream.expr.Explanation.ExpressionType;
 import org.apache.solr.client.solrj.io.stream.metrics.*;
 import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.core.SolrCore;
+import org.apache.solr.schema.IndexSchema;
 
 import java.io.IOException;
 import java.util.*;
@@ -47,6 +49,7 @@ public class AlfrescoStatsStream extends TupleStream implements Expressible  {
 
     private static final long serialVersionUID = 1;
     private StatsStream statsStream;
+    private IndexSchema indexSchema;
 
     public AlfrescoStatsStream(StreamExpression expression, StreamFactory factory) throws IOException
     {
@@ -106,7 +109,7 @@ public class AlfrescoStatsStream extends TupleStream implements Expressible  {
             }
 
             String column = metric.getColumns()[0];
-            String newColumn = AlfrescoStreamHandler.getIndexedField(column);
+            String newColumn = AlfrescoStreamHandler.getIndexedField(column, indexSchema);
             reverseLookup.put(newColumn, column);
             if(metric.getFunctionName().equals("sum"))
             {
@@ -154,6 +157,8 @@ public class AlfrescoStatsStream extends TupleStream implements Expressible  {
     @Override
     public void setStreamContext(StreamContext streamContext)
     {
+        SolrCore solrCore = (SolrCore)streamContext.get("solr-core");
+        this.indexSchema = solrCore.getLatestSchema();
         this.statsStream.setStreamContext(streamContext);
     }
 }
