@@ -307,9 +307,11 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
                 }
             }
         }
+        
+        int lastYearCount = yearCount.get(String.valueOf(lastYear));
 
         // The number of documents created last year in December is "numDocs / (numberOfYears + 1)"
-        assertTrue((numDocs / (numberOfYears + 1)) * contentSize == sumTotal);
+        assertTrue((lastYearCount * contentSize) == sumTotal);
         // The max total of documents added last year in December must be equal to the contentSize defined.
         assertTrue(contentSize == maxTotal);
     }
