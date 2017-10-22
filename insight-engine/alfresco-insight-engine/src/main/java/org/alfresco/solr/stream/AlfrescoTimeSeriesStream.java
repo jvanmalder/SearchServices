@@ -51,12 +51,16 @@ import org.apache.solr.client.solrj.io.stream.expr.StreamExpressionParameter;
 import org.apache.solr.client.solrj.io.stream.expr.StreamFactory;
 import org.apache.solr.client.solrj.io.stream.metrics.*;
 import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.core.SolrCore;
+import org.apache.solr.handler.AlfrescoSQLHandler;
+import org.apache.solr.schema.IndexSchema;
 
 public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible  {
 
     private static final long serialVersionUID = 1;
     private TimeSeriesStream timeSeriesStream;
     private Map<String, String> reverseLookup = new HashMap();
+    private IndexSchema indexSchema;
 
     public AlfrescoTimeSeriesStream(StreamExpression expression, StreamFactory factory) throws IOException
     {
@@ -114,7 +118,7 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
             }
 
             String column = metric.getColumns()[0];
-            String newColumn = AlfrescoStreamHandler.getIndexedField(column);
+            String newColumn = AlfrescoStreamHandler.getIndexedField(column, indexSchema);
 
             newColumn = "field("+newColumn+")";
 
@@ -151,7 +155,7 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
             field = vfield;
         }
 
-        String newField = AlfrescoStreamHandler.getIndexedField(field);
+        String newField = AlfrescoStreamHandler.getIndexedField(field, indexSchema);
         reverseLookup.put(newField, vfield);
         timeSeriesStream.setField(newField);
         this.timeSeriesStream.open();
@@ -198,6 +202,8 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
     @Override
     public void setStreamContext(StreamContext streamContext)
     {
+        SolrCore core = (SolrCore)streamContext.get("solr-core");
+        this.indexSchema = core.getLatestSchema();
         this.timeSeriesStream.setStreamContext(streamContext);
     }
 }
