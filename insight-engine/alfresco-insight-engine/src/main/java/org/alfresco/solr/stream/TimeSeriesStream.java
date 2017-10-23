@@ -327,7 +327,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
             List<String> shards = shardsMap.get(collection);
             solrClient = cache.getHttpSolrClient(shards.get(0));
             if(shards.size() > 1) {
-                String shardsParam = getShardString(shardsMap.get(collection));
+                String shardsParam = StreamUtils.getShardString(shardsMap.get(collection));
                 paramsLoc.add("shards", shardsParam);
                 paramsLoc.add("distrib", "true");
             }
@@ -359,19 +359,6 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
     protected QueryRequest authenticate(StreamContext streamContext, ModifiableSolrParams solrParams) throws IOException {
         return new QueryRequest(solrParams);
     }
-
-    private String getShardString(List<String> shards) {
-        StringBuilder builder = new StringBuilder();
-        for(String shard : shards) {
-            if(builder.length() > 0) {
-                builder.append(",");
-            }
-            builder.append(shard);
-        }
-        return builder.toString();
-    }
-
-
 
     public void close() throws IOException 
     {
@@ -414,7 +401,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         buf.append('"');
         buf.append(":{");
         buf.append("\"type\":\"range\"");
-        buf.append(",\"include\":\"upper\"");
+        buf.append(",\"include\":\"lower,edge\"");
         buf.append(",\"limit\":1000");
         buf.append(",\"field\":\""+field+"\"");
         buf.append(",\"start\":\""+start+"\"");
