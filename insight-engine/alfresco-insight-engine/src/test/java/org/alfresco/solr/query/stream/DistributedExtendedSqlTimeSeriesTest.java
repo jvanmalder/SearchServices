@@ -50,7 +50,7 @@ import org.junit.Test;
 /**
  * @author Tuna Aksoy
  */
-public class DistributedSqlTimeSeriesTest2 extends AbstractStreamTest
+public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 {
     @Rule
     public JettyServerRule jetty = new JettyServerRule(1, this);
