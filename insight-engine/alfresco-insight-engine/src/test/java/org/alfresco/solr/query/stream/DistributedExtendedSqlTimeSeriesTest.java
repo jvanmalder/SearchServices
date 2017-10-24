@@ -42,6 +42,7 @@ import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
 import org.apache.solr.client.solrj.io.Tuple;
+import org.apache.solr.util.DateMathParser;
 import org.joda.time.DateTimeZone;
 import org.junit.Before;
 import org.junit.Rule;
@@ -66,6 +67,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     private List<Node> nodes = new ArrayList<>();
     private List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
     private String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+    private DateMathParser dateMathParser = new DateMathParser();
 
     @Test
     public void testSearch() throws Exception
@@ -77,13 +79,48 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         Instant end = endDate.toInstant(ZoneOffset.UTC);
         int days = calculateDifference(start, end);
 
-        String sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created < '" + end.toString() +"' group by cm_created_day";
+        String sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created < '" + end.toString() + "' group by cm_created_day";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         int size = tuples.size();
 
         assertEquals(days, size);
 
         ListIterator<Tuple> iterator = tuples.listIterator();
+        while (iterator.hasNext())
+        {
+            boolean hasPrevious = iterator.hasPrevious();
+            Tuple tuple = iterator.next();
+            boolean hasNext = iterator.hasNext();
+            long count = tuple.getLong("EXPR$1").longValue();
+
+            if (!hasPrevious)
+            {
+                assertEquals(hours, count);
+            }
+            else if (!hasNext)
+            {
+                assertEquals(hours, count);
+            }
+            else
+            {
+                assertEquals(hours, count);
+            }
+        }
+
+        // Start date inclusive, end date exclusive
+        String solrStartDate = "/YEAR+5MONTHS/DAY";
+        String solrEndDate = "/DAY+1MONTH-2DAYS";
+        start = dateMathParser.parseMath(solrStartDate).toInstant();
+        end = dateMathParser.parseMath(solrEndDate).toInstant();
+        days = calculateDifference(start, end);
+
+        sql = "select cm_created_day, count(*) from alfresco where cm_created >= 'NOW" + solrStartDate + "' and cm_created < 'NOW" + solrEndDate + "' group by cm_created_day";
+        tuples = sqlQuery(sql, alfrescoJson);
+        size = tuples.size();
+
+        assertEquals(days, size);
+
+        iterator = tuples.listIterator();
         while (iterator.hasNext())
         {
             boolean hasPrevious = iterator.hasPrevious();
@@ -112,7 +149,42 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         end = endDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
-        sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created <= '" + end.toString() +"' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created <= '" + end.toString() + "' group by cm_created_day";
+        tuples = sqlQuery(sql, alfrescoJson);
+        size = tuples.size();
+
+        assertEquals(days, size);
+
+        iterator = tuples.listIterator();
+        while (iterator.hasNext())
+        {
+            boolean hasPrevious = iterator.hasPrevious();
+            Tuple tuple = iterator.next();
+            boolean hasNext = iterator.hasNext();
+            long count = tuple.getLong("EXPR$1").longValue();
+
+            if (!hasPrevious)
+            {
+                assertEquals(hours, count);
+            }
+            else if (!hasNext)
+            {
+                assertEquals(hours + 1, count);
+            }
+            else
+            {
+                assertEquals(hours, count);
+            }
+        }
+
+        // Start date inclusive, end date inclusive
+        solrStartDate = "/DAY-2MONTHS";
+        solrEndDate = "/MONTH+20DAYS";
+        start = dateMathParser.parseMath(solrStartDate).toInstant();
+        end = dateMathParser.parseMath(solrEndDate).toInstant();
+        days = calculateDifference(start, end);
+
+        sql = "select cm_created_day, count(*) from alfresco where cm_created >= 'NOW" + solrStartDate + "' and cm_created <= 'NOW" + solrEndDate + "' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
         size = tuples.size();
 
@@ -147,7 +219,42 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         end = endDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
-        sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created <= '" + end.toString() +"' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created <= '" + end.toString() + "' group by cm_created_day";
+        tuples = sqlQuery(sql, alfrescoJson);
+        size = tuples.size();
+
+        assertEquals(days, size);
+
+        iterator = tuples.listIterator();
+        while (iterator.hasNext())
+        {
+            boolean hasPrevious = iterator.hasPrevious();
+            Tuple tuple = iterator.next();
+            boolean hasNext = iterator.hasNext();
+            long count = tuple.getLong("EXPR$1").longValue();
+
+            if (!hasPrevious)
+            {
+                assertEquals(hours - 1, count);
+            }
+            else if (!hasNext)
+            {
+                assertEquals(hours + 1, count);
+            }
+            else
+            {
+                assertEquals(hours, count);
+            }
+        }
+
+        // Start date exclusive, end date inclusive
+        solrStartDate = "-60DAYS/MONTH";
+        solrEndDate = "+1MONTH/DAY";
+        start = dateMathParser.parseMath(solrStartDate).toInstant();
+        end = dateMathParser.parseMath(solrEndDate).toInstant();
+        days = calculateDifference(start, end);
+
+        sql = "select cm_created_day, count(*) from alfresco where cm_created > 'NOW" + solrStartDate + "' and cm_created <= 'NOW" + solrEndDate + "' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
         size = tuples.size();
 
@@ -182,7 +289,42 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         end = endDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
-        sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created < '" + end.toString() +"' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created < '" + end.toString() + "' group by cm_created_day";
+        tuples = sqlQuery(sql, alfrescoJson);
+        size = tuples.size();
+
+        assertEquals(days, size);
+
+        iterator = tuples.listIterator();
+        while (iterator.hasNext())
+        {
+            boolean hasPrevious = iterator.hasPrevious();
+            Tuple tuple = iterator.next();
+            boolean hasNext = iterator.hasNext();
+            long count = tuple.getLong("EXPR$1").longValue();
+
+            if (!hasPrevious)
+            {
+                assertEquals(hours - 1, count);
+            }
+            else if (!hasNext)
+            {
+                assertEquals(hours, count);
+            }
+            else
+            {
+                assertEquals(hours, count);
+            }
+        }
+
+        // Start date exclusive, end date exclusive
+        solrStartDate = "/MONTH+2DAYS";
+        solrEndDate = "+5DAYS/DAY";
+        start = dateMathParser.parseMath(solrStartDate).toInstant();
+        end = dateMathParser.parseMath(solrEndDate).toInstant();
+        days = calculateDifference(start, end);
+
+        sql = "select cm_created_day, count(*) from alfresco where cm_created > 'NOW" + solrStartDate + "' and cm_created < 'NOW" + solrEndDate + "' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
         size = tuples.size();
 
@@ -217,7 +359,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         end = endDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
-        sql = "select cm_created_day, count(*) from alfresco where cm_created < '" + end.toString() +"' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created < '" + end.toString() + "' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
         size = tuples.size();
 
@@ -248,6 +390,44 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             }
         }
 
+        // No start date specified, end date exclusive
+        solrStartDate = "-30DAYS/DAY";
+        solrEndDate = "/DAY+1MONTH";
+        start = dateMathParser.parseMath(solrStartDate).toInstant();
+        end = dateMathParser.parseMath(solrEndDate).toInstant();
+        days = calculateDifference(start, end);
+
+        sql = "select cm_created_day, count(*) from alfresco where cm_created < 'NOW" + solrEndDate + "' group by cm_created_day";
+        tuples = sqlQuery(sql, alfrescoJson);
+        size = tuples.size();
+
+        assertEquals(days, size);
+
+        end = now.withDayOfMonth(1).with(LocalTime.MIN).toInstant(ZoneOffset.UTC);
+        daysToStartCurrentMonth = calculateDifference(start, end);
+
+        iterator = tuples.listIterator();
+        while (iterator.hasNext())
+        {
+            int index = iterator.nextIndex();
+            Tuple tuple = iterator.next();
+            boolean hasNext = iterator.hasNext();
+            long count = tuple.getLong("EXPR$1").longValue();
+
+            if (index < daysToStartCurrentMonth)
+            {
+                assertEquals(hours, count);
+            }
+            else if (!hasNext)
+            {
+                assertEquals(hours, count);
+            }
+            else
+            {
+                assertEquals(hours, count);
+            }
+        }
+
         // No start date specified, end date inclusive
         startDate = now.toLocalDate().atStartOfDay().minusDays(30);
         endDate = startDate.plus(0, ChronoUnit.MONTHS).plus(9, ChronoUnit.DAYS);
@@ -255,7 +435,45 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         end = endDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
-        sql = "select cm_created_day, count(*) from alfresco where cm_created <= '" + end.toString() +"' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created <= '" + end.toString() + "' group by cm_created_day";
+        tuples = sqlQuery(sql, alfrescoJson);
+        size = tuples.size();
+
+        assertEquals(days, size);
+
+        end = now.withDayOfMonth(1).with(LocalTime.MIN).toInstant(ZoneOffset.UTC);
+        daysToStartCurrentMonth = calculateDifference(start, end);
+
+        iterator = tuples.listIterator();
+        while (iterator.hasNext())
+        {
+            int index = iterator.nextIndex();
+            Tuple tuple = iterator.next();
+            boolean hasNext = iterator.hasNext();
+            long count = tuple.getLong("EXPR$1").longValue();
+
+            if (index < daysToStartCurrentMonth)
+            {
+                assertEquals(hours, count);
+            }
+            else if (!hasNext)
+            {
+                assertEquals(hours + 1, count);
+            }
+            else
+            {
+                assertEquals(hours, count);
+            }
+        }
+
+        // No start date specified, end date inclusive
+        solrStartDate = "/DAY-1MONTH";
+        solrEndDate = "/DAY+15DAYS";
+        start = dateMathParser.parseMath(solrStartDate).toInstant();
+        end = dateMathParser.parseMath(solrEndDate).toInstant();
+        days = calculateDifference(start, end);
+
+        sql = "select cm_created_day, count(*) from alfresco where cm_created <= 'NOW" + solrEndDate + "' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
         size = tuples.size();
 
@@ -293,7 +511,42 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         start = startDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
-        sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() +"' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() + "' group by cm_created_day";
+        tuples = sqlQuery(sql, alfrescoJson);
+        size = tuples.size();
+
+        assertEquals(days, size);
+
+        iterator = tuples.listIterator();
+        while (iterator.hasNext())
+        {
+            boolean hasPrevious = iterator.hasPrevious();
+            Tuple tuple = iterator.next();
+            boolean hasNext = iterator.hasNext();
+            long count = tuple.getLong("EXPR$1").longValue();
+
+            if (!hasPrevious)
+            {
+                assertEquals(hours - 1, count);
+            }
+            else if (!hasNext)
+            {
+                assertEquals(hours + 1, count);
+            }
+            else
+            {
+                assertEquals(hours, count);
+            }
+        }
+
+        // Start date exclusive, no end date specified
+        solrStartDate = "/DAY-5DAYS";
+        solrEndDate = "+1DAY/DAY-1SECOND";
+        start = dateMathParser.parseMath(solrStartDate).toInstant();
+        end = dateMathParser.parseMath(solrEndDate).toInstant();
+        days = calculateDifference(start, end);
+
+        sql = "select cm_created_day, count(*) from alfresco where cm_created > 'NOW" + solrStartDate + "' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
         size = tuples.size();
 
@@ -328,7 +581,42 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         start = startDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
-        sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() +"' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() + "' group by cm_created_day";
+        tuples = sqlQuery(sql, alfrescoJson);
+        size = tuples.size();
+
+        assertEquals(days, size);
+
+        iterator = tuples.listIterator();
+        while (iterator.hasNext())
+        {
+            boolean hasPrevious = iterator.hasPrevious();
+            Tuple tuple = iterator.next();
+            boolean hasNext = iterator.hasNext();
+            long count = tuple.getLong("EXPR$1").longValue();
+
+            if (!hasPrevious)
+            {
+                assertEquals(hours, count);
+            }
+            else if (!hasNext)
+            {
+                assertEquals(hours + 1, count);
+            }
+            else
+            {
+                assertEquals(hours, count);
+            }
+        }
+
+        // Start date inclusive, no end date specified
+        solrStartDate = "-1MONTH/DAY+24HOURS";
+        solrEndDate = "+1DAY/DAY-1SECOND";
+        start = dateMathParser.parseMath(solrStartDate).toInstant();
+        end = dateMathParser.parseMath(solrEndDate).toInstant();
+        days = calculateDifference(start, end);
+
+        sql = "select cm_created_day, count(*) from alfresco where cm_created >= 'NOW" + solrStartDate + "' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
         size = tuples.size();
 
