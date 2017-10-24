@@ -139,6 +139,12 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
         assertTrue("name3".equals(tuples.get(0).getString(("cm_name"))));
+
+        sql = "select TYPE, count(*) from alfresco group by TYPE";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
+        assertTrue(tuples.get(0).getString("TYPE").equals("{http://www.alfresco.org/test/solrtest}testSuperType"));
+        assertTrue(tuples.get(0).getLong("EXPR$1") == 4);
     }
 
 }

@@ -271,7 +271,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
       streamContext.put("request-factory", new AlfrescoStreamHandler.AlfrescoRequestFactory(alfrescoJson));
       streamContext.put("shards", getCollectionShards(properties));
       streamContext.setSolrClientCache(StreamHandler.getClientCache());
-      streamContext.put("core", this.schema.core);
+      streamContext.put("solr-core", this.schema.core);
 //      context.workerID = worker;
 //      context.numWorkers = numWorkers;
 //      context.setModelCache(modelCache);

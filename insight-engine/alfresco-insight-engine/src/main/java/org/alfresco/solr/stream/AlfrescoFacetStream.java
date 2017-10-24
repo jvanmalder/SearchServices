@@ -25,6 +25,7 @@
  */
 package org.alfresco.solr.stream;
 
+import org.alfresco.solr.sql.AlfrescoCalciteSolrDriver;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.client.solrj.io.comp.FieldComparator;
 import org.apache.solr.client.solrj.io.comp.StreamComparator;
@@ -34,6 +35,8 @@ import org.apache.solr.client.solrj.io.stream.expr.*;
 import org.apache.solr.client.solrj.io.stream.expr.Explanation.ExpressionType;
 import org.apache.solr.client.solrj.io.stream.metrics.*;
 import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.core.SolrCore;
+import org.apache.solr.schema.IndexSchema;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,6 +47,7 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
 
     private static final long serialVersionUID = 1;
     private FacetStream facetStream;
+    private IndexSchema indexSchema;
 
     public AlfrescoFacetStream(StreamExpression expression, StreamFactory factory) throws IOException
     {
@@ -104,7 +108,7 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
             }
 
             String column = metric.getColumns()[0];
-            String newColumn = "field("+AlfrescoStreamHandler.getIndexedField(column)+")";
+            String newColumn = "field("+AlfrescoStreamHandler.getIndexedField(column, indexSchema)+")";
             String metFunc = metric.getFunctionName()+"(";
             reverseLookup.put(metFunc+newColumn+")", metFunc+column+")");
             if(metric.getFunctionName().equals("sum"))
@@ -126,9 +130,10 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
 
         }
 
+
         Bucket[] buckets = facetStream.getBuckets();
         for (int i = 0; i <buckets.length ; i++) {
-            String newColumn = AlfrescoStreamHandler.getIndexedField(buckets[i].toString());
+            String newColumn = AlfrescoStreamHandler.getIndexedField(buckets[i].toString(), indexSchema);
             reverseLookup.put(newColumn, buckets[i].toString());
             buckets[i] = new Bucket(newColumn);
         }
@@ -145,7 +150,7 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
      * Used to retrieve a sort field name from within a metric or index field
      * @return A string name
      */
-    public static String getAlfrescoIndexedFieldName(String theField)
+    public String getAlfrescoIndexedFieldName(String theField)
     {
         if (theField != null && !theField.trim().isEmpty())
         {
@@ -155,11 +160,11 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
            {
                String newField = theField.substring(bracketIndex+1, endIndex);
                return theField.substring(0, bracketIndex+1)
-                       + AlfrescoStreamHandler.getIndexedField(newField)
+                       + AlfrescoStreamHandler.getIndexedField(newField, indexSchema)
                        + theField.substring(endIndex);
            }
         }
-        return AlfrescoStreamHandler.getIndexedField(theField);
+        return AlfrescoStreamHandler.getIndexedField(theField, indexSchema);
     }
 
     public void close() throws IOException
@@ -187,6 +192,8 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
     @Override
     public void setStreamContext(StreamContext streamContext)
     {
+        SolrCore core = (SolrCore)streamContext.get("solr-core");
+        this.indexSchema = core.getLatestSchema();
         this.facetStream.setStreamContext(streamContext);
     }
 }
