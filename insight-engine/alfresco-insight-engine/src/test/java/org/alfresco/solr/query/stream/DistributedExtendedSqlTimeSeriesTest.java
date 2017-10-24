@@ -84,28 +84,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         int size = tuples.size();
 
         assertEquals(days, size);
-
-        ListIterator<Tuple> iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (!hasPrevious)
-            {
-                assertEquals(hours, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours, hours, hours);
 
         // Start date inclusive, end date exclusive
         String solrStartDate = "/YEAR+5MONTHS/DAY";
@@ -119,28 +98,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (!hasPrevious)
-            {
-                assertEquals(hours, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours, hours, hours);
 
         // Start date inclusive, end date inclusive
         startDate = LocalDateTime.of(currentYear, 6, 1, 0, 0, 0);
@@ -154,28 +112,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (!hasPrevious)
-            {
-                assertEquals(hours, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours + 1, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours, hours + 1, hours);
 
         // Start date inclusive, end date inclusive
         solrStartDate = "/DAY-2MONTHS";
@@ -189,28 +126,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (!hasPrevious)
-            {
-                assertEquals(hours, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours + 1, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours, hours + 1, hours);
 
         // Start date exclusive, end date inclusive
         startDate = LocalDateTime.of(currentYear, 4, 1, 0, 0, 0);
@@ -224,28 +140,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (!hasPrevious)
-            {
-                assertEquals(hours - 1, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours + 1, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours - 1, hours + 1, hours);
 
         // Start date exclusive, end date inclusive
         solrStartDate = "-60DAYS/MONTH";
@@ -259,28 +154,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (!hasPrevious)
-            {
-                assertEquals(hours - 1, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours + 1, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours - 1, hours + 1, hours);
 
         // Start date exclusive, end date exclusive
         startDate = LocalDateTime.of(currentYear, 9, 7, 0, 0, 0);
@@ -294,28 +168,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (!hasPrevious)
-            {
-                assertEquals(hours - 1, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours - 1, hours, hours);
 
         // Start date exclusive, end date exclusive
         solrStartDate = "/MONTH+2DAYS";
@@ -329,28 +182,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (!hasPrevious)
-            {
-                assertEquals(hours - 1, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours - 1, hours, hours);
 
         // No start date specified, end date exclusive
         startDate = now.toLocalDate().atStartOfDay().minusDays(30);
@@ -364,31 +196,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        end = now.withDayOfMonth(1).with(LocalTime.MIN).toInstant(ZoneOffset.UTC);
-        int daysToStartCurrentMonth = calculateDifference(start, end);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            int index = iterator.nextIndex();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (index < daysToStartCurrentMonth)
-            {
-                assertEquals(hours, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours, hours, hours);
 
         // No start date specified, end date exclusive
         solrStartDate = "-30DAYS/DAY";
@@ -402,31 +210,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        end = now.withDayOfMonth(1).with(LocalTime.MIN).toInstant(ZoneOffset.UTC);
-        daysToStartCurrentMonth = calculateDifference(start, end);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            int index = iterator.nextIndex();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (index < daysToStartCurrentMonth)
-            {
-                assertEquals(hours, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours, hours, hours);
 
         // No start date specified, end date inclusive
         startDate = now.toLocalDate().atStartOfDay().minusDays(30);
@@ -440,31 +224,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        end = now.withDayOfMonth(1).with(LocalTime.MIN).toInstant(ZoneOffset.UTC);
-        daysToStartCurrentMonth = calculateDifference(start, end);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            int index = iterator.nextIndex();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (index < daysToStartCurrentMonth)
-            {
-                assertEquals(hours, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours + 1, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours, hours + 1, hours);
 
         // No start date specified, end date inclusive
         solrStartDate = "/DAY-1MONTH";
@@ -478,31 +238,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        end = now.withDayOfMonth(1).with(LocalTime.MIN).toInstant(ZoneOffset.UTC);
-        daysToStartCurrentMonth = calculateDifference(start, end);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            int index = iterator.nextIndex();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (index < daysToStartCurrentMonth)
-            {
-                assertEquals(hours, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours + 1, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours, hours + 1, hours);
 
         // Start date exclusive, no end date specified
         endDate = now.with(LocalTime.MAX).withNano(0);
@@ -516,28 +252,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (!hasPrevious)
-            {
-                assertEquals(hours - 1, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours + 1, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours - 1, hours + 1, hours);
 
         // Start date exclusive, no end date specified
         solrStartDate = "/DAY-5DAYS";
@@ -551,28 +266,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (!hasPrevious)
-            {
-                assertEquals(hours - 1, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours + 1, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours - 1, hours + 1, hours);
 
         // Start date inclusive, no end date specified
         endDate = now.with(LocalTime.MAX).withNano(0);
@@ -586,28 +280,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (!hasPrevious)
-            {
-                assertEquals(hours, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours + 1, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours, hours + 1, hours);
 
         // Start date inclusive, no end date specified
         solrStartDate = "-1MONTH/DAY+24HOURS";
@@ -621,28 +294,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (!hasPrevious)
-            {
-                assertEquals(hours, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours + 1, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours, hours + 1, hours);
 
         // No start date specified, no end date specified
         start = now.toLocalDate().atStartOfDay().minusDays(30).toInstant(ZoneOffset.UTC);
@@ -654,31 +306,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         size = tuples.size();
 
         assertEquals(days, size);
-
-        end = now.withDayOfMonth(1).with(LocalTime.MIN).toInstant(ZoneOffset.UTC);
-        daysToStartCurrentMonth = calculateDifference(start, end);
-
-        iterator = tuples.listIterator();
-        while (iterator.hasNext())
-        {
-            int index = iterator.nextIndex();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            if (index < daysToStartCurrentMonth)
-            {
-                assertEquals(hours, count);
-            }
-            else if (!hasNext)
-            {
-                assertEquals(hours + 1, count);
-            }
-            else
-            {
-                assertEquals(hours, count);
-            }
-        }
+        assertExpectedBucketContent(tuples, hours, hours + 1, hours);
     }
 
     @Before
@@ -729,5 +357,30 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         double days = (double) startDate.until(endDate, ChronoUnit.HOURS) / hours;
         int difference = (int) Math.ceil(days);
         return difference;
+    }
+
+    private void assertExpectedBucketContent(List<Tuple> tuples, int firstBucketValue, int lastBucketValue, int otherBucketsValue)
+    {
+        ListIterator<Tuple> iterator = tuples.listIterator();
+        while (iterator.hasNext())
+        {
+            boolean hasPrevious = iterator.hasPrevious();
+            Tuple tuple = iterator.next();
+            boolean hasNext = iterator.hasNext();
+            long count = tuple.getLong("EXPR$1").longValue();
+
+            if (!hasPrevious)
+            {
+                assertEquals(firstBucketValue, count);
+            }
+            else if (!hasNext)
+            {
+                assertEquals(lastBucketValue, count);
+            }
+            else
+            {
+                assertEquals(otherBucketsValue, count);
+            }
+        }
     }
 }
