@@ -22,6 +22,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
 import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -57,12 +58,10 @@ public class DistributedSqlTimeSeriesTest2 extends AbstractStreamTest
     private ZoneId zoneId = ZoneId.of(DateTimeZone.UTC.getID());
     private LocalDateTime now = LocalDateTime.now(zoneId);
     private int currentYear = now.getYear();
-    private int currentMonth = now.getMonthValue();
-    private int startDay = 1;
-    private int endDay = 5;
-    private int days = now.getMonth().length(now.toLocalDate().isLeapYear());
+    private int months = 12;
+    private int days = 31;
     private int hours = 24;
-    private int numDocs = days * hours;
+    private int numDocs = days * hours * months;
     private Transaction txn = getTransaction(0, numDocs);
     private List<Node> nodes = new ArrayList<>();
     private List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
@@ -72,8 +71,10 @@ public class DistributedSqlTimeSeriesTest2 extends AbstractStreamTest
     public void testSearch() throws Exception
     {
         // Start date inclusive, end date exclusive
-        Instant start = LocalDateTime.of(currentYear, currentMonth, startDay, 0, 0, 0).toInstant(ZoneOffset.UTC);
-        Instant end = LocalDateTime.of(currentYear, currentMonth, endDay, 0, 0, 0).toInstant(ZoneOffset.UTC);
+        LocalDateTime startDate = LocalDateTime.of(currentYear, 1, 5, 0, 0, 0);
+        LocalDateTime endDate = startDate.plus(7, ChronoUnit.MONTHS).plus(3, ChronoUnit.DAYS);
+        Instant start = startDate.toInstant(ZoneOffset.UTC);
+        Instant end = endDate.toInstant(ZoneOffset.UTC);
         int days = calculateDifference(start, end);
 
         String sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created < '" + end.toString() +"' group by cm_created_day";
@@ -92,21 +93,23 @@ public class DistributedSqlTimeSeriesTest2 extends AbstractStreamTest
 
             if (!hasPrevious)
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
             else if (!hasNext)
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
             else
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
         }
 
         // Start date inclusive, end date inclusive
-        start = LocalDateTime.of(currentYear, currentMonth, startDay, 0, 0, 0).toInstant(ZoneOffset.UTC);
-        end = LocalDateTime.of(currentYear, currentMonth, endDay, 0, 0, 0).toInstant(ZoneOffset.UTC);
+        startDate = LocalDateTime.of(currentYear, 6, 1, 0, 0, 0);
+        endDate = startDate.plus(1, ChronoUnit.MONTHS).plus(8, ChronoUnit.DAYS);
+        start = startDate.toInstant(ZoneOffset.UTC);
+        end = endDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created <= '" + end.toString() +"' group by cm_created_day";
@@ -125,21 +128,23 @@ public class DistributedSqlTimeSeriesTest2 extends AbstractStreamTest
 
             if (!hasPrevious)
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
             else if (!hasNext)
             {
-                assertEquals(25, count);
+                assertEquals(hours + 1, count);
             }
             else
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
         }
 
         // Start date exclusive, end date inclusive
-        start = LocalDateTime.of(currentYear, currentMonth, startDay, 0, 0, 0).toInstant(ZoneOffset.UTC);
-        end = LocalDateTime.of(currentYear, currentMonth, endDay, 0, 0, 0).toInstant(ZoneOffset.UTC);
+        startDate = LocalDateTime.of(currentYear, 4, 1, 0, 0, 0);
+        endDate = startDate.plus(1, ChronoUnit.MONTHS).plus(10, ChronoUnit.DAYS);
+        start = startDate.toInstant(ZoneOffset.UTC);
+        end = endDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created <= '" + end.toString() +"' group by cm_created_day";
@@ -158,21 +163,23 @@ public class DistributedSqlTimeSeriesTest2 extends AbstractStreamTest
 
             if (!hasPrevious)
             {
-                assertEquals(23, count);
+                assertEquals(hours - 1, count);
             }
             else if (!hasNext)
             {
-                assertEquals(25, count);
+                assertEquals(hours + 1, count);
             }
             else
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
         }
 
         // Start date exclusive, end date exclusive
-        start = LocalDateTime.of(currentYear, currentMonth, startDay, 0, 0, 0).toInstant(ZoneOffset.UTC);
-        end = LocalDateTime.of(currentYear, currentMonth, endDay, 0, 0, 0).toInstant(ZoneOffset.UTC);
+        startDate = LocalDateTime.of(currentYear, 9, 7, 0, 0, 0);
+        endDate = startDate.plus(2, ChronoUnit.MONTHS).plus(5, ChronoUnit.DAYS);
+        start = startDate.toInstant(ZoneOffset.UTC);
+        end = endDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created < '" + end.toString() +"' group by cm_created_day";
@@ -191,21 +198,23 @@ public class DistributedSqlTimeSeriesTest2 extends AbstractStreamTest
 
             if (!hasPrevious)
             {
-                assertEquals(23, count);
+                assertEquals(hours - 1, count);
             }
             else if (!hasNext)
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
             else
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
         }
 
         // No start date specified, end date exclusive
-        start = now.toLocalDate().atStartOfDay().minusDays(30).toInstant(ZoneOffset.UTC);
-        end = LocalDateTime.of(currentYear, currentMonth, endDay, 0, 0, 0).toInstant(ZoneOffset.UTC);
+        startDate = now.toLocalDate().atStartOfDay().minusDays(30);
+        endDate = startDate.plus(2, ChronoUnit.MONTHS).plus(15, ChronoUnit.DAYS);
+        start = startDate.toInstant(ZoneOffset.UTC);
+        end = endDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created < '" + end.toString() +"' group by cm_created_day";
@@ -227,21 +236,23 @@ public class DistributedSqlTimeSeriesTest2 extends AbstractStreamTest
 
             if (index < daysToStartCurrentMonth)
             {
-                assertEquals(0, count);
+                assertEquals(hours, count);
             }
             else if (!hasNext)
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
             else
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
         }
 
         // No start date specified, end date inclusive
-        start = now.toLocalDate().atStartOfDay().minusDays(30).toInstant(ZoneOffset.UTC);
-        end = LocalDateTime.of(currentYear, currentMonth, endDay, 0, 0, 0).toInstant(ZoneOffset.UTC);
+        startDate = now.toLocalDate().atStartOfDay().minusDays(30);
+        endDate = startDate.plus(0, ChronoUnit.MONTHS).plus(9, ChronoUnit.DAYS);
+        start = startDate.toInstant(ZoneOffset.UTC);
+        end = endDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created <= '" + end.toString() +"' group by cm_created_day";
@@ -263,21 +274,23 @@ public class DistributedSqlTimeSeriesTest2 extends AbstractStreamTest
 
             if (index < daysToStartCurrentMonth)
             {
-                assertEquals(0, count);
+                assertEquals(hours, count);
             }
             else if (!hasNext)
             {
-                assertEquals(25, count);
+                assertEquals(hours + 1, count);
             }
             else
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
         }
 
         // Start date exclusive, no end date specified
-        start = LocalDateTime.of(currentYear, currentMonth, startDay, 0, 0, 0).toInstant(ZoneOffset.UTC);
-        end = now.with(LocalTime.MAX).toInstant(ZoneOffset.UTC);
+        endDate = now.with(LocalTime.MAX).withNano(0);
+        end = endDate.toInstant(ZoneOffset.UTC);
+        startDate = endDate.toLocalDate().atStartOfDay().minus(1, ChronoUnit.MONTHS).minus(5, ChronoUnit.DAYS);
+        start = startDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() +"' group by cm_created_day";
@@ -296,21 +309,23 @@ public class DistributedSqlTimeSeriesTest2 extends AbstractStreamTest
 
             if (!hasPrevious)
             {
-                assertEquals(23, count);
+                assertEquals(hours - 1, count);
             }
             else if (!hasNext)
             {
-                assertEquals(25, count);
+                assertEquals(hours + 1, count);
             }
             else
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
         }
 
         // Start date inclusive, no end date specified
-        start = LocalDateTime.of(currentYear, currentMonth, startDay, 0, 0, 0).toInstant(ZoneOffset.UTC);
-        end = now.with(LocalTime.MAX).toInstant(ZoneOffset.UTC);
+        endDate = now.with(LocalTime.MAX).withNano(0);
+        end = endDate.toInstant(ZoneOffset.UTC);
+        startDate = endDate.toLocalDate().atStartOfDay().minus(3, ChronoUnit.MONTHS).minus(18, ChronoUnit.DAYS);
+        start = startDate.toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() +"' group by cm_created_day";
@@ -329,21 +344,21 @@ public class DistributedSqlTimeSeriesTest2 extends AbstractStreamTest
 
             if (!hasPrevious)
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
             else if (!hasNext)
             {
-                assertEquals(25, count);
+                assertEquals(hours + 1, count);
             }
             else
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
         }
 
         // No start date specified, no end date specified
         start = now.toLocalDate().atStartOfDay().minusDays(30).toInstant(ZoneOffset.UTC);
-        end = now.with(LocalTime.MAX).toInstant(ZoneOffset.UTC);
+        end = now.with(LocalTime.MAX).withNano(0).toInstant(ZoneOffset.UTC);
         days = calculateDifference(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco group by cm_created_day";
@@ -365,15 +380,15 @@ public class DistributedSqlTimeSeriesTest2 extends AbstractStreamTest
 
             if (index < daysToStartCurrentMonth)
             {
-                assertEquals(0, count);
+                assertEquals(hours, count);
             }
             else if (!hasNext)
             {
-                assertEquals(25, count);
+                assertEquals(hours + 1, count);
             }
             else
             {
-                assertEquals(24, count);
+                assertEquals(hours, count);
             }
         }
     }
@@ -383,16 +398,27 @@ public class DistributedSqlTimeSeriesTest2 extends AbstractStreamTest
     {
         TimeZone.setDefault(TimeZone.getTimeZone(zoneId));
 
-        for (int i = 1; i <= days; i++)
+        int failedDateCount = 0;
+        for (int i = 1; i <= months; i++)
         {
-            for (int j = 0; j < hours; j++)
+            for (int j = 1; j <= days; j++)
             {
-                setProperties(LocalDateTime.of(currentYear, currentMonth, i, j, 0, 0).toInstant(ZoneOffset.UTC).toString());
+                for (int k = 0; k < hours; k++)
+                {
+                    try
+                    {
+                        setProperties(LocalDateTime.of(currentYear, i, j, k, 0, 0).toInstant(ZoneOffset.UTC).toString());
+                    }
+                    catch (DateTimeException dte)
+                    {
+                        failedDateCount += 1;
+                    }
+                }
             }
         }
 
         indexTransaction(txn, nodes, nodeMetaDatas);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numDocs + 4, 80000);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numDocs - failedDateCount + 4, 80000);
     }
 
     private void setProperties(String createdDate)
