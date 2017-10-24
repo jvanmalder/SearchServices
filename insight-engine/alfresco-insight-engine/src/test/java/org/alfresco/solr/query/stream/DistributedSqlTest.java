@@ -126,6 +126,10 @@ public class DistributedSqlTest extends AbstractStreamTest
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
 
+        sql = "select DBID from alfresco where `cm:content.size` > 0";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
+
         sql = "select DBID from alfresco where `cm:content.size` = '[1 TO *]'";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
