@@ -810,9 +810,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
         if(end != null) {
             end = end.replace("'", "");
         } else {
-            GregorianCalendar cal = new GregorianCalendar();
-            cal.setTime(new Date());
-            end = cal.get(Calendar.YEAR)+"-"+(cal.get(Calendar.MONTH)+1)+"-"+cal.getActualMaximum(cal.DAY_OF_MONTH)+"T23:59:59Z";
+            end = "NOW/MONTH+1DAY-1SECOND";
         }
 
         format = "YYYY-MM";
@@ -836,9 +834,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
         if(end != null) {
             end = end.replace("'", "");
         } else {
-            GregorianCalendar cal = new GregorianCalendar();
-            cal.setTime(new Date());
-            end = cal.get(Calendar.YEAR)+"-12-31T23:59:59Z";
+            end = "NOW/YEAR+1YEAR-1SECOND";
         }
 
         format = "YYYY";
