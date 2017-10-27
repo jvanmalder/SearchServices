@@ -27,7 +27,11 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
-import java.text.DateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -51,7 +55,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.io.Tuple;
-import org.junit.Assert;
+import org.joda.time.DateTimeZone;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -72,10 +76,11 @@ import org.junit.Test;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedTimeZoneTest extends AbstractStreamTest
 {
-    private Node nodeUSA, nodeJapan;
+    private Node nodeUSA, nodeJapan, nodeHere;
     @Rule
     public JettyServerRule jetty = new JettyServerRule(1, this);
     
+    private LocalDateTime presentTime= LocalDateTime.of(2017, 1, 1, 12, 0);
     @Before
     public void loadTimeZoneData() throws Exception
     {
@@ -103,32 +108,41 @@ public class DistributedTimeZoneTest extends AbstractStreamTest
 
          //First create a transaction.
          Transaction txn = getTransaction(0, 2);
-         
-         TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
-         Date america = getDate(2000, 0, 0);
-         TimeZone.setDefault(TimeZone.getTimeZone("Japan"));
-         Date japan = getDate(2000, 0, 0);
+         Instant present = presentTime.toInstant(ZoneOffset.UTC);
+         Instant dateLA = LocalDateTime.ofInstant(presentTime.toInstant(ZoneOffset.UTC), ZoneId.of("America/Los_Angeles")).toInstant(ZoneOffset.UTC);
+         Instant dateTokyo = LocalDateTime.ofInstant(presentTime.toInstant(ZoneOffset.UTC), ZoneId.of("Asia/Tokyo")).toInstant(ZoneOffset.UTC);;
+         System.out.println(present.toString());
+         System.out.println(dateLA.toString());
+         System.out.println(dateTokyo.toString());
          
          nodeUSA = getNode(txn, tzAcl, Node.SolrApiNodeStatus.UPDATED);
          nodeJapan = getNode(txn, tzAcl, Node.SolrApiNodeStatus.UPDATED);
+         nodeHere = getNode(txn, tzAcl, Node.SolrApiNodeStatus.UPDATED);
+         
+         NodeMetaData nodeMetaDataHere = getNodeMetaData(nodeHere, txn, tzAcl, "marty", null, false);
+
+         nodeMetaDataHere.getProperties().put(ContentModel.PROP_CREATED,
+                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, present.toString())));
+         nodeMetaDataHere.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("NowTime"));
+         nodeMetaDataHere.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("Dr who"));
          
          NodeMetaData nodeMetaDataUSA = getNodeMetaData(nodeUSA, txn, tzAcl, "marty", null, false);
 
          nodeMetaDataUSA.getProperties().put(ContentModel.PROP_CREATED,
-                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, america)));
+                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, dateLA.toString())));
          nodeMetaDataUSA.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("AmericanTime"));
          nodeMetaDataUSA.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("Brown"));
          
          NodeMetaData nodeMetaDataJapan = getNodeMetaData(nodeJapan, txn, tzAcl, "marty", null, false);
  
          nodeMetaDataJapan.getProperties().put(ContentModel.PROP_CREATED,
-                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, japan)));
+                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, dateTokyo.toString())));
          nodeMetaDataJapan.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("NipponTime"));
          nodeMetaDataJapan.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("suzuki"));
          
          indexTransaction(txn,
-                 list(nodeUSA, nodeJapan),
-                 list(nodeMetaDataUSA, nodeMetaDataJapan));
+                 list(nodeUSA, nodeJapan, nodeHere),
+                 list(nodeMetaDataUSA, nodeMetaDataJapan, nodeMetaDataHere));
          
          //Check for the TXN state stamp.
          builder = new BooleanQuery.Builder();
@@ -143,11 +157,26 @@ public class DistributedTimeZoneTest extends AbstractStreamTest
     {
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         String timeJson = "{ \"authorities\": [ \"mcfly\" ], \"tenants\": [ \"\" ] }";
-        String sql = "select DBID, cm_created, cm_creator from alfresco where cm_created = '[1998 TO 1999]'";
+//        String sql = "select DBID, cm_created, cm_creator from alfresco where cm_created = 'NOW/DAY-1DAYS'";
+        String sql = "select cm_created_day, count(*) as total from alfresco where cm_created >='2017-01-01T01:00:01Z' and cm_created <= '2017-01-01T23:59:59Z' group by cm_created_day";
+
+        Long expected = new Long(3);
 
         List<Tuple> tuples = sqlQuery(sql, timeJson);
         assertTrue(tuples.size() == 1);
-        tuples.forEach(tuple -> System.out.println(tuple.get("cm_creator") + " " + tuple.get("cm_created")));
+        System.out.println("UTC " + tuples.get(0).get("total"));
+        assertEquals(expected, tuples.get(0).get("total"));
+        
+        tuples = sqlQuery(sql, timeJson, "America/Los_Angeles");
+        System.out.println("LA " + tuples.get(0).get("total"));
+        assertTrue(tuples.size() == 1);
+        assertEquals(expected, tuples.get(0).get("total"));
+
+        tuples = sqlQuery(sql, timeJson, "Japan");
+        System.out.println("Tokyo " + tuples.get(0).get("total"));
+        assertTrue(tuples.size() == 1);
+        assertEquals(expected, tuples.get(0).get("total"));
+        
         
     }
 
