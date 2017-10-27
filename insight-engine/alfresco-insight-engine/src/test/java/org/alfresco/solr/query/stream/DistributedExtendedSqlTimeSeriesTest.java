@@ -71,6 +71,8 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     private List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
     private DateMathParser dateMathParser = new DateMathParser();
     private Map<String, Integer> createdDay = new HashMap<>();
+    private Map<String, Integer> createdMonth = new HashMap<>();
+    private Map<String, Integer> createdYear = new HashMap<>();
 
     @Test
     public void testSearch() throws Exception
@@ -317,8 +319,8 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     {
         TimeZone.setDefault(TimeZone.getTimeZone(zoneId));
 
-        int failedDateCount = 0;
         int year = now.getYear() - 1;
+        int failedDateCount = 0;
 
         for (int i = 0; i < years; i++)
         {
@@ -332,14 +334,42 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
                         {
                             LocalDateTime localDateTime = LocalDateTime.of(year + i, j, k, l, 0, 0);
                             setProperties(localDateTime.toInstant(ZoneOffset.UTC).toString());
-                            String key = localDateTime.toLocalDate().toString();
-                            if (createdDay.containsKey(key))
+
+                            String localDate = localDateTime.toLocalDate().toString();
+                            String dayKey = localDate;
+                            if (createdDay.containsKey(dayKey))
                             {
-                                createdDay.put(key, createdDay.get(key) + 1);
+                                createdDay.put(dayKey, createdDay.get(dayKey) + 1);
                             }
                             else
                             {
-                                createdDay.put(key, 1);
+                                createdDay.put(dayKey, 1);
+                            }
+
+                            String monthKey = localDate.substring(0, 7);
+                            if (dayKey.startsWith(monthKey))
+                            {
+                                if (createdMonth.containsKey(monthKey))
+                                {
+                                    createdMonth.put(monthKey, createdMonth.get(monthKey) + 1);
+                                }
+                                else
+                                {
+                                    createdMonth.put(monthKey, 1);
+                                }
+                            }
+
+                            String yearKey = localDate.substring(0, 4);
+                            if (monthKey.startsWith(yearKey))
+                            {
+                                if (createdYear.containsKey(yearKey))
+                                {
+                                    createdYear.put(yearKey, createdYear.get(yearKey) + 1);
+                                }
+                                else
+                                {
+                                    createdYear.put(yearKey, 1);
+                                }
                             }
                         }
                         catch (DateTimeException dte)
