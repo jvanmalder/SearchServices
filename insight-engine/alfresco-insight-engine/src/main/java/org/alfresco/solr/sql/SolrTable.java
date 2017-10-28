@@ -810,7 +810,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
         if(end != null) {
             end = end.replace("'", "");
         } else {
-            end = "NOW/MONTH+1DAY-1SECOND";
+            end = "NOW/MONTH+1MONTH-1SECOND";
         }
 
         format = "YYYY-MM";
