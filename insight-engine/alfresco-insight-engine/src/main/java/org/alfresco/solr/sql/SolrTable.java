@@ -20,8 +20,11 @@ import static org.apache.solr.common.params.CommonParams.SORT;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,8 +63,6 @@ import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.TranslatableTable;
 import org.apache.calcite.schema.impl.AbstractTableQueryable;
 import org.apache.calcite.util.Pair;
-import org.apache.lucene.search.Query;
-import org.apache.solr.util.DateMathParser;
 import org.apache.solr.client.solrj.io.comp.ComparatorOrder;
 import org.apache.solr.client.solrj.io.comp.FieldComparator;
 import org.apache.solr.client.solrj.io.comp.MultipleFieldComparator;
@@ -101,7 +102,6 @@ import org.apache.solr.client.solrj.io.stream.metrics.SumMetric;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.handler.StreamHandler;
-import java.util.*;
 
 
 /**
@@ -166,7 +166,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
             Collections.emptyList(), null, null, null, null);
   }
 
-  /** Executes a Solr query on the underlying table.
+  /** 
+   * Executes a Solr query on the underlying table.
    *
    * @param properties Connections properties
    * @param fields List of fields to project
@@ -238,8 +239,10 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
               }
             }
 
-            if(timeSeries) {
-              tupleStream = handleTimeSeries(zk,
+            String timezone = properties.getProperty("tz");
+            if(timeSeries)
+            {
+                tupleStream = handleTimeSeries(zk,
                       collection,
                       fields,
                       q,
@@ -248,7 +251,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                       metricPairs,
                       limitInt,
                       havingPredicate,
-                      filterData);
+                      filterData,
+                      timezone);
             } else {
 
               tupleStream = handleGroupByFacet(zk,
@@ -259,7 +263,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                       buckets,
                       metricPairs,
                       limitInt,
-                      havingPredicate);
+                      havingPredicate,
+                      timezone);
 
             }
           }
@@ -665,7 +670,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                          final List<String> bucketFields,
                                          final List<Pair<String, String>> metricPairs,
                                          final int limit,
-                                         final String havingPredicate) throws IOException {
+                                         final String havingPredicate,
+                                         final String timezone) throws IOException {
 
 
     Map<String, Class> fmap = new HashMap();
@@ -734,7 +740,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                        final List<Pair<String, String>> metricPairs,
                                        final int limit,
                                        final String havingPredicate,
-                                       final String filterData) throws IOException {
+                                       final String filterData,
+                                       final String tz) throws IOException {
 
     FilterData fdata  = new FilterData(filterData);
 
@@ -840,7 +847,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
         format = "YYYY";
     }
 
-    TupleStream tupleStream = new TimeSeriesStream(zkHost, collection, solrParams, metrics, bucket, start, end, gap, format);
+    TupleStream tupleStream = new TimeSeriesStream(zkHost, collection, solrParams, metrics, bucket, start, end, gap, format, tz);
 
     if(havingPredicate != null) {
       BooleanEvaluator booleanOperation = (BooleanEvaluator)streamFactory.constructEvaluator(StreamExpressionParser.parse(havingPredicate));

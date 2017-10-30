@@ -48,10 +48,12 @@ import org.apache.solr.common.params.SolrParams;
 import org.junit.Before;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
 
@@ -208,6 +210,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     {
         return new Date(new GregorianCalendar(year, month, day, 10, 0).getTimeInMillis());
     }
+    
     /**
      * Build a sql query with alfresco user authentication and parses the response
      * back into tuples.
@@ -216,13 +219,19 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
      * @return List<Tuple>
      * @throws IOException if error
      */
-    public List<Tuple> sqlQuery(String sql, String alfrescoJson) throws IOException {
+
+    public List<Tuple> sqlQuery(String sql, String alfrescoJson) throws IOException 
+    {
+        return sqlQuery(sql, alfrescoJson, "UTC");
+    }
+    public List<Tuple> sqlQuery(String sql, String alfrescoJson, String timezone) throws IOException 
+    {
         System.out.println("######### AFRESCO SQL #######");
         System.out.println(sql);
         List<SolrClient> clusterClients = getClusterClients();
         String shards = getShardsString(clusterClients);
 
-        SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards);
+        SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards, "tz", timezone);
 
         AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
         tupleStream.setJson(alfrescoJson);
