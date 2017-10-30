@@ -290,7 +290,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         expression.addParameter(new StreamExpressionNamedParameter("format", format));
         if(null != timeZone)
         {
-            expression.addParameter(new StreamExpressionNamedParameter("tz", timeZone));
+            expression.addParameter(new StreamExpressionNamedParameter("TZ", timeZone));
         }
         
         // zkHost
