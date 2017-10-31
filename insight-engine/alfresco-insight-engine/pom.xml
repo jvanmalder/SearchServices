@@ -58,6 +58,12 @@
    <dependencies>
       <dependency>
          <groupId>org.alfresco</groupId>
+         <artifactId>insight-jdbc</artifactId>
+         <version>1.0</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco</groupId>
          <artifactId>alfresco-search</artifactId>
          <version>${alfresco.search.dependency.version}</version>
       </dependency>
@@ -88,5 +94,6 @@
          <version>${solr.version}</version>
          <scope>test</scope>
       </dependency>
+
    </dependencies>
 </project>
