@@ -18,6 +18,16 @@
  */
 package org.alfresco.solr.query.stream;
 
+import static java.time.ZoneOffset.UTC;
+import static java.time.temporal.ChronoUnit.DAYS;
+import static java.time.temporal.ChronoUnit.HOURS;
+import static java.time.temporal.ChronoUnit.MONTHS;
+
+import static org.alfresco.model.ContentModel.PROP_CREATED;
+import static org.alfresco.model.ContentModel.PROP_CREATOR;
+import static org.alfresco.model.ContentModel.PROP_NAME;
+import static org.alfresco.model.ContentModel.PROP_OWNER;
+import static org.alfresco.model.ContentModel.PROP_TITLE;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
 import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
@@ -29,8 +39,6 @@ import java.time.LocalDateTime;
 import java.time.MonthDay;
 import java.time.YearMonth;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +46,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.StringPropertyValue;
@@ -67,6 +74,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     private int totalNumberOfDocuments = hours * days * months * years;
     private ZoneId zoneId = ZoneId.of(DateTimeZone.UTC.getID());
     private LocalDateTime now = LocalDateTime.now(zoneId);
+    private int currentYear = now.getYear();
     private Transaction txn = getTransaction(0, totalNumberOfDocuments);
     private List<Node> nodes = new ArrayList<>();
     private List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
@@ -74,16 +82,16 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     private Map<String, Integer> createdDay = new HashMap<>();
     private Map<String, Integer> createdMonth = new HashMap<>();
     private Map<String, Integer> createdYear = new HashMap<>();
-    private boolean debugEnabled = true;
+    private boolean debugEnabled = false;
 
     @Test
     public void testSearch() throws Exception
     {
         // Start date inclusive, end date exclusive
-        LocalDateTime startDate = LocalDateTime.of(2017, 1, 5, 0, 0, 0);
-        LocalDateTime endDate = startDate.plus(7, ChronoUnit.MONTHS).plus(3, ChronoUnit.DAYS);
-        Instant start = startDate.toInstant(ZoneOffset.UTC);
-        Instant end = endDate.toInstant(ZoneOffset.UTC);
+        LocalDateTime startDate = LocalDateTime.of(currentYear, 1, 5, 0, 0, 0);
+        LocalDateTime endDate = startDate.plus(7, MONTHS).plus(3, DAYS);
+        Instant start = startDate.toInstant(UTC);
+        Instant end = endDate.toInstant(UTC);
         int numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
 
         String sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created < '" + end.toString() + "' group by cm_created_day";
@@ -108,10 +116,10 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Day(buckets, true, false, start, end);
 
         // Start date inclusive, end date inclusive
-        startDate = LocalDateTime.of(2017, 6, 1, 0, 0, 0);
-        endDate = startDate.plus(1, ChronoUnit.MONTHS).plus(8, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
-        end = endDate.toInstant(ZoneOffset.UTC);
+        startDate = LocalDateTime.of(currentYear, 6, 1, 0, 0, 0);
+        endDate = startDate.plus(1, MONTHS).plus(8, DAYS);
+        start = startDate.toInstant(UTC);
+        end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created <= '" + end.toString() + "' group by cm_created_day";
@@ -136,10 +144,10 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Day(buckets, true, true, start, end);
 
         // Start date exclusive, end date inclusive
-        startDate = LocalDateTime.of(2017, 4, 1, 0, 0, 0);
-        endDate = startDate.plus(1, ChronoUnit.MONTHS).plus(10, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
-        end = endDate.toInstant(ZoneOffset.UTC);
+        startDate = LocalDateTime.of(currentYear, 4, 1, 0, 0, 0);
+        endDate = startDate.plus(1, MONTHS).plus(10, DAYS);
+        start = startDate.toInstant(UTC);
+        end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created <= '" + end.toString() + "' group by cm_created_day";
@@ -164,10 +172,10 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Day(buckets, false, true, start, end);
 
         // Start date exclusive, end date exclusive
-        startDate = LocalDateTime.of(2017, 9, 7, 0, 0, 0);
-        endDate = startDate.plus(2, ChronoUnit.MONTHS).plus(5, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
-        end = endDate.toInstant(ZoneOffset.UTC);
+        startDate = LocalDateTime.of(currentYear, 9, 7, 0, 0, 0);
+        endDate = startDate.plus(2, MONTHS).plus(5, DAYS);
+        start = startDate.toInstant(UTC);
+        end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created < '" + end.toString() + "' group by cm_created_day";
@@ -193,9 +201,9 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
         // No start date specified, end date exclusive
         startDate = getFallbackStartDate_Day();
-        endDate = startDate.plus(2, ChronoUnit.MONTHS).plus(15, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
-        end = endDate.toInstant(ZoneOffset.UTC);
+        endDate = startDate.plus(2, MONTHS).plus(15, DAYS);
+        start = startDate.toInstant(UTC);
+        end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created < '" + end.toString() + "' group by cm_created_day";
@@ -221,9 +229,9 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
         // No start date specified, end date inclusive
         startDate = getFallbackStartDate_Day();
-        endDate = startDate.plus(0, ChronoUnit.MONTHS).plus(9, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
-        end = endDate.toInstant(ZoneOffset.UTC);
+        endDate = startDate.plus(0, MONTHS).plus(9, DAYS);
+        start = startDate.toInstant(UTC);
+        end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created <= '" + end.toString() + "' group by cm_created_day";
@@ -249,9 +257,9 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
         // Start date exclusive, no end date specified
         endDate = getFallbackEndDate_Day();
-        end = endDate.toInstant(ZoneOffset.UTC);
-        startDate = endDate.toLocalDate().atStartOfDay().minus(1, ChronoUnit.MONTHS).minus(5, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
+        end = endDate.toInstant(UTC);
+        startDate = endDate.toLocalDate().atStartOfDay().minus(1, MONTHS).minus(5, DAYS);
+        start = startDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() + "' group by cm_created_day";
@@ -277,9 +285,9 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
         // Start date inclusive, no end date specified
         endDate = getFallbackEndDate_Day();
-        end = endDate.toInstant(ZoneOffset.UTC);
-        startDate = endDate.toLocalDate().atStartOfDay().minus(3, ChronoUnit.MONTHS).minus(18, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
+        end = endDate.toInstant(UTC);
+        startDate = endDate.toLocalDate().atStartOfDay().minus(3, MONTHS).minus(18, DAYS);
+        start = startDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() + "' group by cm_created_day";
@@ -304,8 +312,8 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Day(buckets, true, true, start, end);
 
         // No start date specified, no end date specified
-        start = getFallbackStartDate_Day().toInstant(ZoneOffset.UTC);
-        end = getFallbackEndDate_Day().toInstant(ZoneOffset.UTC);
+        start = getFallbackStartDate_Day().toInstant(UTC);
+        end = getFallbackEndDate_Day().toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
 
         sql = "select cm_created_day, count(*) from alfresco group by cm_created_day";
@@ -316,10 +324,10 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Day(buckets, true, true, start, end);
 
         // Start date inclusive, end date exclusive
-        startDate = LocalDateTime.of(2017, 1, 5, 0, 0, 0);
-        endDate = startDate.plus(7, ChronoUnit.MONTHS).plus(3, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
-        end = endDate.toInstant(ZoneOffset.UTC);
+        startDate = LocalDateTime.of(currentYear, 5, 2, 0, 0, 0);
+        endDate = startDate.plus(6, MONTHS).plus(10, DAYS);
+        start = startDate.toInstant(UTC);
+        end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
 
         sql = "select cm_created_month, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created < '" + end.toString() + "' group by cm_created_month";
@@ -330,8 +338,8 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Month(buckets, true, false, start, end);
 
         // Start date inclusive, end date exclusive
-        solrStartDate = "/YEAR+5MONTHS/DAY";
-        solrEndDate = "/DAY+1MONTH-2DAYS";
+        solrStartDate = "/YEAR+2MONTHS+18DAYS/DAY";
+        solrEndDate = "/DAY+1MONTH+4DAYS";
         start = dateMathParser.parseMath(solrStartDate).toInstant();
         end = dateMathParser.parseMath(solrEndDate).toInstant();
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
@@ -344,10 +352,10 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Month(buckets, true, false, start, end);
 
         // Start date inclusive, end date inclusive
-        startDate = LocalDateTime.of(2017, 6, 1, 0, 0, 0);
-        endDate = startDate.plus(1, ChronoUnit.MONTHS).plus(8, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
-        end = endDate.toInstant(ZoneOffset.UTC);
+        startDate = LocalDateTime.of(currentYear, 10, 8, 0, 0, 0);
+        endDate = startDate.plus(2, MONTHS).minus(22, DAYS);
+        start = startDate.toInstant(UTC);
+        end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
 
         sql = "select cm_created_month, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created <= '" + end.toString() + "' group by cm_created_month";
@@ -372,10 +380,10 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Month(buckets, true, true, start, end);
 
         // Start date exclusive, end date inclusive
-        startDate = LocalDateTime.of(2017, 4, 1, 0, 0, 0);
-        endDate = startDate.plus(1, ChronoUnit.MONTHS).plus(10, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
-        end = endDate.toInstant(ZoneOffset.UTC);
+        startDate = LocalDateTime.of(currentYear, 4, 1, 0, 0, 0);
+        endDate = startDate.plus(1, MONTHS).plus(10, DAYS);
+        start = startDate.toInstant(UTC);
+        end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
 
         sql = "select cm_created_month, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created <= '" + end.toString() + "' group by cm_created_month";
@@ -400,10 +408,10 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Month(buckets, false, true, start, end);
 
         // Start date exclusive, end date exclusive
-        startDate = LocalDateTime.of(2017, 9, 7, 0, 0, 0);
-        endDate = startDate.plus(2, ChronoUnit.MONTHS).plus(5, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
-        end = endDate.toInstant(ZoneOffset.UTC);
+        startDate = LocalDateTime.of(currentYear, 9, 7, 0, 0, 0);
+        endDate = startDate.plus(2, MONTHS).plus(5, DAYS);
+        start = startDate.toInstant(UTC);
+        end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
 
         sql = "select cm_created_month, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created < '" + end.toString() + "' group by cm_created_month";
@@ -429,9 +437,9 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
         // No start date specified, end date exclusive
         startDate = getFallbackStartDate_Month();
-        endDate = startDate.plus(2, ChronoUnit.MONTHS).plus(15, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
-        end = endDate.toInstant(ZoneOffset.UTC);
+        endDate = startDate.plus(2, MONTHS).plus(15, DAYS);
+        start = startDate.toInstant(UTC);
+        end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
 
         sql = "select cm_created_month, count(*) from alfresco where cm_created < '" + end.toString() + "' group by cm_created_month";
@@ -457,9 +465,9 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
         // No start date specified, end date inclusive
         startDate = getFallbackStartDate_Month();
-        endDate = startDate.plus(0, ChronoUnit.MONTHS).plus(9, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
-        end = endDate.toInstant(ZoneOffset.UTC);
+        endDate = startDate.plus(0, MONTHS).plus(9, DAYS);
+        start = startDate.toInstant(UTC);
+        end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
 
         sql = "select cm_created_month, count(*) from alfresco where cm_created <= '" + end.toString() + "' group by cm_created_month";
@@ -485,9 +493,9 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
         // Start date exclusive, no end date specified
         endDate = getFallbackEndDate_Month();
-        end = endDate.toInstant(ZoneOffset.UTC);
-        startDate = endDate.toLocalDate().atStartOfDay().minus(1, ChronoUnit.MONTHS).minus(5, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
+        end = endDate.toInstant(UTC);
+        startDate = endDate.toLocalDate().atStartOfDay().minus(1, MONTHS).minus(5, DAYS);
+        start = startDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
 
         sql = "select cm_created_month, count(*) from alfresco where cm_created > '" + start.toString() + "' group by cm_created_month";
@@ -513,9 +521,9 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
         // Start date inclusive, no end date specified
         endDate = getFallbackEndDate_Month();
-        end = endDate.toInstant(ZoneOffset.UTC);
-        startDate = endDate.toLocalDate().atStartOfDay().minus(3, ChronoUnit.MONTHS).minus(18, ChronoUnit.DAYS);
-        start = startDate.toInstant(ZoneOffset.UTC);
+        end = endDate.toInstant(UTC);
+        startDate = endDate.toLocalDate().atStartOfDay().minus(3, MONTHS).minus(18, DAYS);
+        start = startDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
 
         sql = "select cm_created_month, count(*) from alfresco where cm_created >= '" + start.toString() + "' group by cm_created_month";
@@ -540,8 +548,8 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Month(buckets, true, true, start, end, true);
 
         // No start date specified, no end date specified
-        start = getFallbackStartDate_Month().toInstant(ZoneOffset.UTC);
-        end = getFallbackEndDate_Month().toInstant(ZoneOffset.UTC);
+        start = getFallbackStartDate_Month().toInstant(UTC);
+        end = getFallbackEndDate_Month().toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
 
         sql = "select cm_created_month, count(*) from alfresco group by cm_created_month";
@@ -557,7 +565,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     {
         TimeZone.setDefault(TimeZone.getTimeZone(zoneId));
 
-        int year = now.getYear() - 1;
+        int year = currentYear - 1;
         int failedDateCount = 0;
 
         for (int i = 0; i < years; i++)
@@ -571,7 +579,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
                         try
                         {
                             LocalDateTime localDateTime = LocalDateTime.of(year + i, j, k, l, 0, 0);
-                            setProperties(localDateTime.toInstant(ZoneOffset.UTC).toString());
+                            setProperties(localDateTime.toInstant(UTC).toString());
 
                             String localDate = localDateTime.toLocalDate().toString();
                             String dayKey = localDate;
@@ -629,11 +637,11 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         nodes.add(node);
         NodeMetaData nodeMetaData = getNodeMetaData(node, txn, acl, "mike", null, false);
 
-        nodeMetaData.getProperties().put(ContentModel.PROP_CREATED, new StringPropertyValue(createdDate));
-        nodeMetaData.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name1"));
-        nodeMetaData.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));
-        nodeMetaData.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
-        nodeMetaData.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("jim"));
+        nodeMetaData.getProperties().put(PROP_CREATED, new StringPropertyValue(createdDate));
+        nodeMetaData.getProperties().put(PROP_NAME, new StringPropertyValue("name1"));
+        nodeMetaData.getProperties().put(PROP_TITLE, new StringPropertyValue("title1"));
+        nodeMetaData.getProperties().put(PROP_CREATOR, new StringPropertyValue("creator1"));
+        nodeMetaData.getProperties().put(PROP_OWNER, new StringPropertyValue("jim"));
 
         nodeMetaDatas.add(nodeMetaData);
     }
@@ -646,7 +654,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
     private int calculateNumberOfBuckets_Day(Instant startDate, Instant endDate)
     {
-        double days = (double) startDate.until(endDate, ChronoUnit.HOURS) / hours;
+        double days = (double) startDate.until(endDate, HOURS) / hours;
         return (int) Math.ceil(days);
     }
 
