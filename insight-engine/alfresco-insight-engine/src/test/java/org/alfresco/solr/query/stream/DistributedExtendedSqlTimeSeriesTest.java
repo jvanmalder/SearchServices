@@ -662,27 +662,28 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
     private LocalDateTime getFallbackStartDate_Day()
     {
+        MonthDay monthDay = MonthDay.from(now);
         YearMonth yearMonth = YearMonth.from(now);
-        return LocalDateTime.of(yearMonth.getYear(), yearMonth.getMonthValue(), 1, 0, 0).minusMonths(1);
+        return LocalDateTime.of(yearMonth.getYear(), yearMonth.getMonthValue(), monthDay.getDayOfMonth(), 0, 0, 0).minusMonths(1);
     }
 
     private LocalDateTime getFallbackStartDate_Month()
     {
         YearMonth yearMonth = YearMonth.from(now);
-        return LocalDateTime.of(yearMonth.getYear(), yearMonth.getMonthValue(), 1, 0, 0).minusMonths(24);
+        return LocalDateTime.of(yearMonth.getYear(), yearMonth.getMonthValue(), 1, 0, 0, 0).minusMonths(24);
     }
 
     private LocalDateTime getFallbackEndDate_Day()
     {
         MonthDay monthDay = MonthDay.from(now);
         YearMonth yearMonth = YearMonth.from(now);
-        return LocalDateTime.of(yearMonth.getYear(), yearMonth.getMonthValue(), monthDay.getDayOfMonth(), 0, 0).plusDays(1).minusSeconds(1);
+        return LocalDateTime.of(yearMonth.getYear(), yearMonth.getMonthValue(), monthDay.getDayOfMonth(), 0, 0, 0).plusDays(1).minusSeconds(1);
     }
 
     private LocalDateTime getFallbackEndDate_Month()
     {
         YearMonth yearMonth = YearMonth.from(now);
-        return LocalDateTime.of(yearMonth.getYear(), yearMonth.getMonthValue(), 1, 0, 0).plusMonths(1).minusSeconds(1);
+        return LocalDateTime.of(yearMonth.getYear(), yearMonth.getMonthValue(), 1, 0, 0, 0).plusMonths(1).minusSeconds(1);
     }
 
     private String getSolrFallbackStartDate_Day()
@@ -712,15 +713,22 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertEquals(expectedBucketSize, actualBucketSize);
     }
 
+    private void assertBucketContentSize(long expectedBucketContentSize, long actualBucketContentSize)
+    {
+        System.out.println("Expected bucket content size: " + expectedBucketContentSize);
+        System.out.println("Actual bucket content size: " + actualBucketContentSize);
+        assertEquals(expectedBucketContentSize, actualBucketContentSize);
+    }
+
     private void assertExpectedBucketContent_Day(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end)
     {
         LocalDateTime endDate = LocalDateTime.ofInstant(end, zoneId);
         LocalDateTime startDate = LocalDateTime.ofInstant(start, zoneId);
 
-        System.out.println();
-        System.out.println("Start date: " + start);
+        System.out.println("\n"+ "Start date: " + start);
         System.out.println("End date: " + end);
-        System.out.println("Difference between end date and start date: " + endDate.minusYears(startDate.getYear()).minusMonths(startDate.getMonthValue()).minusDays(startDate.getDayOfMonth()).minusHours(startDate.getHour()).minusMinutes(startDate.getMinute()).minusSeconds(startDate.getSecond()));
+        LocalDateTime difference = endDate.minusYears(startDate.getYear()).minusMonths(startDate.getMonthValue()).minusDays(startDate.getDayOfMonth()).minusHours(startDate.getHour()).minusMinutes(startDate.getMinute()).minusSeconds(startDate.getSecond());
+        System.out.println("Difference between end date and start date: " + difference);
 
         ListIterator<Tuple> iterator = buckets.listIterator();
         while (iterator.hasNext())
@@ -731,12 +739,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             String createdDate = tuple.getString("cm_created_day");
             long count = tuple.getLong("EXPR$1").longValue();
 
-            System.out.println("Creation date: " + createdDate + ". Number of documents: " + count);
+            System.out.println("\n" + "Creation date: " + createdDate + ". Number of documents: " + count);
 
             Integer createdDocuments = createdDay.get(createdDate);
             if (createdDocuments == null)
             {
-                assertEquals(0, count);
+                assertBucketContentSize(0, count);
                 continue;
             }
             int numberOfCreatedDocuments = createdDocuments.intValue();
@@ -744,16 +752,16 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             if (!hasPrevious)
             {
                 int range = startInclusive ? 0 : -1;
-                assertEquals(numberOfCreatedDocuments + range, count);
+                assertBucketContentSize(numberOfCreatedDocuments + range, count);
             }
             else if (!hasNext)
             {
                 int range = endInclusive ? 1 : 0;
-                assertEquals(numberOfCreatedDocuments + range, count);
+                assertBucketContentSize(numberOfCreatedDocuments + range, count);
             }
             else
             {
-                assertEquals(numberOfCreatedDocuments, count);
+                assertBucketContentSize(numberOfCreatedDocuments, count);
             }
         }
 
@@ -771,10 +779,10 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         LocalDateTime endDate = LocalDateTime.ofInstant(end, zoneId);
         LocalDateTime startDate = LocalDateTime.ofInstant(start, zoneId);
 
-        System.out.println();
-        System.out.println("Start date: " + start);
+        System.out.println("\n"+ "Start date: " + start);
         System.out.println("End date: " + end);
-        System.out.println("Difference between end date and start date: " + endDate.minusYears(startDate.getYear()).minusMonths(startDate.getMonthValue()).minusDays(startDate.getDayOfMonth()).minusHours(startDate.getHour()).minusMinutes(startDate.getMinute()).minusSeconds(startDate.getSecond()));
+        LocalDateTime difference = endDate.minusYears(startDate.getYear()).minusMonths(startDate.getMonthValue()).minusDays(startDate.getDayOfMonth()).minusHours(startDate.getHour()).minusMinutes(startDate.getMinute()).minusSeconds(startDate.getSecond());
+        System.out.println("Difference between end date and start date: " + difference);
 
         ListIterator<Tuple> iterator = buckets.listIterator();
         while (iterator.hasNext())
@@ -785,12 +793,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             String createdDate = tuple.getString("cm_created_month");
             long count = tuple.getLong("EXPR$1").longValue();
 
-            System.out.println("Creation date: " + createdDate + ". Number of documents: " + count);
+            System.out.println("\n"+ "Creation date: " + createdDate + ". Number of documents: " + count);
 
             Integer createdDocuments = createdMonth.get(createdDate);
             if (createdDocuments == null)
             {
-                assertEquals(0, count);
+                assertBucketContentSize(0, count);
                 continue;
             }
             int numberOfCreatedDocuments = createdDocuments.intValue();
@@ -806,7 +814,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
                 {
                     range = startInclusive ? 0 : -1;
                 }
-                assertEquals(numberOfCreatedDocuments + range, count);
+                assertBucketContentSize(numberOfCreatedDocuments + range, count);
             }
             else if (!hasNext)
             {
@@ -825,16 +833,16 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
                     }
 
                     int range = endInclusive ? 1 : 0;
-                    assertEquals(expectedNumberOfDocuments + range, count);
+                    assertBucketContentSize(expectedNumberOfDocuments + range, count);
                 }
                 else
                 {
-                    assertEquals(numberOfCreatedDocuments + 1, count);
+                    assertBucketContentSize(numberOfCreatedDocuments + 1, count);
                 }
             }
             else
             {
-                assertEquals(numberOfCreatedDocuments, count);
+                assertBucketContentSize(numberOfCreatedDocuments, count);
             }
         }
 
