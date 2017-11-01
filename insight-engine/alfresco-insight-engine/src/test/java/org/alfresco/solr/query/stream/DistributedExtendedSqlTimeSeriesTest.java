@@ -396,8 +396,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        // FIXME
-        //assertExpectedBucketContent_Month(buckets, false, true, start, end);
+        assertExpectedBucketContent_Month(buckets, false, true, start, end);
 
         // Start date exclusive, end date exclusive
         startDate = LocalDateTime.of(2017, 9, 7, 0, 0, 0);
@@ -425,8 +424,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        // FIXME
-        //assertExpectedBucketContent_Month(buckets, false, false, start, end);
+        assertExpectedBucketContent_Month(buckets, false, false, start, end);
 
         // No start date specified, end date exclusive
         startDate = getFallbackStartDate_Month();
@@ -454,8 +452,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        // FIXME
-        //assertExpectedBucketContent_Month(buckets, true, false, start, end);
+        assertExpectedBucketContent_Month(buckets, true, false, start, end);
 
         // No start date specified, end date inclusive
         startDate = getFallbackStartDate_Month();
@@ -747,10 +744,17 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
                 assertBucketContentSize(0, count);
                 continue;
             }
+
             int numberOfCreatedDocuments = createdDocuments.intValue();
 
             if (!hasPrevious)
             {
+                if (buckets.size() == 1)
+                {
+                    int dayOfMonth = startDate.getDayOfMonth();
+                    numberOfCreatedDocuments = dayOfMonth * hours;
+                }
+
                 int range = startInclusive ? 0 : -1;
                 assertBucketContentSize(numberOfCreatedDocuments + range, count);
             }
@@ -801,19 +805,18 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
                 assertBucketContentSize(0, count);
                 continue;
             }
+
             int numberOfCreatedDocuments = createdDocuments.intValue();
 
             if (!hasPrevious)
             {
-                int range;
                 if (buckets.size() == 1)
                 {
-                    range = startInclusive && endInclusive ? 1 : 0;
+                    int dayOfMonth = startDate.getDayOfMonth();
+                    numberOfCreatedDocuments = dayOfMonth * hours;
                 }
-                else
-                {
-                    range = startInclusive ? 0 : -1;
-                }
+                int range = startInclusive ? 0 : -1;
+
                 assertBucketContentSize(numberOfCreatedDocuments + range, count);
             }
             else if (!hasNext)
@@ -823,7 +826,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
                     int differenceDay = endDate.getDayOfMonth() - startDate.getDayOfMonth();
                     int expectedNumberOfDocuments;
 
-                    if (differenceDay < 0)
+                    if (differenceDay == 0)
+                    {
+                        YearMonth yearMonth = YearMonth.of(startDate.getYear(), startDate.getMonth());
+                        expectedNumberOfDocuments = yearMonth.lengthOfMonth() * hours;
+                    }
+                    else if (differenceDay < 0)
                     {
                         expectedNumberOfDocuments = numberOfCreatedDocuments - (-1 * differenceDay * hours);
                     }
