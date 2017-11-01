@@ -789,7 +789,7 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
         if(start != null) {
             start = start.replace("'", "");
         } else {
-            start = "NOW/DAY-30DAYS";
+            start = "NOW/DAY-1MONTH";
         }
 
       if(end != null) {
