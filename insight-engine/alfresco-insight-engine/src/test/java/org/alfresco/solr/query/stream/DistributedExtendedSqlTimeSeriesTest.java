@@ -366,8 +366,8 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Month(buckets, true, true, start, end);
 
         // Start date inclusive, end date inclusive
-        solrStartDate = "/DAY-2MONTHS";
-        solrEndDate = "/MONTH+20DAYS";
+        solrStartDate = "/DAY-1MONTHS+18DAYS";
+        solrEndDate = "/MONTH+20DAYS+1MONTH";
         start = dateMathParser.parseMath(solrStartDate).toInstant();
         end = dateMathParser.parseMath(solrEndDate).toInstant();
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
@@ -380,8 +380,8 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Month(buckets, true, true, start, end);
 
         // Start date exclusive, end date inclusive
-        startDate = LocalDateTime.of(currentYear, 4, 1, 0, 0, 0);
-        endDate = startDate.plus(1, MONTHS).plus(10, DAYS);
+        startDate = LocalDateTime.of(currentYear, 5, 19, 0, 0, 0);
+        endDate = startDate.plus(2, MONTHS).minus(13, DAYS);
         start = startDate.toInstant(UTC);
         end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
@@ -394,8 +394,8 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Month(buckets, false, true, start, end);
 
         // Start date exclusive, end date inclusive
-        solrStartDate = "-60DAYS/MONTH";
-        solrEndDate = "+1MONTH/DAY";
+        solrStartDate = "-55DAYS/MONTH+3DAYS";
+        solrEndDate = "+1MONTH/DAY-5DAYS";
         start = dateMathParser.parseMath(solrStartDate).toInstant();
         end = dateMathParser.parseMath(solrEndDate).toInstant();
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
@@ -408,8 +408,8 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Month(buckets, false, true, start, end);
 
         // Start date exclusive, end date exclusive
-        startDate = LocalDateTime.of(currentYear, 9, 7, 0, 0, 0);
-        endDate = startDate.plus(2, MONTHS).plus(5, DAYS);
+        startDate = LocalDateTime.of(currentYear, 10, 4, 0, 0, 0);
+        endDate = startDate.plus(1, MONTHS).minus(11, DAYS);
         start = startDate.toInstant(UTC);
         end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
@@ -422,8 +422,8 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Month(buckets, false, false, start, end);
 
         // Start date exclusive, end date exclusive
-        solrStartDate = "/MONTH+2DAYS";
-        solrEndDate = "+5DAYS/DAY";
+        solrStartDate = "/MONTH+2DAYS-3MONTHS";
+        solrEndDate = "+5DAYS/DAY+1MONTH";
         start = dateMathParser.parseMath(solrStartDate).toInstant();
         end = dateMathParser.parseMath(solrEndDate).toInstant();
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
@@ -437,7 +437,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
         // No start date specified, end date exclusive
         startDate = getFallbackStartDate_Month();
-        endDate = startDate.plus(2, MONTHS).plus(15, DAYS);
+        endDate = startDate.plus(4, MONTHS).minus(20, DAYS);
         start = startDate.toInstant(UTC);
         end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
@@ -451,7 +451,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
         // No start date specified, end date exclusive
         solrStartDate = getSolrFallbackStartDate_Month();
-        solrEndDate = "/DAY+1MONTH";
+        solrEndDate = "/DAY+2MONTH-3DAYS";
         start = dateMathParser.parseMath(solrStartDate).toInstant();
         end = dateMathParser.parseMath(solrEndDate).toInstant();
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
@@ -465,7 +465,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
         // No start date specified, end date inclusive
         startDate = getFallbackStartDate_Month();
-        endDate = startDate.plus(0, MONTHS).plus(9, DAYS);
+        endDate = startDate.plus(0, MONTHS).plus(18, DAYS);
         start = startDate.toInstant(UTC);
         end = endDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
@@ -479,7 +479,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
         // No start date specified, end date inclusive
         solrStartDate = getSolrFallbackStartDate_Month();
-        solrEndDate = "/DAY+15DAYS";
+        solrEndDate = "/DAY-15DAYS+3MONTHS";
         start = dateMathParser.parseMath(solrStartDate).toInstant();
         end = dateMathParser.parseMath(solrEndDate).toInstant();
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
@@ -494,7 +494,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         // Start date exclusive, no end date specified
         endDate = getFallbackEndDate_Month();
         end = endDate.toInstant(UTC);
-        startDate = endDate.toLocalDate().atStartOfDay().minus(1, MONTHS).minus(5, DAYS);
+        startDate = endDate.toLocalDate().atStartOfDay().minus(3, MONTHS).plus(18, DAYS);
         start = startDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
 
@@ -506,7 +506,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Month(buckets, false, true, start, end, true);
 
         // Start date exclusive, no end date specified
-        solrStartDate = "/DAY-5DAYS";
+        solrStartDate = "/DAY-25DAYS";
         solrEndDate = getSolrFallbackEndDate_Month();
         start = dateMathParser.parseMath(solrStartDate).toInstant();
         end = dateMathParser.parseMath(solrEndDate).toInstant();
@@ -522,7 +522,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         // Start date inclusive, no end date specified
         endDate = getFallbackEndDate_Month();
         end = endDate.toInstant(UTC);
-        startDate = endDate.toLocalDate().atStartOfDay().minus(3, MONTHS).minus(18, DAYS);
+        startDate = endDate.toLocalDate().atStartOfDay().minus(1, MONTHS).minus(5, DAYS);
         start = startDate.toInstant(UTC);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
 
@@ -534,7 +534,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Month(buckets, true, true, start, end, true);
 
         // Start date inclusive, no end date specified
-        solrStartDate = "-1MONTH/DAY+24HOURS";
+        solrStartDate = "-2MONTH/DAY+24HOURS";
         solrEndDate = getSolrFallbackEndDate_Month();
         start = dateMathParser.parseMath(solrStartDate).toInstant();
         end = dateMathParser.parseMath(solrEndDate).toInstant();
@@ -760,7 +760,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             {
                 if (buckets.size() == 1)
                 {
-                    int dayOfMonth = startDate.getDayOfMonth();
+                    int dayOfMonth = Math.abs(endDate.getDayOfMonth() - startDate.getDayOfMonth());
                     numberOfCreatedDocuments = dayOfMonth * hours;
                 }
 
@@ -820,7 +820,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             {
                 if (buckets.size() == 1)
                 {
-                    int dayOfMonth = startDate.getDayOfMonth();
+                    int dayOfMonth = Math.abs(endDate.getDayOfMonth() - startDate.getDayOfMonth());
                     numberOfCreatedDocuments = dayOfMonth * hours;
                 }
                 int range = startInclusive ? 0 : -1;
