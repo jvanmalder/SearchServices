@@ -74,6 +74,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     private Map<String, Integer> createdDay = new HashMap<>();
     private Map<String, Integer> createdMonth = new HashMap<>();
     private Map<String, Integer> createdYear = new HashMap<>();
+    private boolean debugEnabled = true;
 
     @Test
     public void testSearch() throws Exception
@@ -705,15 +706,15 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
     private void assertBucketSize(int expectedBucketSize, int actualBucketSize)
     {
-        System.out.println("Expected bucket size: " + expectedBucketSize);
-        System.out.println("Actual bucket size: " + actualBucketSize);
+        print("Expected bucket size: " + expectedBucketSize);
+        print("Actual bucket size: " + actualBucketSize);
         assertEquals(expectedBucketSize, actualBucketSize);
     }
 
     private void assertBucketContentSize(long expectedBucketContentSize, long actualBucketContentSize)
     {
-        System.out.println("Expected bucket content size: " + expectedBucketContentSize);
-        System.out.println("Actual bucket content size: " + actualBucketContentSize);
+        print("Expected bucket content size: " + expectedBucketContentSize);
+        print("Actual bucket content size: " + actualBucketContentSize);
         assertEquals(expectedBucketContentSize, actualBucketContentSize);
     }
 
@@ -722,10 +723,10 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         LocalDateTime endDate = LocalDateTime.ofInstant(end, zoneId);
         LocalDateTime startDate = LocalDateTime.ofInstant(start, zoneId);
 
-        System.out.println("\n"+ "Start date: " + start);
-        System.out.println("End date: " + end);
+        print("\n"+ "Start date: " + start);
+        print("End date: " + end);
         LocalDateTime difference = endDate.minusYears(startDate.getYear()).minusMonths(startDate.getMonthValue()).minusDays(startDate.getDayOfMonth()).minusHours(startDate.getHour()).minusMinutes(startDate.getMinute()).minusSeconds(startDate.getSecond());
-        System.out.println("Difference between end date and start date: " + difference);
+        print("Difference between end date and start date: " + difference);
 
         ListIterator<Tuple> iterator = buckets.listIterator();
         while (iterator.hasNext())
@@ -736,7 +737,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             String createdDate = tuple.getString("cm_created_day");
             long count = tuple.getLong("EXPR$1").longValue();
 
-            System.out.println("\n" + "Creation date: " + createdDate + ". Number of documents: " + count);
+            print("\n" + "Creation date: " + createdDate + ". Number of documents: " + count);
 
             Integer createdDocuments = createdDay.get(createdDate);
             if (createdDocuments == null)
@@ -769,8 +770,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             }
         }
 
-        System.out.println("************************************************************************************");
-        System.out.println();
+        print("************************************************************************************" + "\n");
     }
 
     private void assertExpectedBucketContent_Month(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end)
@@ -783,10 +783,10 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         LocalDateTime endDate = LocalDateTime.ofInstant(end, zoneId);
         LocalDateTime startDate = LocalDateTime.ofInstant(start, zoneId);
 
-        System.out.println("\n"+ "Start date: " + start);
-        System.out.println("End date: " + end);
+        print("\n"+ "Start date: " + start);
+        print("End date: " + end);
         LocalDateTime difference = endDate.minusYears(startDate.getYear()).minusMonths(startDate.getMonthValue()).minusDays(startDate.getDayOfMonth()).minusHours(startDate.getHour()).minusMinutes(startDate.getMinute()).minusSeconds(startDate.getSecond());
-        System.out.println("Difference between end date and start date: " + difference);
+        print("Difference between end date and start date: " + difference);
 
         ListIterator<Tuple> iterator = buckets.listIterator();
         while (iterator.hasNext())
@@ -797,7 +797,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             String createdDate = tuple.getString("cm_created_month");
             long count = tuple.getLong("EXPR$1").longValue();
 
-            System.out.println("\n"+ "Creation date: " + createdDate + ". Number of documents: " + count);
+            print("\n"+ "Creation date: " + createdDate + ". Number of documents: " + count);
 
             Integer createdDocuments = createdMonth.get(createdDate);
             if (createdDocuments == null)
@@ -854,7 +854,14 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             }
         }
 
-        System.out.println("************************************************************************************");
-        System.out.println();
+        print("************************************************************************************" + "\n");
+    }
+
+    private void print (String message)
+    {
+        if (debugEnabled)
+        {
+            System.out.println(message);
+        }
     }
 }
