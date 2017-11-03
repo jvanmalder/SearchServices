@@ -376,9 +376,8 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
 
-        // FIXME
-        //assertBucketSize(numberOfBuckets, bucketSize);
-        //assertExpectedBucketContent_Month(buckets, true, true, start, end);
+        assertBucketSize(numberOfBuckets, bucketSize);
+        assertExpectedBucketContent_Month(buckets, true, true, start, end);
 
         // Start date exclusive, end date inclusive
         startDate = LocalDateTime.of(currentYear, 5, 19, 0, 0, 0);
@@ -727,8 +726,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        // FIXME
-        //assertExpectedBucketContent_Year(buckets, true, true, start, end);
+        assertExpectedBucketContent_Year(buckets, true, true, start, end);
 
         // Start date exclusive, no end date specified
         endDate = getFallbackEndDate_Year();
@@ -742,8 +740,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        // FIXME
-        //assertExpectedBucketContent_Year(buckets, false, true, start, end);
+        assertExpectedBucketContent_Year(buckets, false, true, start, end, true);
 
         // Start date exclusive, no end date specified
         solrStartDate = "/DAY-25DAYS";
@@ -757,8 +754,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        // FIXME
-        //assertExpectedBucketContent_Year(buckets, false, true, start, end);
+        assertExpectedBucketContent_Year(buckets, false, true, start, end, true);
 
         // Start date inclusive, no end date specified
         endDate = getFallbackEndDate_Year();
@@ -772,8 +768,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        // FIXME
-        //assertExpectedBucketContent_Year(buckets, true, true, start, end);
+        assertExpectedBucketContent_Year(buckets, true, true, start, end, true);
 
         // Start date inclusive, no end date specified
         solrStartDate = "-2MONTH/DAY+24HOURS";
@@ -787,8 +782,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        // FIXME
-        //assertExpectedBucketContent_Year(buckets, true, true, start, end);
+        assertExpectedBucketContent_Year(buckets, true, true, start, end, true);
 
         // No start date specified, no end date specified
         start = getFallbackStartDate_Year().toInstant(UTC);
@@ -800,8 +794,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        // FIXME
-        //assertExpectedBucketContent_Year(buckets, true, true, start, end);
+        assertExpectedBucketContent_Year(buckets, true, true, start, end, true);
     }
 
     @Before
@@ -905,19 +898,25 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     private int calculateNumberOfBuckets_Month(Instant startDate, Instant endDate)
     {
         LocalDateTime difference = difference(startDate, endDate);
-        // FIXME
-        //LocalDateTime dateTime = difference.with(ChronoField.DAY_OF_MONTH, difference.getDayOfMonth() + 1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime dateTime = difference.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        return dateTime.getYear() * 12 + dateTime.getMonthValue() + (dateTime.getDayOfMonth() > 0 ? 1 : 0);
+
+        if (difference.getHour() > 0 || difference.getMinute() > 0 || difference.getSecond() > 0 || difference.getNano() > 0)
+        {
+            difference = difference.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        }
+
+        return difference.getYear() * 12 + difference.getMonthValue() + (difference.getDayOfMonth() > 0 ? 1 : 0);
     }
 
     private int calculateNumberOfBuckets_Year(Instant startDate, Instant endDate)
     {
         LocalDateTime difference = difference(startDate, endDate);
-        // FIXME
-        //LocalDateTime dateTime = difference.with(ChronoField.MONTH_OF_YEAR, difference.getMonthValue() + 1).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime dateTime = difference.plusMonths(1).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        return dateTime.getYear() + (dateTime.getMonthValue() > 0 ? 1 : 0);
+
+        if (difference.getDayOfMonth() > 0 || difference.getHour() > 0 || difference.getMinute() > 0 || difference.getSecond() > 0 || difference.getNano() > 0)
+        {
+            difference = difference.plusMonths(1).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        }
+
+        return difference.getYear() + (difference.getMonthValue() > 0 ? 1 : 0);
     }
 
     private LocalDateTime difference(Instant startDate, Instant endDate)
@@ -1178,37 +1177,41 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             LocalDateTime startRange;
             LocalDateTime endRange;
             int numberOfCreatedDocuments;
-            if (!hasPrevious)
+            if (!hasNext)
             {
-                int range = startInclusive ? 0 : -1;
-                if (buckets.size() != 1)
+                int range;
+                if (startInclusive && endInclusive)
                 {
-                    startRange = startDate.plusYears(yearCounter++);
-                    endRange = startDate.plusYears(yearCounter);
+                    range = 1;
+                }
+                else if (!startInclusive && !endInclusive)
+                {
+                    range = -1;
                 }
                 else
                 {
-                    startRange = startDate;
-                    endRange = endDate;
-                    range += endInclusive ? 1 : 0;
+                    range = 0;
                 }
 
-                numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
-                assertBucketContentSize(numberOfCreatedDocuments + range, count);
-            }
-            else if (!hasNext)
-            {
                 if (endDateNotSpecified == null)
                 {
                     startRange = startDate.plusYears(yearCounter++);
                     endRange = endDate;
                     numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
-                    assertBucketContentSize(numberOfCreatedDocuments, count);
+                    assertBucketContentSize(numberOfCreatedDocuments + range, count);
                 }
                 else
                 {
-                    assertBucketContentSize(createdYear.get(createdDate) + 1, count);
+                    assertBucketContentSize(createdYear.get(createdDate) + range, count);
                 }
+            }
+            else if (!hasPrevious)
+            {
+                startRange = startDate.plusYears(yearCounter++);
+                endRange = startDate.plusYears(yearCounter);
+                int range = startInclusive ? 0 : -1;
+                numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
+                assertBucketContentSize(numberOfCreatedDocuments + range, count);
             }
             else
             {
