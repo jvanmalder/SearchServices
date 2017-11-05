@@ -16,15 +16,13 @@
  */
 package org.alfresco.solr.sql;
 
+import static org.apache.solr.common.params.CommonParams.NOW;
 import static org.apache.solr.common.params.CommonParams.SORT;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -107,7 +105,7 @@ import org.apache.solr.handler.StreamHandler;
 /**
  * Table based on a Solr collection
  */
-class SolrTable extends AbstractQueryableTable implements TranslatableTable {
+public class SolrTable extends AbstractQueryableTable implements TranslatableTable {
 
   private static final StreamFactory streamFactory = new StreamFactory()
           .withFunctionName("alfrescoExpr", AlfrescoExpressionStream.class)
@@ -135,6 +133,13 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
           .withFunctionName("lteq", LessThanEqualToEvaluator.class)
           .withFunctionName("gteq", GreaterThanEqualToEvaluator.class)
           .withFunctionName("top", RankStream.class);
+
+  public static final String DEFAULT_START_DATE_DAY = "/DAY-1MONTH";
+  public static final String DEFAULT_START_DATE_MONTH = "/MONTH-24MONTHS";
+  public static final String DEFAULT_START_DATE_YEAR = "/YEAR-5YEARS";
+  public static final String DEFAULT_END_DATE_DAY = "/DAY+1DAY-1SECOND";
+  public static final String DEFAULT_END_DATE_MONTH = "/MONTH+1MONTH-1SECOND";
+  public static final String DEFAULT_END_DATE_YEAR = "/YEAR+1YEAR-1SECOND";
 
   private static final String DEFAULT_QUERY = "*";
   public static final int DEFAULT_LIMIT = 1000;
@@ -789,13 +794,13 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
         if(start != null) {
             start = start.replace("'", "");
         } else {
-            start = "NOW/DAY-1MONTH";
+            start = NOW + DEFAULT_START_DATE_DAY;
         }
 
       if(end != null) {
         end = end.replace("'", "");
       } else {
-        end = "NOW/DAY+1DAY-1SECOND";
+        end = NOW + DEFAULT_END_DATE_DAY;
       }
 
     } else if(bucket.endsWith("_month")) {
@@ -811,13 +816,13 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
         if(start != null) {
             start = start.replace("'", "");
         } else {
-            start = "NOW/MONTH-24MONTHS";
+            start = NOW + DEFAULT_START_DATE_MONTH;
         }
 
         if(end != null) {
             end = end.replace("'", "");
         } else {
-            end = "NOW/MONTH+1MONTH-1SECOND";
+            end = NOW + DEFAULT_END_DATE_MONTH;
         }
 
         format = "YYYY-MM";
@@ -835,13 +840,13 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
         if(start != null) {
             start = start.replace("'", "");
         } else {
-            start = "NOW/YEAR-5YEARS";
+            start = NOW + DEFAULT_START_DATE_YEAR;
         }
 
         if(end != null) {
             end = end.replace("'", "");
         } else {
-            end = "NOW/YEAR+1YEAR-1SECOND";
+            end = NOW + DEFAULT_END_DATE_YEAR;
         }
 
         format = "YYYY";
