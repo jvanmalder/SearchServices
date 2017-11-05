@@ -82,7 +82,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     private Map<String, Integer> createdDay = new HashMap<>();
     private Map<String, Integer> createdMonth = new HashMap<>();
     private Map<String, Integer> createdYear = new HashMap<>();
-    private boolean debugEnabled = false;
+    private boolean debugEnabled = true;
 
     @Test
     public void testSearch() throws Exception
@@ -475,8 +475,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        // FIXME
-        //assertExpectedBucketContent_Month(buckets, true, true, start, end);
+        assertExpectedBucketContent_Month(buckets, true, true, start, end);
 
         // No start date specified, end date inclusive
         solrStartDate = getSolrFallbackStartDate_Month();
@@ -1126,37 +1125,44 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             LocalDateTime startRange;
             LocalDateTime endRange;
             int numberOfCreatedDocuments;
-            if (!hasPrevious)
+            if (!hasNext)
             {
+                int range = endInclusive ? 1 : 0;
                 if (buckets.size() == 1)
                 {
-                    startRange = startDate;
-                    endRange = endDate;
-                }
-                else
-                {
-                    startRange = startDate.plusMonths(monthCounter++);
-                    endRange = startDate.plusMonths(monthCounter);
+                    if (startInclusive && endInclusive)
+                    {
+                        range = 1;
+                    }
+                    else if (!startInclusive && !endInclusive)
+                    {
+                        range = -1;
+                    }
+                    else
+                    {
+                        range = 0;
+                    }
                 }
 
-                int range = startInclusive ? 0 : -1;
-                numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
-                assertBucketContentSize(numberOfCreatedDocuments + range, count);
-            }
-            else if (!hasNext)
-            {
                 if (endDateNotSpecified == null)
                 {
                     startRange = startDate.plusMonths(monthCounter++);
                     endRange = endDate;
-                    int range = endInclusive ? 1 : 0;
                     numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
                     assertBucketContentSize(numberOfCreatedDocuments + range, count);
                 }
                 else
                 {
-                    assertBucketContentSize(createdMonth.get(createdDate) + 1, count);
+                    assertBucketContentSize(createdDocuments + range, count);
                 }
+            }
+            else if (!hasPrevious)
+            {
+                startRange = startDate.plusMonths(monthCounter++);
+                endRange = startDate.plusMonths(monthCounter);
+                int range = startInclusive ? 0 : -1;
+                numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
+                assertBucketContentSize(numberOfCreatedDocuments + range, count);
             }
             else
             {
@@ -1208,18 +1214,21 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             int numberOfCreatedDocuments;
             if (!hasNext)
             {
-                int range;
-                if (startInclusive && endInclusive)
+                int range = endInclusive ? 1 : 0;
+                if (buckets.size() == 1)
                 {
-                    range = 1;
-                }
-                else if (!startInclusive && !endInclusive)
-                {
-                    range = -1;
-                }
-                else
-                {
-                    range = 0;
+                    if (startInclusive && endInclusive)
+                    {
+                        range = 1;
+                    }
+                    else if (!startInclusive && !endInclusive)
+                    {
+                        range = -1;
+                    }
+                    else
+                    {
+                        range = 0;
+                    }
                 }
 
                 if (endDateNotSpecified == null)
@@ -1231,7 +1240,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
                 }
                 else
                 {
-                    assertBucketContentSize(createdYear.get(createdDate) + range, count);
+                    assertBucketContentSize(createdDocuments + range, count);
                 }
             }
             else if (!hasPrevious)
