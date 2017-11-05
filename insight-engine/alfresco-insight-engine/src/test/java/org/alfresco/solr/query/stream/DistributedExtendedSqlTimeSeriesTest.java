@@ -274,7 +274,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, false, true, start, end);
+        assertExpectedBucketContent_Day(buckets, false, true, start, end, false);
 
         // Start date exclusive, no end date specified
         solrStartDate = "/DAY-5DAYS";
@@ -288,7 +288,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, false, true, start, end);
+        assertExpectedBucketContent_Day(buckets, false, true, start, end, false);
 
         // Start date inclusive, no end date specified
         endDate = parseDateMath(DEFAULT_END_DATE_DAY);
@@ -302,7 +302,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, true, start, end);
+        assertExpectedBucketContent_Day(buckets, true, true, start, end, false);
 
         // Start date inclusive, no end date specified
         solrStartDate = "-1MONTH/DAY+24HOURS";
@@ -316,7 +316,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, true, start, end);
+        assertExpectedBucketContent_Day(buckets, true, true, start, end, false);
 
         // No start date specified, no end date specified
         start = parseDateMath(DEFAULT_START_DATE_DAY).toInstant(UTC);
@@ -328,7 +328,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, true, start, end);
+        assertExpectedBucketContent_Day(buckets, true, true, start, end, false);
 
         // Start date inclusive, end date exclusive
         startDate = LocalDateTime.of(currentYear, 5, 2, 0, 0, 0);
@@ -510,7 +510,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, false, true, start, end, true);
+        assertExpectedBucketContent_Month(buckets, false, true, start, end, false);
 
         // Start date exclusive, no end date specified
         solrStartDate = "/DAY-25DAYS";
@@ -524,7 +524,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, false, true, start, end, true);
+        assertExpectedBucketContent_Month(buckets, false, true, start, end, false);
 
         // Start date inclusive, no end date specified
         endDate = parseDateMath(DEFAULT_END_DATE_MONTH);
@@ -538,7 +538,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, true, start, end, true);
+        assertExpectedBucketContent_Month(buckets, true, true, start, end, false);
 
         // Start date inclusive, no end date specified
         solrStartDate = "-2MONTH/DAY+24HOURS";
@@ -552,7 +552,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, true, start, end, true);
+        assertExpectedBucketContent_Month(buckets, true, true, start, end, false);
 
         // No start date specified, no end date specified
         start = parseDateMath(DEFAULT_START_DATE_MONTH).toInstant(UTC);
@@ -564,7 +564,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, true, start, end, true);
+        assertExpectedBucketContent_Month(buckets, true, true, start, end, false);
 
         // Start date inclusive, end date exclusive
         startDate = LocalDateTime.of(currentYear + 1, 8, 3, 0, 0, 0);
@@ -746,7 +746,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, false, true, start, end, true);
+        assertExpectedBucketContent_Year(buckets, false, true, start, end, false);
 
         // Start date exclusive, no end date specified
         solrStartDate = "/DAY-5DAYS-1YEAR";
@@ -760,7 +760,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, false, true, start, end, true);
+        assertExpectedBucketContent_Year(buckets, false, true, start, end, false);
 
         // Start date inclusive, no end date specified
         endDate = parseDateMath(DEFAULT_END_DATE_YEAR);
@@ -774,7 +774,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, true, start, end, true);
+        assertExpectedBucketContent_Year(buckets, true, true, start, end, false);
 
         // Start date inclusive, no end date specified
         solrStartDate = "-2YEARS-2MONTH/DAY+24HOURS+2MONTHS";
@@ -788,7 +788,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, true, start, end, true);
+        assertExpectedBucketContent_Year(buckets, true, true, start, end, false);
 
         // No start date specified, no end date specified
         start = parseDateMath(DEFAULT_START_DATE_YEAR).toInstant(UTC);
@@ -800,7 +800,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         bucketSize = buckets.size();
 
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, true, start, end, true);
+        assertExpectedBucketContent_Year(buckets, true, true, start, end, false);
     }
 
     @Before
@@ -906,7 +906,8 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     private int calculateNumberOfBuckets_Day(Instant startDate, Instant endDate)
     {
         double days = (double) startDate.until(endDate, HOURS) / hours;
-        return (int) Math.ceil(days);
+        int numberOfBuckets = (int) Math.ceil(days);
+        return numberOfBuckets > 0 ? numberOfBuckets : 0;
     }
 
     private int calculateNumberOfBuckets_Month(Instant startDate, Instant endDate)
@@ -970,11 +971,11 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
     private void assertExpectedBucketContent_Day(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end)
     {
-        assertExpectedBucketContent_Day(buckets, startInclusive, endInclusive, start, end, false);
+        assertExpectedBucketContent_Day(buckets, startInclusive, endInclusive, start, end, true);
     }
 
     @SuppressWarnings("null")
-    private void assertExpectedBucketContent_Day(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateNotSpecified)
+    private void assertExpectedBucketContent_Day(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateSpecified)
     {
         LocalDateTime endDate = LocalDateTime.ofInstant(end, zoneId);
         LocalDateTime startDate = LocalDateTime.ofInstant(start, zoneId);
@@ -1024,16 +1025,16 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
                     }
                 }
 
-                if (endDateNotSpecified)
-                {
-                    assertBucketContentSize(createdDocuments + range, count);
-                }
-                else
+                if (endDateSpecified)
                 {
                     startRange = startDate.plusDays(dayCounter++);
                     endRange = endDate;
                     numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
                     assertBucketContentSize(numberOfCreatedDocuments > 0 ? numberOfCreatedDocuments + range : numberOfCreatedDocuments, count);
+                }
+                else
+                {
+                    assertBucketContentSize(createdDocuments + range, count);
                 }
             }
             else if (!hasPrevious)
@@ -1058,11 +1059,11 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
     private void assertExpectedBucketContent_Month(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end)
     {
-        assertExpectedBucketContent_Month(buckets, startInclusive, endInclusive, start, end, false);
+        assertExpectedBucketContent_Month(buckets, startInclusive, endInclusive, start, end, true);
     }
 
     @SuppressWarnings("null")
-    private void assertExpectedBucketContent_Month(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateNotSpecified)
+    private void assertExpectedBucketContent_Month(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateSpecified)
     {
         LocalDateTime endDate = LocalDateTime.ofInstant(end, zoneId);
         LocalDateTime startDate = LocalDateTime.ofInstant(start, zoneId);
@@ -1112,16 +1113,16 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
                     }
                 }
 
-                if (endDateNotSpecified)
-                {
-                    assertBucketContentSize(createdDocuments + range, count);
-                }
-                else
+                if (endDateSpecified)
                 {
                     startRange = startDate.plusMonths(monthCounter++);
                     endRange = endDate;
                     numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
                     assertBucketContentSize(numberOfCreatedDocuments > 0 ? numberOfCreatedDocuments + range : numberOfCreatedDocuments, count);
+                }
+                else
+                {
+                    assertBucketContentSize(createdDocuments + range, count);
                 }
             }
             else if (!hasPrevious)
@@ -1146,11 +1147,11 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
     private void assertExpectedBucketContent_Year(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end)
     {
-        assertExpectedBucketContent_Year(buckets, startInclusive, endInclusive, start, end, false);
+        assertExpectedBucketContent_Year(buckets, startInclusive, endInclusive, start, end, true);
     }
 
     @SuppressWarnings("null")
-    private void assertExpectedBucketContent_Year(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateNotSpecified)
+    private void assertExpectedBucketContent_Year(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateSpecified)
     {
         LocalDateTime endDate = LocalDateTime.ofInstant(end, zoneId);
         LocalDateTime startDate = LocalDateTime.ofInstant(start, zoneId);
@@ -1200,16 +1201,16 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
                     }
                 }
 
-                if (endDateNotSpecified)
-                {
-                    assertBucketContentSize(createdDocuments + range, count);
-                }
-                else
+                if (endDateSpecified)
                 {
                     startRange = startDate.plusYears(yearCounter++);
                     endRange = endDate;
                     numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
                     assertBucketContentSize(numberOfCreatedDocuments > 0 ? numberOfCreatedDocuments + range : numberOfCreatedDocuments, count);
+                }
+                else
+                {
+                    assertBucketContentSize(createdDocuments + range, count);
                 }
             }
             else if (!hasPrevious)
