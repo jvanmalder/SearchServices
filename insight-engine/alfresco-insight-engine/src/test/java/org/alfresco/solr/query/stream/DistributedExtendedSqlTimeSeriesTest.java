@@ -799,7 +799,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     @Before
     private void createData() throws Exception
     {
-        print("Test data creation...");
+        print("Creating test data...");
 
         TimeZone.setDefault(TimeZone.getTimeZone(zoneId));
 
@@ -1023,6 +1023,11 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
     private void assertExpectedBucketContent_Day(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end)
     {
+        assertExpectedBucketContent_Day(buckets, startInclusive, endInclusive, start, end, null);
+    }
+
+    private void assertExpectedBucketContent_Day(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, Boolean endDateNotSpecified)
+    {
         LocalDateTime endDate = LocalDateTime.ofInstant(end, zoneId);
         LocalDateTime startDate = LocalDateTime.ofInstant(start, zoneId);
 
@@ -1040,7 +1045,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             String createdDate = tuple.getString("cm_created_day");
             long count = tuple.getLong("EXPR$1").longValue();
 
-            print("\n" + "Creation date: " + createdDate + ".");
+            print("\n"+ "Creation date: " + createdDate + ".");
 
             Integer createdDocuments = createdDay.get(createdDate);
             if (createdDocuments == null && buckets.size() == 1)
@@ -1052,28 +1057,42 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             LocalDateTime startRange;
             LocalDateTime endRange;
             int numberOfCreatedDocuments;
-            if (!hasPrevious)
+            if (!hasNext)
             {
+                int range = endInclusive ? 1 : 0;
                 if (buckets.size() == 1)
                 {
-                    startRange = startDate;
+                    if (startInclusive && endInclusive)
+                    {
+                        range = 1;
+                    }
+                    else if (!startInclusive && !endInclusive)
+                    {
+                        range = -1;
+                    }
+                    else
+                    {
+                        range = 0;
+                    }
+                }
+
+                if (endDateNotSpecified == null)
+                {
+                    startRange = startDate.plusDays(dayCounter++);
                     endRange = endDate;
                     numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
+                    assertBucketContentSize(numberOfCreatedDocuments + range, count);
                 }
                 else
                 {
-                    startRange = startDate.plusDays(dayCounter++);
-                    endRange = startDate.plusDays(dayCounter);
-                    numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
+                    assertBucketContentSize(createdDocuments + range, count);
                 }
-                int range = startInclusive ? 0 : -1;
-                assertBucketContentSize(numberOfCreatedDocuments + range, count);
             }
-            else if (!hasNext)
+            else if (!hasPrevious)
             {
                 startRange = startDate.plusDays(dayCounter++);
-                endRange = endDate;
-                int range = endInclusive ? 1 : 0;
+                endRange = startDate.plusDays(dayCounter);
+                int range = startInclusive ? 0 : -1;
                 numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
                 assertBucketContentSize(numberOfCreatedDocuments + range, count);
             }
