@@ -974,87 +974,9 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Day(buckets, startInclusive, endInclusive, start, end, true);
     }
 
-    @SuppressWarnings("null")
     private void assertExpectedBucketContent_Day(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateSpecified)
     {
-        LocalDateTime endDate = LocalDateTime.ofInstant(end, zoneId);
-        LocalDateTime startDate = LocalDateTime.ofInstant(start, zoneId);
-
-        print("\n"+ "Start date: " + start);
-        print("End date: " + end);
-        print("Difference between end date and start date: " + difference(start, end));
-
-        ListIterator<Tuple> iterator = buckets.listIterator();
-        int dayCounter = 0;
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            String createdDate = tuple.getString("cm_created_day");
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            print("\n"+ "Creation date: " + createdDate + ".");
-
-            Integer createdDocuments = createdDay.get(createdDate);
-            if (createdDocuments == null && buckets.size() == 1)
-            {
-                assertEquals(0, count);
-                continue;
-            }
-
-            LocalDateTime startRange;
-            LocalDateTime endRange;
-            int numberOfCreatedDocuments;
-            if (!hasNext)
-            {
-                int range = endInclusive ? 1 : 0;
-                if (buckets.size() == 1)
-                {
-                    if (startInclusive && endInclusive)
-                    {
-                        range = 1;
-                    }
-                    else if (!startInclusive && !endInclusive)
-                    {
-                        range = -1;
-                    }
-                    else
-                    {
-                        range = 0;
-                    }
-                }
-
-                if (endDateSpecified)
-                {
-                    startRange = startDate.plusDays(dayCounter++);
-                    endRange = endDate;
-                    numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
-                    assertBucketContentSize(numberOfCreatedDocuments > 0 ? numberOfCreatedDocuments + range : numberOfCreatedDocuments, count);
-                }
-                else
-                {
-                    assertBucketContentSize(createdDocuments + range, count);
-                }
-            }
-            else if (!hasPrevious)
-            {
-                startRange = startDate.plusDays(dayCounter++);
-                endRange = startDate.plusDays(dayCounter);
-                int range = startInclusive ? 0 : -1;
-                numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
-                assertBucketContentSize(numberOfCreatedDocuments > 0 ? numberOfCreatedDocuments + range : numberOfCreatedDocuments, count);
-            }
-            else
-            {
-                startRange = startDate.plusDays(dayCounter++);
-                endRange = startDate.plusDays(dayCounter);
-                numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
-                assertBucketContentSize(numberOfCreatedDocuments, count);
-            }
-        }
-
-        print("************************************************************************************" + "\n");
+        assertExpectedBucketContent(buckets, startInclusive, endInclusive, start, end, endDateSpecified, "day", createdDay);
     }
 
     private void assertExpectedBucketContent_Month(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end)
@@ -1062,87 +984,9 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Month(buckets, startInclusive, endInclusive, start, end, true);
     }
 
-    @SuppressWarnings("null")
     private void assertExpectedBucketContent_Month(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateSpecified)
     {
-        LocalDateTime endDate = LocalDateTime.ofInstant(end, zoneId);
-        LocalDateTime startDate = LocalDateTime.ofInstant(start, zoneId);
-
-        print("\n"+ "Start date: " + start);
-        print("End date: " + end);
-        print("Difference between end date and start date: " + difference(start, end));
-
-        ListIterator<Tuple> iterator = buckets.listIterator();
-        int monthCounter = 0;
-        while (iterator.hasNext())
-        {
-            boolean hasPrevious = iterator.hasPrevious();
-            Tuple tuple = iterator.next();
-            boolean hasNext = iterator.hasNext();
-            String createdDate = tuple.getString("cm_created_month");
-            long count = tuple.getLong("EXPR$1").longValue();
-
-            print("\n"+ "Creation date: " + createdDate + ".");
-
-            Integer createdDocuments = createdMonth.get(createdDate);
-            if (createdDocuments == null && buckets.size() == 1)
-            {
-                assertEquals(0, count);
-                continue;
-            }
-
-            LocalDateTime startRange;
-            LocalDateTime endRange;
-            int numberOfCreatedDocuments;
-            if (!hasNext)
-            {
-                int range = endInclusive ? 1 : 0;
-                if (buckets.size() == 1)
-                {
-                    if (startInclusive && endInclusive)
-                    {
-                        range = 1;
-                    }
-                    else if (!startInclusive && !endInclusive)
-                    {
-                        range = -1;
-                    }
-                    else
-                    {
-                        range = 0;
-                    }
-                }
-
-                if (endDateSpecified)
-                {
-                    startRange = startDate.plusMonths(monthCounter++);
-                    endRange = endDate;
-                    numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
-                    assertBucketContentSize(numberOfCreatedDocuments > 0 ? numberOfCreatedDocuments + range : numberOfCreatedDocuments, count);
-                }
-                else
-                {
-                    assertBucketContentSize(createdDocuments + range, count);
-                }
-            }
-            else if (!hasPrevious)
-            {
-                startRange = startDate.plusMonths(monthCounter++);
-                endRange = startDate.plusMonths(monthCounter);
-                int range = startInclusive ? 0 : -1;
-                numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
-                assertBucketContentSize(numberOfCreatedDocuments > 0 ? numberOfCreatedDocuments + range : numberOfCreatedDocuments, count);
-            }
-            else
-            {
-                startRange = startDate.plusMonths(monthCounter++);
-                endRange = startDate.plusMonths(monthCounter);
-                numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
-                assertBucketContentSize(numberOfCreatedDocuments, count);
-            }
-        }
-
-        print("************************************************************************************" + "\n");
+        assertExpectedBucketContent(buckets, startInclusive, endInclusive, start, end, endDateSpecified, "month", createdMonth);
     }
 
     private void assertExpectedBucketContent_Year(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end)
@@ -1150,8 +994,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertExpectedBucketContent_Year(buckets, startInclusive, endInclusive, start, end, true);
     }
 
-    @SuppressWarnings("null")
     private void assertExpectedBucketContent_Year(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateSpecified)
+    {
+        assertExpectedBucketContent(buckets, startInclusive, endInclusive, start, end, endDateSpecified, "year", createdYear);
+    }
+
+    private void assertExpectedBucketContent(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateSpecified, String type, Map<String, Integer> createdDocumentsMap)
     {
         LocalDateTime endDate = LocalDateTime.ofInstant(end, zoneId);
         LocalDateTime startDate = LocalDateTime.ofInstant(start, zoneId);
@@ -1161,18 +1009,18 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         print("Difference between end date and start date: " + difference(start, end));
 
         ListIterator<Tuple> iterator = buckets.listIterator();
-        int yearCounter = 0;
+        int counter = 0;
         while (iterator.hasNext())
         {
             boolean hasPrevious = iterator.hasPrevious();
             Tuple tuple = iterator.next();
             boolean hasNext = iterator.hasNext();
-            String createdDate = tuple.getString("cm_created_year");
+            String createdDate = tuple.getString("cm_created_" + type);
             long count = tuple.getLong("EXPR$1").longValue();
 
             print("\n"+ "Creation date: " + createdDate + ".");
 
-            Integer createdDocuments = createdYear.get(createdDate);
+            Integer createdDocuments = createdDocumentsMap.get(createdDate);
             if (createdDocuments == null && buckets.size() == 1)
             {
                 assertEquals(0, count);
@@ -1203,7 +1051,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
                 if (endDateSpecified)
                 {
-                    startRange = startDate.plusYears(yearCounter++);
+                    startRange = addPeriod(startDate, counter++, type);
                     endRange = endDate;
                     numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
                     assertBucketContentSize(numberOfCreatedDocuments > 0 ? numberOfCreatedDocuments + range : numberOfCreatedDocuments, count);
@@ -1215,22 +1063,46 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             }
             else if (!hasPrevious)
             {
-                startRange = startDate.plusYears(yearCounter++);
-                endRange = startDate.plusYears(yearCounter);
+                startRange = addPeriod(startDate, counter++, type);
+                endRange = addPeriod(startDate, counter, type);
                 int range = startInclusive ? 0 : -1;
                 numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
                 assertBucketContentSize(numberOfCreatedDocuments > 0 ? numberOfCreatedDocuments + range : numberOfCreatedDocuments, count);
             }
             else
             {
-                startRange = startDate.plusYears(yearCounter++);
-                endRange = startDate.plusYears(yearCounter);
+                startRange = addPeriod(startDate, counter++, type);
+                endRange = addPeriod(startDate, counter, type);
                 numberOfCreatedDocuments = getTotalNumberOfDocumentsForRange(startRange, endRange);
                 assertBucketContentSize(numberOfCreatedDocuments, count);
             }
         }
 
         print("************************************************************************************" + "\n");
+    }
+
+    private LocalDateTime addPeriod(LocalDateTime date, int period, String type)
+    {
+        LocalDateTime result = null;
+
+        if (type.equals("day"))
+        {
+            result = date.plusDays(period);
+        }
+        else if (type.equals("month"))
+        {
+            result = date.plusMonths(period);
+        }
+        else if (type.equals("year"))
+        {
+            result = date.plusYears(period);
+        }
+        else
+        {
+            throw new IllegalArgumentException("Type '" + type + "' is not support. Allowed values are: day, month or year!");
+        }
+
+        return result;
     }
 
     private int getTotalNumberOfDocumentsForRange(LocalDateTime start, LocalDateTime end)
