@@ -95,14 +95,14 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     {
         LocalDateTime startDate;
         LocalDateTime endDate;
+        String startDateExpression;
+        String endDateExpression;
         Instant start;
         Instant end;
-        int numberOfBuckets;
-        String sql;
         List<Tuple> buckets;
         int bucketSize;
-        String solrStartDate;
-        String solrEndDate;
+        int numberOfBuckets;
+        String sql;
 
         // Start date inclusive, end date exclusive
         startDate = LocalDateTime.of(currentYear, 1, 5, 0, 0, 0);
@@ -118,12 +118,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date inclusive, end date exclusive
-        solrStartDate = "/YEAR+5MONTHS/DAY";
-        solrEndDate = "/DAY+1MONTH-2DAYS";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "/YEAR+5MONTHS/DAY";
+        endDateExpression = "/DAY+1MONTH-2DAYS";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created >= 'NOW" + solrStartDate + "' and cm_created < 'NOW" + solrEndDate + "' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' and cm_created < 'NOW" + endDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -144,12 +144,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date inclusive, end date inclusive
-        solrStartDate = "/DAY-2MONTHS";
-        solrEndDate = "/MONTH+20DAYS";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "/DAY-2MONTHS";
+        endDateExpression = "/MONTH+20DAYS";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created >= 'NOW" + solrStartDate + "' and cm_created <= 'NOW" + solrEndDate + "' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' and cm_created <= 'NOW" + endDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -170,12 +170,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date exclusive, end date inclusive
-        solrStartDate = "-60DAYS/MONTH";
-        solrEndDate = "+1MONTH/DAY";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "-60DAYS/MONTH";
+        endDateExpression = "+1MONTH/DAY";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created > 'NOW" + solrStartDate + "' and cm_created <= 'NOW" + solrEndDate + "' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' and cm_created <= 'NOW" + endDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -196,12 +196,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date exclusive, end date exclusive
-        solrStartDate = "/MONTH+2DAYS";
-        solrEndDate = "+5DAYS/DAY";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "/MONTH+2DAYS";
+        endDateExpression = "+5DAYS/DAY";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created > 'NOW" + solrStartDate + "' and cm_created < 'NOW" + solrEndDate + "' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' and cm_created < 'NOW" + endDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -222,12 +222,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // No start date specified, end date exclusive
-        solrStartDate = DEFAULT_START_DATE_DAY;
-        solrEndDate = "/DAY+1MONTH";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = DEFAULT_START_DATE_DAY;
+        endDateExpression = "/DAY+1MONTH";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created < 'NOW" + solrEndDate + "' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created < 'NOW" + endDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -248,12 +248,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // No start date specified, end date inclusive
-        solrStartDate = DEFAULT_START_DATE_DAY;
-        solrEndDate = "/DAY+15DAYS";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = DEFAULT_START_DATE_DAY;
+        endDateExpression = "/DAY+15DAYS";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created <= 'NOW" + solrEndDate + "' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created <= 'NOW" + endDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -274,12 +274,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date exclusive, no end date specified
-        solrStartDate = "/DAY-5DAYS";
-        solrEndDate = DEFAULT_END_DATE_DAY;
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "/DAY-5DAYS";
+        endDateExpression = DEFAULT_END_DATE_DAY;
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created > 'NOW" + solrStartDate + "' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -300,12 +300,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date inclusive, no end date specified
-        solrStartDate = "-1MONTH/DAY+24HOURS";
-        solrEndDate = DEFAULT_END_DATE_DAY;
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "-1MONTH/DAY+24HOURS";
+        endDateExpression = DEFAULT_END_DATE_DAY;
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created >= 'NOW" + solrStartDate + "' group by cm_created_day";
+        sql = "select cm_created_day, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -337,12 +337,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date inclusive, end date exclusive
-        solrStartDate = "/YEAR+2MONTHS+18DAYS/DAY";
-        solrEndDate = "/DAY+1MONTH+4DAYS";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "/YEAR+2MONTHS+18DAYS/DAY";
+        endDateExpression = "/DAY+1MONTH+4DAYS";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created >= 'NOW" + solrStartDate + "' and cm_created < 'NOW" + solrEndDate + "' group by cm_created_month";
+        sql = "select cm_created_month, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' and cm_created < 'NOW" + endDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -363,12 +363,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date inclusive, end date inclusive
-        solrStartDate = "/DAY-1MONTHS+18DAYS";
-        solrEndDate = "/MONTH+20DAYS+1MONTH";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "/DAY-1MONTHS+18DAYS";
+        endDateExpression = "/MONTH+20DAYS+1MONTH";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created >= 'NOW" + solrStartDate + "' and cm_created <= 'NOW" + solrEndDate + "' group by cm_created_month";
+        sql = "select cm_created_month, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' and cm_created <= 'NOW" + endDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -389,12 +389,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date exclusive, end date inclusive
-        solrStartDate = "-55DAYS/MONTH+3DAYS";
-        solrEndDate = "+1MONTH/DAY-5DAYS";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "-55DAYS/MONTH+3DAYS";
+        endDateExpression = "+1MONTH/DAY-5DAYS";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created > 'NOW" + solrStartDate + "' and cm_created <= 'NOW" + solrEndDate + "' group by cm_created_month";
+        sql = "select cm_created_month, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' and cm_created <= 'NOW" + endDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -415,12 +415,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date exclusive, end date exclusive
-        solrStartDate = "/MONTH+2DAYS-3MONTHS";
-        solrEndDate = "+5DAYS/DAY+1MONTH";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "/MONTH+2DAYS-3MONTHS";
+        endDateExpression = "+5DAYS/DAY+1MONTH";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created > 'NOW" + solrStartDate + "' and cm_created < 'NOW" + solrEndDate + "' group by cm_created_month";
+        sql = "select cm_created_month, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' and cm_created < 'NOW" + endDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -441,12 +441,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // No start date specified, end date exclusive
-        solrStartDate = DEFAULT_START_DATE_MONTH;
-        solrEndDate = "/DAY+2MONTH-3DAYS";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = DEFAULT_START_DATE_MONTH;
+        endDateExpression = "/DAY+2MONTH-3DAYS";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created < 'NOW" + solrEndDate + "' group by cm_created_month";
+        sql = "select cm_created_month, count(*) from alfresco where cm_created < 'NOW" + endDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -467,12 +467,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // No start date specified, end date inclusive
-        solrStartDate = DEFAULT_START_DATE_MONTH;
-        solrEndDate = "/DAY-15DAYS+3MONTHS";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = DEFAULT_START_DATE_MONTH;
+        endDateExpression = "/DAY-15DAYS+3MONTHS";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created <= 'NOW" + solrEndDate + "' group by cm_created_month";
+        sql = "select cm_created_month, count(*) from alfresco where cm_created <= 'NOW" + endDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -493,12 +493,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date exclusive, no end date specified
-        solrStartDate = "/DAY-25DAYS";
-        solrEndDate = DEFAULT_END_DATE_MONTH;
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "/DAY-25DAYS";
+        endDateExpression = DEFAULT_END_DATE_MONTH;
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created > 'NOW" + solrStartDate + "' group by cm_created_month";
+        sql = "select cm_created_month, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -519,12 +519,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date inclusive, no end date specified
-        solrStartDate = "-2MONTH/DAY+24HOURS";
-        solrEndDate = DEFAULT_END_DATE_MONTH;
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "-2MONTH/DAY+24HOURS";
+        endDateExpression = DEFAULT_END_DATE_MONTH;
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created >= 'NOW" + solrStartDate + "' group by cm_created_month";
+        sql = "select cm_created_month, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -556,12 +556,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date inclusive, end date exclusive
-        solrStartDate = "/YEAR-2YEARS+1MONTHS+3DAYS/DAY";
-        solrEndDate = "/DAY+10MONTH-10DAYS";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "/YEAR-2YEARS+1MONTHS+3DAYS/DAY";
+        endDateExpression = "/DAY+10MONTH-10DAYS";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created >= 'NOW" + solrStartDate + "' and cm_created < 'NOW" + solrEndDate + "' group by cm_created_year";
+        sql = "select cm_created_year, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' and cm_created < 'NOW" + endDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -582,12 +582,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date inclusive, end date inclusive
-        solrStartDate = "/DAY-3YEARS+12DAYS";
-        solrEndDate = "/MONTH+4MONTH-20DAYS";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "/DAY-3YEARS+12DAYS";
+        endDateExpression = "/MONTH+4MONTH-20DAYS";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created >= 'NOW" + solrStartDate + "' and cm_created <= 'NOW" + solrEndDate + "' group by cm_created_year";
+        sql = "select cm_created_year, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' and cm_created <= 'NOW" + endDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -608,12 +608,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date exclusive, end date inclusive
-        solrStartDate = "/YEAR+3DAYS-3MONTHS";
-        solrEndDate = "+1MONTH/DAY-5DAYS";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "/YEAR+3DAYS-3MONTHS";
+        endDateExpression = "+1MONTH/DAY-5DAYS";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created > 'NOW" + solrStartDate + "' and cm_created <= 'NOW" + solrEndDate + "' group by cm_created_year";
+        sql = "select cm_created_year, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' and cm_created <= 'NOW" + endDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -634,12 +634,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date exclusive, end date exclusive
-        solrStartDate = "/YEAR-3MONTHS";
-        solrEndDate = "+25DAYS/DAY+3MONTH";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "/YEAR-3MONTHS";
+        endDateExpression = "+25DAYS/DAY+3MONTH";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created > 'NOW" + solrStartDate + "' and cm_created < 'NOW" + solrEndDate + "' group by cm_created_year";
+        sql = "select cm_created_year, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' and cm_created < 'NOW" + endDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -660,12 +660,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // No start date specified, end date exclusive
-        solrStartDate = DEFAULT_START_DATE_YEAR;
-        solrEndDate = "/YEAR+23DAY+2MONTH";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = DEFAULT_START_DATE_YEAR;
+        endDateExpression = "/YEAR+23DAY+2MONTH";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created < 'NOW" + solrEndDate + "' group by cm_created_year";
+        sql = "select cm_created_year, count(*) from alfresco where cm_created < 'NOW" + endDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -686,12 +686,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // No start date specified, end date inclusive
-        solrStartDate = DEFAULT_START_DATE_YEAR;
-        solrEndDate = "/DAY-35DAYS";
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = DEFAULT_START_DATE_YEAR;
+        endDateExpression = "/DAY-35DAYS";
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created <= 'NOW" + solrEndDate + "' group by cm_created_year";
+        sql = "select cm_created_year, count(*) from alfresco where cm_created <= 'NOW" + endDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -712,12 +712,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date exclusive, no end date specified
-        solrStartDate = "/DAY-5DAYS-1YEAR";
-        solrEndDate = DEFAULT_END_DATE_YEAR;
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "/DAY-5DAYS-1YEAR";
+        endDateExpression = DEFAULT_END_DATE_YEAR;
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created > 'NOW" + solrStartDate + "' group by cm_created_year";
+        sql = "select cm_created_year, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -738,12 +738,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
 
         // Start date inclusive, no end date specified
-        solrStartDate = "-2YEARS-2MONTH/DAY+24HOURS+2MONTHS";
-        solrEndDate = DEFAULT_END_DATE_YEAR;
-        start = parseDateMathAsInstant(solrStartDate);
-        end = parseDateMathAsInstant(solrEndDate);
+        startDateExpression = "-2YEARS-2MONTH/DAY+24HOURS+2MONTHS";
+        endDateExpression = DEFAULT_END_DATE_YEAR;
+        start = parseDateMathAsInstant(startDateExpression);
+        end = parseDateMathAsInstant(endDateExpression);
         numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created >= 'NOW" + solrStartDate + "' group by cm_created_year";
+        sql = "select cm_created_year, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
@@ -990,7 +990,6 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
             Integer createdDocuments = createdDocumentsMap.get(createdDate);
             int createdDocumentsValue = createdDocuments == null ? 0 : createdDocuments.intValue();
-            // FIXME
             if (createdDocumentsValue == 0 && buckets.size() == 1)
             {
                 assertEquals(0, count);
@@ -1086,7 +1085,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         return total;
     }
 
-    private void print (String message)
+    private void print(String message)
     {
         if (debugEnabled)
         {
