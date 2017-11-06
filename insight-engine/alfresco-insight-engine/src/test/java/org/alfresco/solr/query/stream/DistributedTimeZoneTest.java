@@ -115,10 +115,11 @@ public class DistributedTimeZoneTest extends AbstractStreamTest
          for(int i = 0; i <= 4; i++)
          {
              int hour = i == 4 ? (i * 6) - 1: i * 6;
+             int minute = 23 == hour ? 59 : 0;
              LocalDateTime time= LocalDateTime.of(testPresentTime.getYear(),
                                                   testPresentTime.getMonth(),
                                                   testPresentTime.getDayOfMonth(),
-                                                  hour, 0);
+                                                  hour, minute);
              Instant instant = time.toInstant(ZoneOffset.UTC);
              Transaction txn = getTransaction(0, 1);
              Node node = getNode(txn, tzAcl, Node.SolrApiNodeStatus.UPDATED);
