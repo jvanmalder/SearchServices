@@ -88,7 +88,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     private Map<String, Integer> createdDay = new HashMap<>();
     private Map<String, Integer> createdMonth = new HashMap<>();
     private Map<String, Integer> createdYear = new HashMap<>();
-    private boolean debugEnabled = true;
+    private boolean debugEnabled = false;
 
     @Test
     public void testSearch() throws IOException, ParseException
@@ -97,668 +97,618 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         LocalDateTime endDate;
         String startDateExpression;
         String endDateExpression;
-        Instant start;
-        Instant end;
         List<Tuple> buckets;
         int bucketSize;
         int numberOfBuckets;
         String sql;
 
-        // Start date inclusive, end date exclusive
+        // DAY: Start date inclusive, end date exclusive
         startDate = LocalDateTime.of(currentYear, 1, 5, 0, 0, 0);
         endDate = startDate.plus(7, MONTHS).plus(3, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created < '" + end.toString() + "' group by cm_created_day";
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
+        sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + localDateTimeString(startDate) + "' and cm_created < '" + localDateTimeString(endDate) + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, false, start, end);
+        assertExpectedBucketContent_Day(buckets, true, false, startDate, endDate);
 
 
         // Start date inclusive, end date exclusive
         startDateExpression = "/YEAR+5MONTHS/DAY";
         endDateExpression = "/DAY+1MONTH-2DAYS";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
         sql = "select cm_created_day, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' and cm_created < 'NOW" + endDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, false, start, end);
+        assertExpectedBucketContent_Day(buckets, true, false, startDate, endDate);
 
 
-        // Start date inclusive, end date inclusive
+        // DAY: Start date inclusive, end date inclusive
         startDate = LocalDateTime.of(currentYear, 6, 1, 0, 0, 0);
         endDate = startDate.plus(1, MONTHS).plus(8, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created <= '" + end.toString() + "' group by cm_created_day";
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
+        sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + localDateTimeString(startDate) + "' and cm_created <= '" + localDateTimeString(endDate) + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, true, start, end);
+        assertExpectedBucketContent_Day(buckets, true, true, startDate, endDate);
 
 
-        // Start date inclusive, end date inclusive
+        // DAY: Start date inclusive, end date inclusive
         startDateExpression = "/DAY-2MONTHS";
         endDateExpression = "/MONTH+20DAYS";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
         sql = "select cm_created_day, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' and cm_created <= 'NOW" + endDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, true, start, end);
+        assertExpectedBucketContent_Day(buckets, true, true, startDate, endDate);
 
 
-        // Start date exclusive, end date inclusive
+        // DAY: Start date exclusive, end date inclusive
         startDate = LocalDateTime.of(currentYear, 4, 1, 0, 0, 0);
         endDate = startDate.plus(1, MONTHS).plus(10, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created <= '" + end.toString() + "' group by cm_created_day";
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
+        sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + localDateTimeString(startDate) + "' and cm_created <= '" + localDateTimeString(endDate) + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, false, true, start, end);
+        assertExpectedBucketContent_Day(buckets, false, true, startDate, endDate);
 
 
-        // Start date exclusive, end date inclusive
+        // DAY: Start date exclusive, end date inclusive
         startDateExpression = "-60DAYS/MONTH";
         endDateExpression = "+1MONTH/DAY";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
         sql = "select cm_created_day, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' and cm_created <= 'NOW" + endDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, false, true, start, end);
+        assertExpectedBucketContent_Day(buckets, false, true, startDate, endDate);
 
 
-        // Start date exclusive, end date exclusive
+        // DAY: Start date exclusive, end date exclusive
         startDate = LocalDateTime.of(currentYear, 9, 7, 0, 0, 0);
         endDate = startDate.plus(2, MONTHS).plus(5, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created < '" + end.toString() + "' group by cm_created_day";
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
+        sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + localDateTimeString(startDate) + "' and cm_created < '" + localDateTimeString(endDate) + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, false, false, start, end);
+        assertExpectedBucketContent_Day(buckets, false, false, startDate, endDate);
 
 
-        // Start date exclusive, end date exclusive
+        // DAY: Start date exclusive, end date exclusive
         startDateExpression = "/MONTH+2DAYS";
         endDateExpression = "+5DAYS/DAY";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
         sql = "select cm_created_day, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' and cm_created < 'NOW" + endDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, false, false, start, end);
+        assertExpectedBucketContent_Day(buckets, false, false, startDate, endDate);
 
 
-        // No start date specified, end date exclusive
+        // DAY: No start date specified, end date exclusive
         startDate = parseDateMathAsLocalDateTime(DEFAULT_START_DATE_DAY);
         endDate = startDate.plus(2, MONTHS).plus(15, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created < '" + end.toString() + "' group by cm_created_day";
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
+        sql = "select cm_created_day, count(*) from alfresco where cm_created < '" + localDateTimeString(endDate) + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, false, start, end);
+        assertExpectedBucketContent_Day(buckets, true, false, startDate, endDate);
 
 
-        // No start date specified, end date exclusive
+        // DAY: No start date specified, end date exclusive
         startDateExpression = DEFAULT_START_DATE_DAY;
         endDateExpression = "/DAY+1MONTH";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
         sql = "select cm_created_day, count(*) from alfresco where cm_created < 'NOW" + endDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, false, start, end);
+        assertExpectedBucketContent_Day(buckets, true, false, startDate, endDate);
 
 
-        // No start date specified, end date inclusive
+        // DAY: No start date specified, end date inclusive
         startDate = parseDateMathAsLocalDateTime(DEFAULT_START_DATE_DAY);
         endDate = startDate.plus(0, MONTHS).plus(9, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created <= '" + end.toString() + "' group by cm_created_day";
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
+        sql = "select cm_created_day, count(*) from alfresco where cm_created <= '" + localDateTimeString(endDate) + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, true, start, end);
+        assertExpectedBucketContent_Day(buckets, true, true, startDate, endDate);
 
 
-        // No start date specified, end date inclusive
+        // DAY: No start date specified, end date inclusive
         startDateExpression = DEFAULT_START_DATE_DAY;
         endDateExpression = "/DAY+15DAYS";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
         sql = "select cm_created_day, count(*) from alfresco where cm_created <= 'NOW" + endDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, true, start, end);
+        assertExpectedBucketContent_Day(buckets, true, true, startDate, endDate);
 
 
-        // Start date exclusive, no end date specified
+        // DAY: Start date exclusive, no end date specified
         endDate = parseDateMathAsLocalDateTime(DEFAULT_END_DATE_DAY);
-        end = localDateTimeAsInstant(endDate);
         startDate = endDate.toLocalDate().atStartOfDay().minus(1, MONTHS).minus(5, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + start.toString() + "' group by cm_created_day";
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
+        sql = "select cm_created_day, count(*) from alfresco where cm_created > '" + localDateTimeString(startDate) + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, false, true, start, end, false);
+        assertExpectedBucketContent_Day(buckets, false, true, startDate, endDate, false);
 
 
-        // Start date exclusive, no end date specified
+        // DAY: Start date exclusive, no end date specified
         startDateExpression = "/DAY-5DAYS";
         endDateExpression = DEFAULT_END_DATE_DAY;
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
         sql = "select cm_created_day, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, false, true, start, end, false);
+        assertExpectedBucketContent_Day(buckets, false, true, startDate, endDate, false);
 
 
-        // Start date inclusive, no end date specified
+        // DAY: Start date inclusive, no end date specified
         endDate = parseDateMathAsLocalDateTime(DEFAULT_END_DATE_DAY);
-        end = localDateTimeAsInstant(endDate);
         startDate = endDate.toLocalDate().atStartOfDay().minus(3, MONTHS).minus(18, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
-        sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + start.toString() + "' group by cm_created_day";
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
+        sql = "select cm_created_day, count(*) from alfresco where cm_created >= '" + localDateTimeString(startDate) + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, true, start, end, false);
+        assertExpectedBucketContent_Day(buckets, true, true, startDate, endDate, false);
 
 
-        // Start date inclusive, no end date specified
+        // DAY: Start date inclusive, no end date specified
         startDateExpression = "-1MONTH/DAY+24HOURS";
         endDateExpression = DEFAULT_END_DATE_DAY;
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
         sql = "select cm_created_day, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, true, start, end, false);
+        assertExpectedBucketContent_Day(buckets, true, true, startDate, endDate, false);
 
 
-        // No start date specified, no end date specified
-        start = parseDateMathAsInstant(DEFAULT_START_DATE_DAY);
-        end = parseDateMathAsInstant(DEFAULT_END_DATE_DAY);
-        numberOfBuckets = calculateNumberOfBuckets_Day(start, end);
+        // DAY: No start date specified, no end date specified
+        startDate = parseDateMathAsLocalDateTime(DEFAULT_START_DATE_DAY);
+        endDate = parseDateMathAsLocalDateTime(DEFAULT_END_DATE_DAY);
+        numberOfBuckets = calculateNumberOfBuckets_Day(startDate, endDate);
         sql = "select cm_created_day, count(*) from alfresco group by cm_created_day";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Day(buckets, true, true, start, end, false);
+        assertExpectedBucketContent_Day(buckets, true, true, startDate, endDate, false);
 
 
-        // Start date inclusive, end date exclusive
+        // MONTH: Start date inclusive, end date exclusive
         startDate = LocalDateTime.of(currentYear, 5, 2, 0, 0, 0);
         endDate = startDate.plus(6, MONTHS).plus(10, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created < '" + end.toString() + "' group by cm_created_month";
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
+        sql = "select cm_created_month, count(*) from alfresco where cm_created >= '" + localDateTimeString(startDate) + "' and cm_created < '" + localDateTimeString(endDate) + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, false, start, end);
+        assertExpectedBucketContent_Month(buckets, true, false, startDate, endDate);
 
 
-        // Start date inclusive, end date exclusive
+        // MONTH: Start date inclusive, end date exclusive
         startDateExpression = "/YEAR+2MONTHS+18DAYS/DAY";
         endDateExpression = "/DAY+1MONTH+4DAYS";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
         sql = "select cm_created_month, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' and cm_created < 'NOW" + endDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, false, start, end);
+        assertExpectedBucketContent_Month(buckets, true, false, startDate, endDate);
 
 
-        // Start date inclusive, end date inclusive
+        // MONTH: Start date inclusive, end date inclusive
         startDate = LocalDateTime.of(currentYear, 10, 8, 0, 0, 0);
         endDate = startDate.plus(2, MONTHS).minus(22, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created <= '" + end.toString() + "' group by cm_created_month";
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
+        sql = "select cm_created_month, count(*) from alfresco where cm_created >= '" + localDateTimeString(startDate) + "' and cm_created <= '" + localDateTimeString(endDate) + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, true, start, end);
+        assertExpectedBucketContent_Month(buckets, true, true, startDate, endDate);
 
 
-        // Start date inclusive, end date inclusive
+        // MONTH: Start date inclusive, end date inclusive
         startDateExpression = "/DAY-1MONTHS+18DAYS";
         endDateExpression = "/MONTH+20DAYS+1MONTH";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
         sql = "select cm_created_month, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' and cm_created <= 'NOW" + endDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, true, start, end);
+        assertExpectedBucketContent_Month(buckets, true, true, startDate, endDate);
 
 
-        // Start date exclusive, end date inclusive
+        // MONTH: Start date exclusive, end date inclusive
         startDate = LocalDateTime.of(currentYear, 5, 19, 0, 0, 0);
         endDate = startDate.plus(2, MONTHS).minus(13, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created <= '" + end.toString() + "' group by cm_created_month";
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
+        sql = "select cm_created_month, count(*) from alfresco where cm_created > '" + localDateTimeString(startDate) + "' and cm_created <= '" + localDateTimeString(endDate) + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, false, true, start, end);
+        assertExpectedBucketContent_Month(buckets, false, true, startDate, endDate);
 
 
-        // Start date exclusive, end date inclusive
+        // MONTH: Start date exclusive, end date inclusive
         startDateExpression = "-55DAYS/MONTH+3DAYS";
         endDateExpression = "+1MONTH/DAY-5DAYS";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
         sql = "select cm_created_month, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' and cm_created <= 'NOW" + endDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, false, true, start, end);
+        assertExpectedBucketContent_Month(buckets, false, true, startDate, endDate);
 
 
-        // Start date exclusive, end date exclusive
+        // MONTH: Start date exclusive, end date exclusive
         startDate = LocalDateTime.of(currentYear, 10, 4, 0, 0, 0);
         endDate = startDate.plus(1, MONTHS).minus(11, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created < '" + end.toString() + "' group by cm_created_month";
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
+        sql = "select cm_created_month, count(*) from alfresco where cm_created > '" + localDateTimeString(startDate) + "' and cm_created < '" + localDateTimeString(endDate) + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, false, false, start, end);
+        assertExpectedBucketContent_Month(buckets, false, false, startDate, endDate);
 
 
-        // Start date exclusive, end date exclusive
+        // MONTH: Start date exclusive, end date exclusive
         startDateExpression = "/MONTH+2DAYS-3MONTHS";
         endDateExpression = "+5DAYS/DAY+1MONTH";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
         sql = "select cm_created_month, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' and cm_created < 'NOW" + endDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, false, false, start, end);
+        assertExpectedBucketContent_Month(buckets, false, false, startDate, endDate);
 
 
-        // No start date specified, end date exclusive
+        // MONTH: No start date specified, end date exclusive
         startDate = parseDateMathAsLocalDateTime(DEFAULT_START_DATE_MONTH);
         endDate = startDate.plus(4, MONTHS).minus(20, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created < '" + end.toString() + "' group by cm_created_month";
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
+        sql = "select cm_created_month, count(*) from alfresco where cm_created < '" + localDateTimeString(endDate) + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, false, start, end);
+        assertExpectedBucketContent_Month(buckets, true, false, startDate, endDate);
 
 
-        // No start date specified, end date exclusive
+        // MONTH: No start date specified, end date exclusive
         startDateExpression = DEFAULT_START_DATE_MONTH;
         endDateExpression = "/DAY+2MONTH-3DAYS";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
         sql = "select cm_created_month, count(*) from alfresco where cm_created < 'NOW" + endDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, false, start, end);
+        assertExpectedBucketContent_Month(buckets, true, false, startDate, endDate);
 
 
-        // No start date specified, end date inclusive
+        // MONTH: No start date specified, end date inclusive
         startDate = parseDateMathAsLocalDateTime(DEFAULT_START_DATE_MONTH);
         endDate = startDate.plus(0, MONTHS).plus(18, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created <= '" + end.toString() + "' group by cm_created_month";
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
+        sql = "select cm_created_month, count(*) from alfresco where cm_created <= '" + localDateTimeString(endDate) + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, true, start, end);
+        assertExpectedBucketContent_Month(buckets, true, true, startDate, endDate);
 
 
-        // No start date specified, end date inclusive
+        // MONTH: No start date specified, end date inclusive
         startDateExpression = DEFAULT_START_DATE_MONTH;
         endDateExpression = "/DAY-15DAYS+3MONTHS";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
         sql = "select cm_created_month, count(*) from alfresco where cm_created <= 'NOW" + endDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, true, start, end);
+        assertExpectedBucketContent_Month(buckets, true, true, startDate, endDate);
 
 
-        // Start date exclusive, no end date specified
+        // MONTH: Start date exclusive, no end date specified
         endDate = parseDateMathAsLocalDateTime(DEFAULT_END_DATE_MONTH);
-        end = localDateTimeAsInstant(endDate);
         startDate = endDate.toLocalDate().atStartOfDay().minus(3, MONTHS).plus(18, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created > '" + start.toString() + "' group by cm_created_month";
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
+        sql = "select cm_created_month, count(*) from alfresco where cm_created > '" + localDateTimeString(startDate) + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, false, true, start, end, false);
+        assertExpectedBucketContent_Month(buckets, false, true, startDate, endDate, false);
 
 
-        // Start date exclusive, no end date specified
+        // MONTH: Start date exclusive, no end date specified
         startDateExpression = "/DAY-25DAYS";
         endDateExpression = DEFAULT_END_DATE_MONTH;
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
         sql = "select cm_created_month, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, false, true, start, end, false);
+        assertExpectedBucketContent_Month(buckets, false, true, startDate, endDate, false);
 
 
-        // Start date inclusive, no end date specified
+        // MONTH: Start date inclusive, no end date specified
         endDate = parseDateMathAsLocalDateTime(DEFAULT_END_DATE_MONTH);
-        end = localDateTimeAsInstant(endDate);
         startDate = endDate.toLocalDate().atStartOfDay().minus(1, MONTHS).minus(5, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
-        sql = "select cm_created_month, count(*) from alfresco where cm_created >= '" + start.toString() + "' group by cm_created_month";
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
+        sql = "select cm_created_month, count(*) from alfresco where cm_created >= '" + localDateTimeString(startDate) + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, true, start, end, false);
+        assertExpectedBucketContent_Month(buckets, true, true, startDate, endDate, false);
 
 
-        // Start date inclusive, no end date specified
+        // MONTH: Start date inclusive, no end date specified
         startDateExpression = "-2MONTH/DAY+24HOURS";
         endDateExpression = DEFAULT_END_DATE_MONTH;
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
         sql = "select cm_created_month, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, true, start, end, false);
+        assertExpectedBucketContent_Month(buckets, true, true, startDate, endDate, false);
 
 
-        // No start date specified, no end date specified
-        start = parseDateMathAsInstant(DEFAULT_START_DATE_MONTH);
-        end = parseDateMathAsInstant(DEFAULT_END_DATE_MONTH);
-        numberOfBuckets = calculateNumberOfBuckets_Month(start, end);
+        // MONTH: No start date specified, no end date specified
+        startDate = parseDateMathAsLocalDateTime(DEFAULT_START_DATE_MONTH);
+        endDate = parseDateMathAsLocalDateTime(DEFAULT_END_DATE_MONTH);
+        numberOfBuckets = calculateNumberOfBuckets_Month(startDate, endDate);
         sql = "select cm_created_month, count(*) from alfresco group by cm_created_month";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Month(buckets, true, true, start, end, false);
+        assertExpectedBucketContent_Month(buckets, true, true, startDate, endDate, false);
 
 
-        // Start date inclusive, end date exclusive
+        // YEAR: Start date inclusive, end date exclusive
         startDate = LocalDateTime.of(currentYear + 1, 8, 3, 0, 0, 0);
         endDate = startDate.plus(1, YEARS).minus(7, MONTHS).minus(13, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created < '" + end.toString() + "' group by cm_created_year";
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
+        sql = "select cm_created_year, count(*) from alfresco where cm_created >= '" + localDateTimeString(startDate) + "' and cm_created < '" + localDateTimeString(endDate) + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, false, start, end);
+        assertExpectedBucketContent_Year(buckets, true, false, startDate, endDate);
 
 
-        // Start date inclusive, end date exclusive
+        // YEAR: Start date inclusive, end date exclusive
         startDateExpression = "/YEAR-2YEARS+1MONTHS+3DAYS/DAY";
         endDateExpression = "/DAY+10MONTH-10DAYS";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
         sql = "select cm_created_year, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' and cm_created < 'NOW" + endDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, false, start, end);
+        assertExpectedBucketContent_Year(buckets, true, false, startDate, endDate);
 
 
-        // Start date inclusive, end date inclusive
+        // YEAR: Start date inclusive, end date inclusive
         startDate = LocalDateTime.of(currentYear, 2, 1, 0, 0, 0);
         endDate = startDate.plus(1, YEARS).plus(10, MONTHS).minus(30, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created >= '" + start.toString() + "' and cm_created <= '" + end.toString() + "' group by cm_created_year";
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
+        sql = "select cm_created_year, count(*) from alfresco where cm_created >= '" + localDateTimeString(startDate) + "' and cm_created <= '" + localDateTimeString(endDate) + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, true, start, end);
+        assertExpectedBucketContent_Year(buckets, true, true, startDate, endDate);
 
 
-        // Start date inclusive, end date inclusive
+        // YEAR: Start date inclusive, end date inclusive
         startDateExpression = "/DAY-3YEARS+12DAYS";
         endDateExpression = "/MONTH+4MONTH-20DAYS";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
         sql = "select cm_created_year, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' and cm_created <= 'NOW" + endDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, true, start, end);
+        assertExpectedBucketContent_Year(buckets, true, true, startDate, endDate);
 
 
-        // Start date exclusive, end date inclusive
+        // YEAR: Start date exclusive, end date inclusive
         startDate = LocalDateTime.of(currentYear - 1, 2, 10, 0, 0, 0);
         endDate = startDate.plus(10, MONTHS).plus(1, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created <= '" + end.toString() + "' group by cm_created_year";
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
+        sql = "select cm_created_year, count(*) from alfresco where cm_created > '" + localDateTimeString(startDate) + "' and cm_created <= '" + localDateTimeString(endDate) + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, false, true, start, end);
+        assertExpectedBucketContent_Year(buckets, false, true, startDate, endDate);
 
 
-        // Start date exclusive, end date inclusive
+        // YEAR: Start date exclusive, end date inclusive
         startDateExpression = "/YEAR+3DAYS-3MONTHS";
         endDateExpression = "+1MONTH/DAY-5DAYS";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
         sql = "select cm_created_year, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' and cm_created <= 'NOW" + endDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, false, true, start, end);
+        assertExpectedBucketContent_Year(buckets, false, true, startDate, endDate);
 
 
-        // Start date exclusive, end date exclusive
+        // YEAR: Start date exclusive, end date exclusive
         startDate = LocalDateTime.of(currentYear, 8, 8, 0, 0, 0);
         endDate = startDate.plus(5, MONTHS).plus(10, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created > '" + start.toString() + "' and cm_created < '" + end.toString() + "' group by cm_created_year";
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
+        sql = "select cm_created_year, count(*) from alfresco where cm_created > '" + localDateTimeString(startDate) + "' and cm_created < '" + localDateTimeString(endDate) + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, false, false, start, end);
+        assertExpectedBucketContent_Year(buckets, false, false, startDate, endDate);
 
 
         // Start date exclusive, end date exclusive
         startDateExpression = "/YEAR-3MONTHS";
         endDateExpression = "+25DAYS/DAY+3MONTH";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
         sql = "select cm_created_year, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' and cm_created < 'NOW" + endDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, false, false, start, end);
+        assertExpectedBucketContent_Year(buckets, false, false, startDate, endDate);
 
 
-        // No start date specified, end date exclusive
+        // YEAR: No start date specified, end date exclusive
         startDate = parseDateMathAsLocalDateTime(DEFAULT_START_DATE_YEAR);
         endDate = startDate.plus(1, YEARS).plus(4, MONTHS).minus(30, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created < '" + end.toString() + "' group by cm_created_year";
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
+        sql = "select cm_created_year, count(*) from alfresco where cm_created < '" + localDateTimeString(endDate) + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, false, start, end);
+        assertExpectedBucketContent_Year(buckets, true, false, startDate, endDate);
 
 
-        // No start date specified, end date exclusive
+        // YEAR: No start date specified, end date exclusive
         startDateExpression = DEFAULT_START_DATE_YEAR;
         endDateExpression = "/YEAR+23DAY+2MONTH";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
         sql = "select cm_created_year, count(*) from alfresco where cm_created < 'NOW" + endDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, false, start, end);
+        assertExpectedBucketContent_Year(buckets, true, false, startDate, endDate);
 
 
-        // No start date specified, end date inclusive
+        // YEAR: No start date specified, end date inclusive
         startDate = parseDateMathAsLocalDateTime(DEFAULT_START_DATE_YEAR);
         endDate = startDate.plus(2, YEARS).minus(3, MONTHS).plus(2, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        end = localDateTimeAsInstant(endDate);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created <= '" + end.toString() + "' group by cm_created_year";
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
+        sql = "select cm_created_year, count(*) from alfresco where cm_created <= '" + localDateTimeString(endDate) + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, true, start, end);
+        assertExpectedBucketContent_Year(buckets, true, true, startDate, endDate);
 
 
-        // No start date specified, end date inclusive
+        // YEAR: No start date specified, end date inclusive
         startDateExpression = DEFAULT_START_DATE_YEAR;
         endDateExpression = "/DAY-35DAYS";
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
         sql = "select cm_created_year, count(*) from alfresco where cm_created <= 'NOW" + endDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, true, start, end);
+        assertExpectedBucketContent_Year(buckets, true, true, startDate, endDate);
 
 
-        // Start date exclusive, no end date specified
+        // YEAR: Start date exclusive, no end date specified
         endDate = parseDateMathAsLocalDateTime(DEFAULT_END_DATE_YEAR);
-        end = localDateTimeAsInstant(endDate);
         startDate = endDate.toLocalDate().atStartOfDay().minus(12, MONTHS).plus(5, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created > '" + start.toString() + "' group by cm_created_year";
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
+        sql = "select cm_created_year, count(*) from alfresco where cm_created > '" + localDateTimeString(startDate) + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, false, true, start, end, false);
+        assertExpectedBucketContent_Year(buckets, false, true, startDate, endDate, false);
 
 
-        // Start date exclusive, no end date specified
+        // YEAR: Start date exclusive, no end date specified
         startDateExpression = "/DAY-5DAYS-1YEAR";
         endDateExpression = DEFAULT_END_DATE_YEAR;
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
         sql = "select cm_created_year, count(*) from alfresco where cm_created > 'NOW" + startDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, false, true, start, end, false);
+        assertExpectedBucketContent_Year(buckets, false, true, startDate, endDate, false);
 
 
-        // Start date inclusive, no end date specified
+        // YEAR: Start date inclusive, no end date specified
         endDate = parseDateMathAsLocalDateTime(DEFAULT_END_DATE_YEAR);
-        end = localDateTimeAsInstant(endDate);
         startDate = endDate.toLocalDate().atStartOfDay().minus(2, YEARS).plus(3, MONTHS).minus(15, DAYS);
-        start = localDateTimeAsInstant(startDate);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
-        sql = "select cm_created_year, count(*) from alfresco where cm_created >= '" + start.toString() + "' group by cm_created_year";
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
+        sql = "select cm_created_year, count(*) from alfresco where cm_created >= '" + localDateTimeString(startDate) + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, true, start, end, false);
+        assertExpectedBucketContent_Year(buckets, true, true, startDate, endDate, false);
 
 
-        // Start date inclusive, no end date specified
+        // YEAR: Start date inclusive, no end date specified
         startDateExpression = "-2YEARS-2MONTH/DAY+24HOURS+2MONTHS";
         endDateExpression = DEFAULT_END_DATE_YEAR;
-        start = parseDateMathAsInstant(startDateExpression);
-        end = parseDateMathAsInstant(endDateExpression);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
+        startDate = parseDateMathAsLocalDateTime(startDateExpression);
+        endDate = parseDateMathAsLocalDateTime(endDateExpression);
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
         sql = "select cm_created_year, count(*) from alfresco where cm_created >= 'NOW" + startDateExpression + "' group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, true, start, end, false);
+        assertExpectedBucketContent_Year(buckets, true, true, startDate, endDate, false);
 
 
-        // No start date specified, no end date specified
-        start = parseDateMathAsInstant(DEFAULT_START_DATE_YEAR);
-        end = parseDateMathAsInstant(DEFAULT_END_DATE_YEAR);
-        numberOfBuckets = calculateNumberOfBuckets_Year(start, end);
+        // YEAR: No start date specified, no end date specified
+        startDate = parseDateMathAsLocalDateTime(DEFAULT_START_DATE_YEAR);
+        endDate = parseDateMathAsLocalDateTime(DEFAULT_END_DATE_YEAR);
+        numberOfBuckets = calculateNumberOfBuckets_Year(startDate, endDate);
         sql = "select cm_created_year, count(*) from alfresco group by cm_created_year";
         buckets = executeQuery(sql);
         bucketSize = buckets.size();
         assertBucketSize(numberOfBuckets, bucketSize);
-        assertExpectedBucketContent_Year(buckets, true, true, start, end, false);
+        assertExpectedBucketContent_Year(buckets, true, true, startDate, endDate, false);
     }
 
     @Before
@@ -782,7 +732,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
                         try
                         {
                             LocalDateTime localDateTime = LocalDateTime.of(year + i, j, k, l, 0, 0);
-                            setProperties(localDateTimeAsInstant(localDateTime).toString());
+                            setProperties(localDateTimeString(localDateTime));
 
                             String localDate = localDateTime.toLocalDate().toString();
                             String dayKey = localDate;
@@ -835,8 +785,10 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         print("\n" + "Data created for _year: " + createdYear);
 
         print("\n" + "Start indexing test data...");
+
         indexTransaction(txn, nodes, nodeMetaDatas);
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), totalNumberOfDocuments - failedDateCount + 4, 200000);
+
         print("\n" + "Test data indexing completed..." + "\n");
     }
 
@@ -858,17 +810,18 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     private List<Tuple> executeQuery(String sql) throws IOException
     {
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
-        return sqlQuery(sql, alfrescoJson);
+        List<Tuple> response = sqlQuery(sql, alfrescoJson);
+        return response;
     }
 
-    private int calculateNumberOfBuckets_Day(Instant startDate, Instant endDate)
+    private int calculateNumberOfBuckets_Day(LocalDateTime startDate, LocalDateTime endDate)
     {
         double days = (double) startDate.until(endDate, HOURS) / hours;
         int numberOfBuckets = (int) Math.ceil(days);
-        return numberOfBuckets > 0 ? numberOfBuckets : 0;
+        return Math.max(numberOfBuckets, 0);
     }
 
-    private int calculateNumberOfBuckets_Month(Instant startDate, Instant endDate)
+    private int calculateNumberOfBuckets_Month(LocalDateTime startDate, LocalDateTime endDate)
     {
         LocalDateTime difference = difference(startDate, endDate);
 
@@ -878,10 +831,11 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         }
 
         int numberOfBuckets = difference.getYear() * 12 + difference.getMonthValue() + (difference.getDayOfMonth() > 0 ? 1 : 0);
-        return numberOfBuckets > 0 ? numberOfBuckets : 0;
+
+        return Math.max(numberOfBuckets, 0);
     }
 
-    private int calculateNumberOfBuckets_Year(Instant startDate, Instant endDate)
+    private int calculateNumberOfBuckets_Year(LocalDateTime startDate, LocalDateTime endDate)
     {
         LocalDateTime difference = difference(startDate, endDate);
 
@@ -891,36 +845,30 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         }
 
         int numberOfBuckets = difference.getYear() + (difference.getMonthValue() > 0 ? 1 : 0);
-        return numberOfBuckets > 0 ? numberOfBuckets : 0;
+
+        return Math.max(numberOfBuckets, 0);
     }
 
-    private LocalDateTime difference(Instant startDate, Instant endDate)
+    private LocalDateTime difference(LocalDateTime startDate, LocalDateTime endDate)
     {
-        LocalDateTime end = LocalDateTime.ofInstant(endDate, zoneId);
-        LocalDateTime start = LocalDateTime.ofInstant(startDate, zoneId);
-        LocalDateTime difference = end.minusYears(start.getYear());
-        difference = difference.minusMonths(start.getMonthValue());
-        difference = difference.minusDays(start.getDayOfMonth());
-        difference = difference.minusHours(start.getHour());
-        difference = difference.minusMinutes(start.getMinute());
-        difference = difference.minusSeconds(start.getSecond());
-        return difference.minusNanos(start.getNano());
+        LocalDateTime difference = endDate.minusYears(startDate.getYear());
+        difference = difference.minusMonths(startDate.getMonthValue());
+        difference = difference.minusDays(startDate.getDayOfMonth());
+        difference = difference.minusHours(startDate.getHour());
+        difference = difference.minusMinutes(startDate.getMinute());
+        difference = difference.minusSeconds(startDate.getSecond());
+        return difference.minusNanos(startDate.getNano());
     }
 
     private LocalDateTime parseDateMathAsLocalDateTime(String expression) throws ParseException
     {
-        Instant instant = parseDateMathAsInstant(expression);
+        Instant instant = dateMathParser.parseMath(expression).toInstant();
         return LocalDateTime.ofInstant(instant, zoneId);
     }
 
-    private Instant parseDateMathAsInstant(String expression) throws ParseException
+    private String localDateTimeString(LocalDateTime localDateTime)
     {
-        return dateMathParser.parseMath(expression).toInstant();
-    }
-
-    private Instant localDateTimeAsInstant(LocalDateTime localDateTime)
-    {
-        return localDateTime.toInstant(UTC);
+        return localDateTime.toInstant(UTC).toString();
     }
 
     private void assertBucketSize(int expectedBucketSize, int actualBucketSize)
@@ -937,44 +885,41 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         assertEquals(expectedBucketContentSize, actualBucketContentSize);
     }
 
-    private void assertExpectedBucketContent_Day(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end)
+    private void assertExpectedBucketContent_Day(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, LocalDateTime start, LocalDateTime end)
     {
         assertExpectedBucketContent_Day(buckets, startInclusive, endInclusive, start, end, true);
     }
 
-    private void assertExpectedBucketContent_Day(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateSpecified)
+    private void assertExpectedBucketContent_Day(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, LocalDateTime start, LocalDateTime end, boolean endDateSpecified)
     {
         assertExpectedBucketContent(buckets, startInclusive, endInclusive, start, end, endDateSpecified, "day", createdDay);
     }
 
-    private void assertExpectedBucketContent_Month(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end)
+    private void assertExpectedBucketContent_Month(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, LocalDateTime start, LocalDateTime end)
     {
         assertExpectedBucketContent_Month(buckets, startInclusive, endInclusive, start, end, true);
     }
 
-    private void assertExpectedBucketContent_Month(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateSpecified)
+    private void assertExpectedBucketContent_Month(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, LocalDateTime start, LocalDateTime end, boolean endDateSpecified)
     {
         assertExpectedBucketContent(buckets, startInclusive, endInclusive, start, end, endDateSpecified, "month", createdMonth);
     }
 
-    private void assertExpectedBucketContent_Year(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end)
+    private void assertExpectedBucketContent_Year(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, LocalDateTime start, LocalDateTime end)
     {
         assertExpectedBucketContent_Year(buckets, startInclusive, endInclusive, start, end, true);
     }
 
-    private void assertExpectedBucketContent_Year(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateSpecified)
+    private void assertExpectedBucketContent_Year(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, LocalDateTime start, LocalDateTime end, boolean endDateSpecified)
     {
         assertExpectedBucketContent(buckets, startInclusive, endInclusive, start, end, endDateSpecified, "year", createdYear);
     }
 
-    private void assertExpectedBucketContent(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, Instant start, Instant end, boolean endDateSpecified, String type, Map<String, Integer> createdDocumentsMap)
+    private void assertExpectedBucketContent(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, LocalDateTime startDate, LocalDateTime endDate, boolean endDateSpecified, String type, Map<String, Integer> createdDocumentsMap)
     {
-        LocalDateTime endDate = LocalDateTime.ofInstant(end, zoneId);
-        LocalDateTime startDate = LocalDateTime.ofInstant(start, zoneId);
-
-        print("\n"+ "Start date: " + start);
-        print("End date: " + end);
-        print("Difference between end date and start date: " + difference(start, end));
+        print("\n"+ "Start date: " + startDate);
+        print("End date: " + endDate);
+        print("Difference between end date and start date: " + difference(startDate, endDate));
 
         ListIterator<Tuple> iterator = buckets.listIterator();
         int counter = 0;
@@ -1077,11 +1022,13 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     private int getTotalNumberOfDocumentsForRange(LocalDateTime start, LocalDateTime end)
     {
         int total = 0;
+
         for (LocalDateTime date = start; date.isBefore(end); date = date.plusDays(1))
         {
             Integer numberOfDocuments = createdDay.get(date.toLocalDate().toString());
             total += (numberOfDocuments == null ? 0 : numberOfDocuments);
         }
+
         return total;
     }
 
