@@ -53,15 +53,21 @@
                <outputDirectory>${project.build.testOutputDirectory}/test-files/collection1/conf/</outputDirectory>
             </configuration>
          </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>create-test-jar</id>
+                  <goals>
+                     <goal>test-jar</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
       </plugins>
    </build>
    <dependencies>
-      <dependency>
-         <groupId>org.alfresco</groupId>
-         <artifactId>insight-jdbc</artifactId>
-         <version>1.0</version>
-         <scope>test</scope>
-      </dependency>
       <dependency>
          <groupId>org.alfresco</groupId>
          <artifactId>alfresco-search</artifactId>
@@ -94,6 +100,5 @@
          <version>${solr.version}</version>
          <scope>test</scope>
       </dependency>
-
    </dependencies>
 </project>
