@@ -13,6 +13,7 @@
    <name>Alfresco Insight Engine JDBC Driver</name>
    <properties>
       <solr.version>6.6.0</solr.version>
+      <alfresco.search.dependency.version>1.2.0-SNAPSHOT</alfresco.search.dependency.version>
       <alfresco.insight.engine.version>1.0.0-SNAPSHOT</alfresco.insight.engine.version>
    </properties>
    <distributionManagement>
@@ -64,6 +65,25 @@
                </execution>
             </executions>
          </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>resource-dependencies</id>
+                  <phase>process-test-resources</phase>
+                  <goals>
+                     <goal>unpack-dependencies</goal>
+                  </goals>
+                  <configuration>
+                     <includeArtifactIds>alfresco-insight-engine</includeArtifactIds>
+                     <includeTypes>test-jar</includeTypes>
+                     <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+                     <includes>**/test-files/</includes>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
       </plugins>
    </build>
    <dependencies>
@@ -76,6 +96,40 @@
          <groupId>org.alfresco</groupId>
          <artifactId>alfresco-insight-engine</artifactId>
          <version>${alfresco.insight.engine.version}</version>
+      </dependency>
+      <!-- Provided dependencies -->
+      <dependency>
+         <groupId>org.apache.solr</groupId>
+         <artifactId>solr-analysis-extras</artifactId>
+         <version>${solr.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.solr</groupId>
+         <artifactId>solr-langid</artifactId>
+         <version>${solr.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <!-- Test dependencies -->
+      <dependency>
+         <groupId>org.apache.solr</groupId>
+         <artifactId>solr-test-framework</artifactId>
+         <version>${solr.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>alfresco-search</artifactId>
+         <version>${alfresco.search.dependency.version}</version>
+         <scope>test</scope>
+         <type>test-jar</type>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>alfresco-insight-engine</artifactId>
+         <version>${alfresco.insight.engine.version}</version>
+         <scope>test</scope>
+         <type>test-jar</type>
       </dependency>
    </dependencies>
 </project>
