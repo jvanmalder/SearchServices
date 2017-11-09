@@ -244,7 +244,8 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
               }
             }
 
-            String timezone = properties.getProperty("tz");
+            String timezone = properties.getProperty("timeZone");
+            String now = properties.getProperty("time");
             if(timeSeries)
             {
                 tupleStream = handleTimeSeries(zk,
@@ -257,7 +258,8 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
                       limitInt,
                       havingPredicate,
                       filterData,
-                      timezone);
+                      timezone,
+                      now);
             } else {
 
               tupleStream = handleGroupByFacet(zk,
@@ -746,7 +748,8 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
                                        final int limit,
                                        final String havingPredicate,
                                        final String filterData,
-                                       final String tz) throws IOException {
+                                       final String tz,
+                                       final String now) throws IOException {
 
     FilterData fdata  = new FilterData(filterData);
 
@@ -852,7 +855,7 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
         format = "YYYY";
     }
 
-    TupleStream tupleStream = new TimeSeriesStream(zkHost, collection, solrParams, metrics, bucket, start, end, gap, format, tz);
+    TupleStream tupleStream = new TimeSeriesStream(zkHost, collection, solrParams, metrics, bucket, start, end, gap, format, tz, now);
 
     if(havingPredicate != null) {
       BooleanEvaluator booleanOperation = (BooleanEvaluator)streamFactory.constructEvaluator(StreamExpressionParser.parse(havingPredicate));

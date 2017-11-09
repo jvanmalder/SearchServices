@@ -27,14 +27,9 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
@@ -126,9 +121,9 @@ public class DistributedTimeZoneTest extends AbstractStreamTest
              Transaction txn = getTransaction(0, 1);
              Node node = getNode(txn, tzAcl, Node.SolrApiNodeStatus.UPDATED);
              NodeMetaData nodeMeta = getNodeMetaData(node, txn, tzAcl, "marty", null, false);
-             System.out.println(instant.toString());
+
              nodeMeta.getProperties().put(ContentModel.PROP_CREATED,
-                     new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class,instant.toString())));
+                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, instant.toString())));
              nodeMeta.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("NowTime" + i));
              nodeMeta.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("Dr who" + i));
              
@@ -143,31 +138,32 @@ public class DistributedTimeZoneTest extends AbstractStreamTest
              
              waitForDocCountAllCores(waitForQuery, 1, 80000);
          }
-         
-         
     }
+
+    private long now() {
+        TimeZone timeZone = TimeZone.getTimeZone("UTC");
+        Calendar cal = Calendar.getInstance(timeZone);
+        cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), 10, 0, 0);
+        return cal.getTime().getTime();
+    }
+
     @Test
     public void testSearch() throws Exception
     {
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         String timeJson = "{ \"authorities\": [ \"mcfly\" ], \"tenants\": [ \"\" ] }";
         String sql = "select cm_created_day, count(*) as total from alfresco where cm_created >= 'NOW/DAY' group by cm_created_day";
-
+        long now = now();
         List<Tuple> tuples = sqlQuery(sql, timeJson);
-        System.out.println("UTC " + tuples.get(0).get("total"));
+        System.out.println("UTC " + tuples.get(0).get("total") + ":" + tuples.size());
         assertEquals(new Long(24), tuples.get(0).get("total"));
 
-        tuples = sqlQuery(sql, timeJson, "America/Los_Angeles");
+        tuples = sqlQuery(sql, timeJson, "America/Los_Angeles", now);
         System.out.println("LA " + tuples.get(0).get("total"));
         assertEquals(new Long(16), tuples.get(0).get("total"));
 
-        tuples = sqlQuery(sql, timeJson, "Japan");
+        tuples = sqlQuery(sql, timeJson, "Japan", now);
         System.out.println("Japan " + tuples.get(0).get("total"));
-        //Below works before 3 UTC
-        //assertEquals(new Long(16), tuples.get(0).get("total"));
-        //Below works after 3 UTC
-        //assertEquals(new Long(9), tuples.get(0).get("total"));
-        
+        assertEquals(new Long(16), tuples.get(0).get("total"));
     }
 
 }

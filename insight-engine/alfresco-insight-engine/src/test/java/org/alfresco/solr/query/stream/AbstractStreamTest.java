@@ -44,6 +44,8 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
+import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.junit.Before;
 
@@ -222,16 +224,20 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
 
     public List<Tuple> sqlQuery(String sql, String alfrescoJson) throws IOException 
     {
-        return sqlQuery(sql, alfrescoJson, "UTC");
+        return sqlQuery(sql, alfrescoJson, "UTC", 0);
     }
-    public List<Tuple> sqlQuery(String sql, String alfrescoJson, String timezone) throws IOException 
+    public List<Tuple> sqlQuery(String sql, String alfrescoJson, String timezone, long now) throws IOException
     {
         System.out.println("######### AFRESCO SQL #######");
         System.out.println(sql);
         List<SolrClient> clusterClients = getClusterClients();
         String shards = getShardsString(clusterClients);
 
-        SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards, "tz", timezone);
+        SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards, "timeZone", timezone);
+
+        if(now > 0) {
+           ((ModifiableSolrParams)params).set("time", Long.toString(now));
+        }
 
         AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
         tupleStream.setJson(alfrescoJson);

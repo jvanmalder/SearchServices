@@ -55,6 +55,7 @@ import org.apache.solr.client.solrj.io.stream.expr.StreamExpressionValue;
 import org.apache.solr.client.solrj.io.stream.expr.StreamFactory;
 import org.apache.solr.client.solrj.io.stream.metrics.Metric;
 import org.apache.solr.client.solrj.request.QueryRequest;
+import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
@@ -69,6 +70,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
     private String format;
     private DateTimeFormatter formatter;
     private String timeZone;
+    private String now;
     
     private Metric[] metrics;
     private List<Tuple> tuples = new ArrayList();
@@ -89,9 +91,10 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
                            String end,
                            String gap,
                            String format,
-                           String timeZone) throws IOException
+                           String timeZone,
+                           String now) throws IOException
    {
-       init(collection, params, field, metrics, start, end, gap, format, timeZone,zkHost);
+       init(collection, params, field, metrics, start, end, gap, format, timeZone, now, zkHost);
    }
    
     public TimeSeriesStream(StreamExpression expression, StreamFactory factory) throws IOException
@@ -105,8 +108,10 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         StreamExpressionNamedParameter gapExpression = factory.getNamedOperand(expression, "gap");
         StreamExpressionNamedParameter formatExpression = factory.getNamedOperand(expression, "format");
         StreamExpressionNamedParameter qExpression = factory.getNamedOperand(expression, "q");
-        StreamExpressionNamedParameter timeZoneExpression = factory.getNamedOperand(expression, "TZ");
-        
+        StreamExpressionNamedParameter timeZoneExpression = factory.getNamedOperand(expression, "timeZone");
+        StreamExpressionNamedParameter nowExpression = factory.getNamedOperand(expression, "time");
+
+
         StreamExpressionNamedParameter zkHostExpression = factory.getNamedOperand(expression, "zkHost");
         List<StreamExpression> metricExpressions = factory.getExpressionOperandsRepresentingTypes(expression, Expressible.class, Metric.class);
 
@@ -142,11 +147,17 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         {
             format = ((StreamExpressionValue)formatExpression.getParameter()).getValue();
         }
-        
+
         String timeZone = null;
         if(timeZoneExpression != null)
         {
             timeZone = ((StreamExpressionValue)timeZoneExpression.getParameter()).getValue();
+        }
+
+        String now = null;
+        if(nowExpression != null)
+        {
+            now = ((StreamExpressionValue)nowExpression.getParameter()).getValue();
         }
        
         // Collection Name
@@ -176,7 +187,12 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         // pull out known named params
         ModifiableSolrParams params = new ModifiableSolrParams();
         for(StreamExpressionNamedParameter namedParam : namedParams){
-            if(!namedParam.getName().equals("zkHost") && !namedParam.getName().equals("start") && !namedParam.getName().equals("end") && !namedParam.getName().equals("gap"))
+            if(!namedParam.getName().equals("zkHost")
+                && !namedParam.getName().equals("start")
+                && !namedParam.getName().equals("end")
+                && !namedParam.getName().equals("timeZone")
+                && !namedParam.getName().equals("time")
+                && !namedParam.getName().equals("gap"))
             {
                 params.add(namedParam.getName(), namedParam.getParameter().toString().trim());
             }
@@ -203,7 +219,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         }
         */
         // We've got all the required items
-        init(collectionName, params, field, metrics, start, end, gap, format, timeZone, zkHost);
+        init(collectionName, params, field, metrics, start, end, gap, format, timeZone, now, zkHost);
     }
 
     public String getCollection() {
@@ -239,6 +255,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
                       String gap,
                       String format,
                       String timeZone,
+                      String now,
                       String zkHost) throws IOException {
       this.zkHost  = zkHost;
       this.collection = collection;
@@ -258,6 +275,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
           formatter = DateTimeFormatter.ofPattern(format, Locale.ROOT);
       }
       this.timeZone = timeZone;
+      this.now = now;
     }
 
     @Override
@@ -288,11 +306,17 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         expression.addParameter(new StreamExpressionNamedParameter("gap", gap));
         expression.addParameter(new StreamExpressionNamedParameter("field", field));
         expression.addParameter(new StreamExpressionNamedParameter("format", format));
+
         if(null != timeZone)
         {
-            expression.addParameter(new StreamExpressionNamedParameter("TZ", timeZone));
+            expression.addParameter(new StreamExpressionNamedParameter("timeZone", timeZone));
         }
-        
+
+        if(null != now)
+        {
+            expression.addParameter(new StreamExpressionNamedParameter("time", now));
+        }
+
         // zkHost
         expression.addParameter(new StreamExpressionNamedParameter("zkHost", zkHost));
         
@@ -348,9 +372,18 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
             }
         }
 
-        String json = getJsonFacetString(field, metrics, start, end, gap, timeZone);
+        String json = getJsonFacetString(field, metrics, start, end, gap);
         paramsLoc.set("json.facet", json);
         paramsLoc.set("rows", "0");
+
+        if(this.timeZone != null) {
+            paramsLoc.set(CommonParams.TZ, timeZone);
+        }
+
+        if(this.now != null) {
+            paramsLoc.set(CommonParams.NOW, now);
+        }
+
         RequestFactory requestFactory = (RequestFactory)streamContext.get("request-factory");
         QueryRequest request = requestFactory.getRequest(paramsLoc);
 
@@ -397,10 +430,10 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         }
     }
     
-    private String getJsonFacetString(String field, Metric[] _metrics, String start, String end, String gap, String timeZone)
+    private String getJsonFacetString(String field, Metric[] _metrics, String start, String end, String gap)
     {
         StringBuilder buf = new StringBuilder();
-        appendJson(buf, _metrics, field, start, end, gap,timeZone);
+        appendJson(buf, _metrics, field, start, end, gap);
         return "{"+buf.toString()+"}";
     }
     
@@ -410,8 +443,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
                             String field,
                             String start,
                             String end,
-                            String gap,
-                            String timeZone) {
+                            String gap) {
         buf.append('"');
         buf.append("timeseries");
         buf.append('"');
@@ -423,11 +455,6 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         buf.append(",\"start\":\""+start+"\"");
         buf.append(",\"end\":\""+end+"\"");
         buf.append(",\"gap\":\""+gap+"\"");
-        if(null != timeZone)
-        {
-            buf.append(",\"TZ\":\""+timeZone+"\"");
-        }
-        
         buf.append(",\"facet\":{");
         int metricCount = 0;
         for(Metric metric : _metrics) 
@@ -450,6 +477,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
                            String field,
                            Metric[] metrics) {
         Tuple tuple = new Tuple(new HashMap());
+        System.out.println("######### response:"+response);
         NamedList facets = (NamedList)response.get("facets");
         fillTuples(tuples, tuple, facets, field, metrics);
     }
