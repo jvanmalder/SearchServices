@@ -88,23 +88,23 @@ class FilterData {
 
         public Filter(String f) {
             String[] parts = f.split("~");
-            if(parts[0].equals("i")) {
+            if (!parts[0].equals("i"))
+            {
                 inclusiveStart = false;
-            } else {
-                inclusiveStart = true;
             }
 
-            if(!parts[1].equals("*")) {
+            if (!parts[1].equals("*"))
+            {
                 start = parts[1];
             }
 
-            if(parts[2].equals("i")) {
+            if (!parts[2].equals("i"))
+            {
                 inclusiveEnd = false;
-            } else {
-                inclusiveEnd = true;
             }
 
-            if(!parts[3].equals("*")) {
+            if (!parts[3].equals("*"))
+            {
                 end = parts[3];
             }
         }

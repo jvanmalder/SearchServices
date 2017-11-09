@@ -18,6 +18,22 @@
  */
 package org.alfresco.solr.query.stream;
 
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
+import java.util.TimeZone;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.solr.client.ContentPropertyValue;
@@ -33,15 +49,6 @@ import org.apache.solr.client.solrj.io.Tuple;
 import org.joda.time.DateTime;
 import org.junit.Rule;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.sql.*;
-import java.util.*;
-import java.util.Date;
-
-import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
-import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 
 /**
  * @author Joel
@@ -204,10 +211,12 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
         }
 
 
-        //Test no date predicate / should default to past 30 days
+        //Test no date predicate / should default to past 1 month
         sql = "select cm_created_day, count(*) as ct from alfresco where cm_owner='vigo' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 31);
+        LocalDate now = LocalDate.now();
+        // end date is exclusive for method "until" so we have to add 1 day
+        assertTrue(tuples.size() == (now.minusMonths(1).until(now, ChronoUnit.DAYS) + 1));
 
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         calendar.setTime(new Date());
