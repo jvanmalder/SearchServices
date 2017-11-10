@@ -26,9 +26,7 @@ import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
-import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.search.impl.QueryParserUtils;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.solr.AlfrescoSolrDataModel;
@@ -43,6 +41,7 @@ import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.request.SolrQueryRequest;
+import org.apache.solr.schema.IndexSchema;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -100,23 +99,27 @@ public class AlfrescoStreamHandler extends StreamHandler
      * @param field - the name of a field.
      * @return a field in the index
      */
-    public static String getIndexedField(String field) {
 
-        AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+    public static String getIndexedField(String field, IndexSchema schema) {
+        if (schema.getFieldOrNull(field) != null) {
+            return field;
+        } else {
+            AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+            Pair<String, String> fieldNameAndEnding = QueryParserUtils.extractFieldNameAndEnding(field.replace('_', ':'));
+            PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, dataModel.getNamespaceDAO(), dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT), fieldNameAndEnding.getFirst());
 
-        Pair<String, String> fieldNameAndEnding = QueryParserUtils.extractFieldNameAndEnding(field.replace('_', ':'));
-        PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, dataModel.getNamespaceDAO(), dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT), fieldNameAndEnding.getFirst());
-
-        if(propertyDef != null)
-        {
-            AlfrescoSolrDataModel.IndexedField fields = dataModel.getQueryableFields(propertyDef.getName(), dataModel.getTextField(fieldNameAndEnding.getSecond()), AlfrescoSolrDataModel.FieldUse.SORT);
-            if(fields.getFields().size() > 0)
+            if(propertyDef != null)
             {
-                return fields.getFields().get(0).getField();
+                AlfrescoSolrDataModel.IndexedField fields = dataModel.getQueryableFields(propertyDef.getName(), dataModel.getTextField(fieldNameAndEnding.getSecond()), AlfrescoSolrDataModel.FieldUse.SORT);
+                if(fields.getFields().size() > 0)
+                {
+                    return fields.getFields().get(0).getField();
+                }
             }
+            return dataModel.mapNonPropertyFields(field);
         }
-        return dataModel.mapNonPropertyFields(field);
     }
+
 
 
     public static class AlfrescoRequestFactory extends RequestFactory

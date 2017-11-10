@@ -31,10 +31,7 @@ import org.apache.calcite.runtime.Hook;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.Pair;
 
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Relational expression representing a scan of a table in Solr
@@ -59,25 +56,32 @@ class SolrToEnumerableConverter extends ConverterImpl implements EnumerableRel {
     final BlockBuilder list = new BlockBuilder();
     final SolrRel.Implementor solrImplementor = new SolrRel.Implementor();
     solrImplementor.visitChild(0, getInput());
+    FilterData filterData = solrImplementor.getFilterData();
+    String serializedFilterData = null;
+    if(filterData != null) {
+      serializedFilterData = filterData.toString();
+    } else {
+      serializedFilterData = "";
+    }
     final RelDataType rowType = getRowType();
     final PhysType physType = PhysTypeImpl.of(implementor.getTypeFactory(), rowType, pref.prefer(JavaRowFormat.ARRAY));
     final Expression table = list.append("table", solrImplementor.table.getExpression(SolrTable.SolrQueryable.class));
     final Expression fields =
         list.append("fields",
             constantArrayList(
-                Pair.zip(generateFields(SolrRules.solrFieldNames(rowType), solrImplementor.fieldMappings),
-                    new AbstractList<Class>() {
-                      @Override
-                      public Class get(int index) {
-                        return physType.fieldClass(index);
-                      }
+                    Pair.zip(generateFields(SolrRules.solrFieldNames(rowType), solrImplementor.fieldMappings),
+                            new AbstractList<Class>() {
+                              @Override
+                              public Class get(int index) {
+                                return physType.fieldClass(index);
+                              }
 
-                      @Override
-                      public int size() {
-                        return rowType.getFieldCount();
-                      }
-                    }),
-                Pair.class));
+                              @Override
+                              public int size() {
+                                return rowType.getFieldCount();
+                              }
+                            }),
+                    Pair.class));
     final Expression query = list.append("query", Expressions.constant(solrImplementor.query, String.class));
     final Expression orders = list.append("orders", constantArrayList(solrImplementor.orders, Pair.class));
     final Expression buckets = list.append("buckets", constantArrayList(solrImplementor.buckets, String.class));
@@ -85,8 +89,10 @@ class SolrToEnumerableConverter extends ConverterImpl implements EnumerableRel {
     final Expression limit = list.append("limit", Expressions.constant(solrImplementor.limitValue));
     final Expression negativeQuery = list.append("negativeQuery", Expressions.constant(Boolean.toString(solrImplementor.negativeQuery), String.class));
     final Expression havingPredicate = list.append("havingTest", Expressions.constant(solrImplementor.havingPredicate, String.class));
+    final Expression fdata = list.append("filterData", Expressions.constant(serializedFilterData, String.class));
+
     Expression enumerable = list.append("enumerable", Expressions.call(table, SolrMethod.SOLR_QUERYABLE_QUERY.method,
-        fields, query, orders, buckets, metricPairs, limit, negativeQuery, havingPredicate));
+        fields, query, orders, buckets, metricPairs, limit, negativeQuery, havingPredicate, fdata));
     Hook.QUERY_PLAN.run(query);
     list.add(Expressions.return_(null, enumerable));
     return implementor.result(physType, list.toBlock());

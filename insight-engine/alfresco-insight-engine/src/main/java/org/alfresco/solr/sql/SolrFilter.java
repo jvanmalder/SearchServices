@@ -30,6 +30,7 @@ import org.apache.calcite.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Implementation of a {@link org.apache.calcite.rel.core.Filter} relational expression in Solr.
@@ -62,7 +63,9 @@ class SolrFilter extends Filter implements SolrRel {
     } else {
       Translator translator = new Translator(SolrRules.solrFieldNames(getRowType()));
       String query = translator.translateMatch(condition);
+      FilterData filterData = translator.getFilterData();
       implementor.addQuery(query);
+      implementor.setFilterData(filterData);
       implementor.setNegativeQuery(translator.negativeQuery);
     }
   }
@@ -70,15 +73,20 @@ class SolrFilter extends Filter implements SolrRel {
   private static class Translator {
 
     private final List<String> fieldNames;
+    private final FilterData filterData = new FilterData();
     public boolean negativeQuery = true;
 
     Translator(List<String> fieldNames) {
       this.fieldNames = fieldNames;
     }
 
+    public FilterData getFilterData() {
+      return this.filterData;
+    }
+
     private String translateMatch(RexNode condition) {
       if (condition.getKind().belongsTo(SqlKind.COMPARISON)) {
-        return translateComparison(condition);
+        return translateComparison(condition, filterData);
       } else if (condition.isA(SqlKind.AND)) {
         return "(" + translateAnd(condition) + ")";
       } else if (condition.isA(SqlKind.OR)) {
@@ -122,7 +130,7 @@ class SolrFilter extends Filter implements SolrRel {
       }
     }
 
-    private String translateComparison(RexNode node) {
+    private String translateComparison(RexNode node, FilterData filterData) {
       Pair<String, RexLiteral> binaryTranslated = null;
       if (((RexCall) node).getOperands().size() == 2) {
         binaryTranslated = translateBinary((RexCall) node);
@@ -130,7 +138,7 @@ class SolrFilter extends Filter implements SolrRel {
 
       switch (node.getKind()) {
         case NOT:
-          return "-" + translateComparison(((RexCall) node).getOperands().get(0));
+          return "-" + translateComparison(((RexCall) node).getOperands().get(0), filterData);
         case EQUALS:
           String terms = binaryTranslated.getValue().toString().trim();
           terms = terms.replace("'","");
@@ -145,14 +153,18 @@ class SolrFilter extends Filter implements SolrRel {
           return "-(" + binaryTranslated.getKey() + ":" + binaryTranslated.getValue() + ")";
         case LESS_THAN:
           this.negativeQuery = false;
+          filterData.addEnd(binaryTranslated.getKey(), binaryTranslated.getValue().toString(), false);
           return "(" + binaryTranslated.getKey() + ": [ * TO " + binaryTranslated.getValue() + " })";
         case LESS_THAN_OR_EQUAL:
+          filterData.addEnd(binaryTranslated.getKey(), binaryTranslated.getValue().toString(), true);
           this.negativeQuery = false;
           return "(" + binaryTranslated.getKey() + ": [ * TO " + binaryTranslated.getValue() + " ])";
         case GREATER_THAN:
+          filterData.addStart(binaryTranslated.getKey(), binaryTranslated.getValue().toString(), false);
           this.negativeQuery = false;
           return "(" + binaryTranslated.getKey() + ": { " + binaryTranslated.getValue() + " TO * ])";
         case GREATER_THAN_OR_EQUAL:
+          filterData.addStart(binaryTranslated.getKey(), binaryTranslated.getValue().toString(), true);
           this.negativeQuery = false;
           return "(" + binaryTranslated.getKey() + ": [ " + binaryTranslated.getValue() + " TO * ])";
         default:

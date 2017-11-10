@@ -414,6 +414,8 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         buf.append('"');
         buf.append(":{");
         buf.append("\"type\":\"range\"");
+        buf.append(",\"include\":\"upper\"");
+        buf.append(",\"limit\":1000");
         buf.append(",\"field\":\""+field+"\"");
         buf.append(",\"start\":\""+start+"\"");
         buf.append(",\"end\":\""+end+"\"");
@@ -460,7 +462,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         {
             NamedList bucket = (NamedList)allBuckets.get(b);
             Object val = bucket.get("val");
-            
+
             if(formatter != null)
             {
                 LocalDateTime localDateTime = LocalDateTime.ofInstant(((java.util.Date) val).toInstant(), ZoneOffset.UTC);
@@ -474,14 +476,16 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
                 String identifier = metric.getIdentifier();
                 if(!identifier.startsWith("count("))
                 {
-                    double d = (double)bucket.get("facet_"+m);
-                    if(metric.outputLong)
-                    {
-                        t.put(identifier, Math.round(d));
-                    } 
-                    else
-                    {
-                        t.put(identifier, d);
+                    Object o = bucket.get("facet_"+m);
+                    if(o != null) {
+                        double d = (double) o;
+                        if (metric.outputLong) {
+                            t.put(identifier, Math.round(d));
+                        } else {
+                            t.put(identifier, d);
+                        }
+                    } else {
+                        t.put(identifier, null);
                     }
                     ++m;
                 }
