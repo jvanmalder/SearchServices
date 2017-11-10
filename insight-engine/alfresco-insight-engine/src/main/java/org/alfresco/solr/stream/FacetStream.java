@@ -347,7 +347,7 @@ public class FacetStream extends TupleStream implements Expressible  {
       solrClient = cache.getHttpSolrClient(shards.get(0));
 
       if(shards.size() > 1) {
-        String shardsParam = getShardString(shards);
+        String shardsParam = StreamUtils.getShardString(shards);
         paramsLoc.add("shards", shardsParam);
         paramsLoc.add("distrib", "true");
       }
@@ -373,17 +373,6 @@ public class FacetStream extends TupleStream implements Expressible  {
     } catch (Exception e) {
       throw new IOException(e);
     }
-  }
-
-  private String getShardString(List<String> shards) {
-    StringBuilder builder = new StringBuilder();
-    for(String shard : shards) {
-      if(builder.length() > 0) {
-        builder.append(",");
-      }
-      builder.append(shard);
-    }
-    return builder.toString();
   }
 
   public void close() throws IOException {

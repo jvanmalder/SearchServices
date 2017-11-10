@@ -18,14 +18,13 @@
  */
 package org.alfresco.solr.query.stream;
 
+import java.util.List;
+
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.junit.Rule;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * @author Joel
@@ -127,14 +126,9 @@ public class DistributedSqlTest extends AbstractStreamTest
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
 
-        try {
-            sql = "select DBID from alfresco where `cm:content.size` > 0";
-            tuples = sqlQuery(sql, alfrescoJson);
-            assertFalse("Should never get here",true);
-        } catch (IOException sqe) {
-            //The sql above produces the following invalid query q=(cm:content.size:+{+0+TO+*+])
-            assertTrue(sqe.getMessage().contains("no viable alternative at input"));
-        }
+        sql = "select DBID from alfresco where `cm:content.size` > 0";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
 
         sql = "select DBID from alfresco where `cm:content.size` = '[1 TO *]'";
         tuples = sqlQuery(sql, alfrescoJson);

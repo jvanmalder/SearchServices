@@ -16,6 +16,7 @@
  */
 package org.alfresco.solr.sql;
 
+import static org.apache.solr.common.params.CommonParams.NOW;
 import static org.apache.solr.common.params.CommonParams.SORT;
 
 import java.io.IOException;
@@ -60,8 +61,6 @@ import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.TranslatableTable;
 import org.apache.calcite.schema.impl.AbstractTableQueryable;
 import org.apache.calcite.util.Pair;
-import org.apache.lucene.search.Query;
-import org.apache.solr.util.DateMathParser;
 import org.apache.solr.client.solrj.io.comp.ComparatorOrder;
 import org.apache.solr.client.solrj.io.comp.FieldComparator;
 import org.apache.solr.client.solrj.io.comp.MultipleFieldComparator;
@@ -101,13 +100,12 @@ import org.apache.solr.client.solrj.io.stream.metrics.SumMetric;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.handler.StreamHandler;
-import java.util.*;
 
 
 /**
  * Table based on a Solr collection
  */
-class SolrTable extends AbstractQueryableTable implements TranslatableTable {
+public class SolrTable extends AbstractQueryableTable implements TranslatableTable {
 
   private static final StreamFactory streamFactory = new StreamFactory()
           .withFunctionName("alfrescoExpr", AlfrescoExpressionStream.class)
@@ -135,6 +133,13 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
           .withFunctionName("lteq", LessThanEqualToEvaluator.class)
           .withFunctionName("gteq", GreaterThanEqualToEvaluator.class)
           .withFunctionName("top", RankStream.class);
+
+  public static final String DEFAULT_START_DATE_DAY = "/DAY-1MONTH";
+  public static final String DEFAULT_START_DATE_MONTH = "/MONTH-24MONTHS";
+  public static final String DEFAULT_START_DATE_YEAR = "/YEAR-5YEARS";
+  public static final String DEFAULT_END_DATE_DAY = "/DAY+1DAY-1SECOND";
+  public static final String DEFAULT_END_DATE_MONTH = "/MONTH+1MONTH-1SECOND";
+  public static final String DEFAULT_END_DATE_YEAR = "/YEAR+1YEAR-1SECOND";
 
   private static final String DEFAULT_QUERY = "*";
   public static final int DEFAULT_LIMIT = 1000;
@@ -166,7 +171,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
             Collections.emptyList(), null, null, null, null);
   }
 
-  /** Executes a Solr query on the underlying table.
+  /** 
+   * Executes a Solr query on the underlying table.
    *
    * @param properties Connections properties
    * @param fields List of fields to project
@@ -238,8 +244,11 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
               }
             }
 
-            if(timeSeries) {
-              tupleStream = handleTimeSeries(zk,
+            String timezone = properties.getProperty("timeZone");
+            String now = properties.getProperty("time");
+            if(timeSeries)
+            {
+                tupleStream = handleTimeSeries(zk,
                       collection,
                       fields,
                       q,
@@ -248,7 +257,9 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                       metricPairs,
                       limitInt,
                       havingPredicate,
-                      filterData);
+                      filterData,
+                      timezone,
+                      now);
             } else {
 
               tupleStream = handleGroupByFacet(zk,
@@ -259,7 +270,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                       buckets,
                       metricPairs,
                       limitInt,
-                      havingPredicate);
+                      havingPredicate,
+                      timezone);
 
             }
           }
@@ -665,7 +677,8 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                          final List<String> bucketFields,
                                          final List<Pair<String, String>> metricPairs,
                                          final int limit,
-                                         final String havingPredicate) throws IOException {
+                                         final String havingPredicate,
+                                         final String timezone) throws IOException {
 
 
     Map<String, Class> fmap = new HashMap();
@@ -734,7 +747,9 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
                                        final List<Pair<String, String>> metricPairs,
                                        final int limit,
                                        final String havingPredicate,
-                                       final String filterData) throws IOException {
+                                       final String filterData,
+                                       final String tz,
+                                       final String now) throws IOException {
 
     FilterData fdata  = new FilterData(filterData);
 
@@ -782,15 +797,13 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
         if(start != null) {
             start = start.replace("'", "");
         } else {
-            start = "NOW/DAY-30DAYS";
+            start = NOW + DEFAULT_START_DATE_DAY;
         }
 
       if(end != null) {
         end = end.replace("'", "");
       } else {
-        GregorianCalendar cal = new GregorianCalendar();
-        cal.setTime(new Date());
-        end = cal.get(Calendar.YEAR)+"-"+pad((cal.get(Calendar.MONTH)+1))+"-"+pad(cal.get(Calendar.DAY_OF_MONTH))+"T23:59:59Z";
+        end = NOW + DEFAULT_END_DATE_DAY;
       }
 
     } else if(bucket.endsWith("_month")) {
@@ -806,15 +819,13 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
         if(start != null) {
             start = start.replace("'", "");
         } else {
-            start = "NOW/MONTH-24MONTHS";
+            start = NOW + DEFAULT_START_DATE_MONTH;
         }
 
         if(end != null) {
             end = end.replace("'", "");
         } else {
-            GregorianCalendar cal = new GregorianCalendar();
-            cal.setTime(new Date());
-            end = cal.get(Calendar.YEAR)+"-"+(cal.get(Calendar.MONTH)+1)+"-"+cal.getActualMaximum(cal.DAY_OF_MONTH)+"T23:59:59Z";
+            end = NOW + DEFAULT_END_DATE_MONTH;
         }
 
         format = "YYYY-MM";
@@ -832,21 +843,19 @@ class SolrTable extends AbstractQueryableTable implements TranslatableTable {
         if(start != null) {
             start = start.replace("'", "");
         } else {
-            start = "NOW/YEAR-5YEARS";
+            start = NOW + DEFAULT_START_DATE_YEAR;
         }
 
         if(end != null) {
             end = end.replace("'", "");
         } else {
-            GregorianCalendar cal = new GregorianCalendar();
-            cal.setTime(new Date());
-            end = cal.get(Calendar.YEAR)+"-12-31T23:59:59Z";
+            end = NOW + DEFAULT_END_DATE_YEAR;
         }
 
         format = "YYYY";
     }
 
-    TupleStream tupleStream = new TimeSeriesStream(zkHost, collection, solrParams, metrics, bucket, start, end, gap, format);
+    TupleStream tupleStream = new TimeSeriesStream(zkHost, collection, solrParams, metrics, bucket, start, end, gap, format, tz, now);
 
     if(havingPredicate != null) {
       BooleanEvaluator booleanOperation = (BooleanEvaluator)streamFactory.constructEvaluator(StreamExpressionParser.parse(havingPredicate));

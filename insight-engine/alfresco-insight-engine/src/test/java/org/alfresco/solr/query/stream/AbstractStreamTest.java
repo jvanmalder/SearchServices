@@ -44,14 +44,18 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
+import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.junit.Before;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.*;
 
@@ -208,6 +212,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     {
         return new Date(new GregorianCalendar(year, month, day, 10, 0).getTimeInMillis());
     }
+    
     /**
      * Build a sql query with alfresco user authentication and parses the response
      * back into tuples.
@@ -216,13 +221,23 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
      * @return List<Tuple>
      * @throws IOException if error
      */
-    public List<Tuple> sqlQuery(String sql, String alfrescoJson) throws IOException {
+
+    public List<Tuple> sqlQuery(String sql, String alfrescoJson) throws IOException 
+    {
+        return sqlQuery(sql, alfrescoJson, "UTC", 0);
+    }
+    public List<Tuple> sqlQuery(String sql, String alfrescoJson, String timezone, long now) throws IOException
+    {
         System.out.println("######### AFRESCO SQL #######");
         System.out.println(sql);
         List<SolrClient> clusterClients = getClusterClients();
         String shards = getShardsString(clusterClients);
 
-        SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards);
+        SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards, "timeZone", timezone);
+
+        if(now > 0) {
+           ((ModifiableSolrParams)params).set("time", Long.toString(now));
+        }
 
         AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
         tupleStream.setJson(alfrescoJson);

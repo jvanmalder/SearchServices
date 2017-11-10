@@ -234,7 +234,7 @@ public class StatsStream extends TupleStream implements Expressible  {
       HttpSolrClient client = cache.getHttpSolrClient(shards.get(0));
 
       if(shards.size() > 1) {
-        String shardsParam = getShardString(shards);
+        String shardsParam = StreamUtils.getShardString(shards);
         paramsLoc.add("shards", shardsParam);
         paramsLoc.add("distrib", "true");
       }
@@ -253,19 +253,6 @@ public class StatsStream extends TupleStream implements Expressible  {
       }
     }
   }
-
-  private String getShardString(List<String> shards) {
-    StringBuilder builder = new StringBuilder();
-    for(String shard : shards) {
-      if(builder.length() > 0) {
-        builder.append(",");
-      }
-      builder.append(shard);
-    }
-    return builder.toString();
-  }
-
-
 
   public void close() throws IOException {
 

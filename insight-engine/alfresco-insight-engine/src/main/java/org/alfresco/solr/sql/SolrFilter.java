@@ -142,7 +142,7 @@ class SolrFilter extends Filter implements SolrRel {
         case EQUALS:
           String terms = binaryTranslated.getValue().toString().trim();
           terms = terms.replace("'","");
-          if (!terms.startsWith("(") && !terms.startsWith("[") && !terms.startsWith("{")) {
+          if (!terms.startsWith("(") && !terms.startsWith("[") && !terms.startsWith("<")) {
             terms = "\"" + terms + "\"";
           }
 
@@ -154,7 +154,7 @@ class SolrFilter extends Filter implements SolrRel {
         case LESS_THAN:
           this.negativeQuery = false;
           filterData.addEnd(binaryTranslated.getKey(), binaryTranslated.getValue().toString(), false);
-          return "(" + binaryTranslated.getKey() + ": [ * TO " + binaryTranslated.getValue() + " })";
+          return "(" + binaryTranslated.getKey() + ": [ * TO " + binaryTranslated.getValue() + " >)";
         case LESS_THAN_OR_EQUAL:
           filterData.addEnd(binaryTranslated.getKey(), binaryTranslated.getValue().toString(), true);
           this.negativeQuery = false;
@@ -162,7 +162,7 @@ class SolrFilter extends Filter implements SolrRel {
         case GREATER_THAN:
           filterData.addStart(binaryTranslated.getKey(), binaryTranslated.getValue().toString(), false);
           this.negativeQuery = false;
-          return "(" + binaryTranslated.getKey() + ": { " + binaryTranslated.getValue() + " TO * ])";
+          return "(" + binaryTranslated.getKey() + ": < " + binaryTranslated.getValue() + " TO * ])";
         case GREATER_THAN_OR_EQUAL:
           filterData.addStart(binaryTranslated.getKey(), binaryTranslated.getValue().toString(), true);
           this.negativeQuery = false;
