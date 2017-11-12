@@ -1,23 +1,347 @@
 {
   "paragraphs": [
     {
+      "title": "Storage Used (Bytes)",
+      "text": "select sum(`cm:content.size`) \nas `Storage Used (bytes)`\nfrom alfresco",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 4.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 84.0,
+              "optionOpen": false
+            }
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "Storage Used (bytes)\n17640184\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109423_-874953438",
+      "id": "20171002-080556_1550956080",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:25 PM",
+      "dateFinished": "Nov 12, 2017 9:36:25 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Total Documents",
+      "text": "select count(*) as Documents from alfresco where TYPE\u003d\u0027cm:content\u0027",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 4.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 108.0,
+              "optionOpen": false
+            }
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "Documents\n189\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109447_-1179674567",
+      "id": "20171002-073934_2145802019",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:25 PM",
+      "dateFinished": "Nov 12, 2017 9:36:25 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Total Folders",
+      "text": "select count(*) as Folders from alfresco where type \u003d \u0027cm:folder\u0027",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 4.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 92.0,
+              "optionOpen": false
+            }
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "Folders\n81\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109447_-1179674567",
+      "id": "20171002-074001_1741036893",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:25 PM",
+      "dateFinished": "Nov 12, 2017 9:36:25 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Count of Content Created In The Last 60 Days",
+      "text": "select cm_created_day, count(*) from alfresco where cm_created \u003e\u003d \u0027NOW/DAY-60DAYS\u0027 group by cm_created_day",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "lineChart",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_created_day\tEXPR$1\n2017-09-13\t0\n2017-09-14\t0\n2017-09-15\t0\n2017-09-16\t0\n2017-09-17\t0\n2017-09-18\t0\n2017-09-19\t0\n2017-09-20\t0\n2017-09-21\t0\n2017-09-22\t0\n2017-09-23\t0\n2017-09-24\t0\n2017-09-25\t0\n2017-09-26\t0\n2017-09-27\t0\n2017-09-28\t0\n2017-09-29\t0\n2017-09-30\t0\n2017-10-01\t0\n2017-10-02\t0\n2017-10-03\t0\n2017-10-04\t0\n2017-10-05\t0\n2017-10-06\t0\n2017-10-07\t0\n2017-10-08\t0\n2017-10-09\t0\n2017-10-10\t0\n2017-10-11\t0\n2017-10-12\t0\n2017-10-13\t0\n2017-10-14\t0\n2017-10-15\t0\n2017-10-16\t0\n2017-10-17\t0\n2017-10-18\t0\n2017-10-19\t0\n2017-10-20\t0\n2017-10-21\t0\n2017-10-22\t0\n2017-10-23\t0\n2017-10-24\t0\n2017-10-25\t0\n2017-10-26\t0\n2017-10-27\t0\n2017-10-28\t0\n2017-10-29\t0\n2017-10-30\t0\n2017-10-31\t0\n2017-11-01\t0\n2017-11-02\t0\n2017-11-03\t0\n2017-11-04\t0\n2017-11-05\t0\n2017-11-06\t0\n2017-11-07\t0\n2017-11-08\t0\n2017-11-09\t0\n2017-11-10\t0\n2017-11-11\t0\n2017-11-12\t686\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109449_-1181983061",
+      "id": "20171005-083941_109499321",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:25 PM",
+      "dateFinished": "Nov 12, 2017 9:36:26 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Volume of Content Created In The Last 60 Days",
+      "text": "select cm_created_day, sum(`cm:content.size`) as `Sum`, max (`cm:content.size`) as `Max`, count(*) as `Count` from alfresco\nwhere cm_created \u003e\u003d \u0027NOW/DAY-60DAYS\u0027 group by cm_created_day\norder by cm_created_day desc",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "lineChart",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_created_day\tSum\tMax\tCount\n2017-11-12\t461007\t10436\t686\n2017-11-11\tnull\tnull\t0\n2017-11-10\tnull\tnull\t0\n2017-11-09\tnull\tnull\t0\n2017-11-08\tnull\tnull\t0\n2017-11-07\tnull\tnull\t0\n2017-11-06\tnull\tnull\t0\n2017-11-05\tnull\tnull\t0\n2017-11-04\tnull\tnull\t0\n2017-11-03\tnull\tnull\t0\n2017-11-02\tnull\tnull\t0\n2017-11-01\tnull\tnull\t0\n2017-10-31\tnull\tnull\t0\n2017-10-30\tnull\tnull\t0\n2017-10-29\tnull\tnull\t0\n2017-10-28\tnull\tnull\t0\n2017-10-27\tnull\tnull\t0\n2017-10-26\tnull\tnull\t0\n2017-10-25\tnull\tnull\t0\n2017-10-24\tnull\tnull\t0\n2017-10-23\tnull\tnull\t0\n2017-10-22\tnull\tnull\t0\n2017-10-21\tnull\tnull\t0\n2017-10-20\tnull\tnull\t0\n2017-10-19\tnull\tnull\t0\n2017-10-18\tnull\tnull\t0\n2017-10-17\tnull\tnull\t0\n2017-10-16\tnull\tnull\t0\n2017-10-15\tnull\tnull\t0\n2017-10-14\tnull\tnull\t0\n2017-10-13\tnull\tnull\t0\n2017-10-12\tnull\tnull\t0\n2017-10-11\tnull\tnull\t0\n2017-10-10\tnull\tnull\t0\n2017-10-09\tnull\tnull\t0\n2017-10-08\tnull\tnull\t0\n2017-10-07\tnull\tnull\t0\n2017-10-06\tnull\tnull\t0\n2017-10-05\tnull\tnull\t0\n2017-10-04\tnull\tnull\t0\n2017-10-03\tnull\tnull\t0\n2017-10-02\tnull\tnull\t0\n2017-10-01\tnull\tnull\t0\n2017-09-30\tnull\tnull\t0\n2017-09-29\tnull\tnull\t0\n2017-09-28\tnull\tnull\t0\n2017-09-27\tnull\tnull\t0\n2017-09-26\tnull\tnull\t0\n2017-09-25\tnull\tnull\t0\n2017-09-24\tnull\tnull\t0\n2017-09-23\tnull\tnull\t0\n2017-09-22\tnull\tnull\t0\n2017-09-21\tnull\tnull\t0\n2017-09-20\tnull\tnull\t0\n2017-09-19\tnull\tnull\t0\n2017-09-18\tnull\tnull\t0\n2017-09-17\tnull\tnull\t0\n2017-09-16\tnull\tnull\t0\n2017-09-15\tnull\tnull\t0\n2017-09-14\tnull\tnull\t0\n2017-09-13\tnull\tnull\t0\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109455_-1182752558",
+      "id": "20171027-154716_370415980",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:26 PM",
+      "dateFinished": "Nov 12, 2017 9:36:26 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Count Of Documents By Site",
+      "text": "select SITE, count(*) as total from alfresco where TYPE \u003d \u0027cm:content\u0027 group by SITE order by total desc",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "runOnSelectionChange": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "multiBarChart": {
+                  "stacked": true
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "SITE",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "total",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {
+          "SITE": [
+            "sales",
+            "marketing",
+            "engineering",
+            "_REPOSITORY_",
+            "swsdp"
+          ]
+        },
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "SITE\ttotal\n_REPOSITORY_\t142\nswsdp\t47\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109460_-1173903334",
+      "id": "20170914-160910_2071356464",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:26 PM",
+      "dateFinished": "Nov 12, 2017 9:36:26 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Volume Stored By Site (Bytes)",
       "text": "SELECT SITE, sum(`cm_content.size`) from alfresco group by SITE",
       "user": "anonymous",
-      "dateUpdated": "Sep 26, 2017 6:04:51 PM",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
       "config": {
+        "lineNumbers": true,
         "tableHide": false,
         "editorSetting": {
           "language": "sql",
           "editOnDblClick": false
         },
-        "colWidth": 12.0,
+        "colWidth": 6.0,
         "editorMode": "ace/mode/sql",
         "editorHide": false,
+        "title": true,
         "results": {
           "0": {
             "graph": {
               "mode": "pieChart",
-              "height": 300.0,
+              "height": 324.0,
               "optionOpen": false
             },
             "helium": {}
@@ -34,32 +358,35 @@
         "msg": [
           {
             "type": "TABLE",
-            "data": "SITE\tEXPR$1\n_REPOSITORY_\t523443\nsurf-config\t0\nswsdp\t17174007\ntwhrahehj\t23212206\n"
+            "data": "SITE\tEXPR$1\n_REPOSITORY_\t466177\nsurf-config\t0\nswsdp\t17174007\n"
           }
         ]
       },
       "apps": [],
-      "jobName": "paragraph_1506440928398_-395347817",
+      "jobName": "paragraph_1510522109468_-1176981325",
       "id": "20170914-113549_1761779241",
-      "dateCreated": "Sep 26, 2017 4:48:48 PM",
-      "dateStarted": "Sep 26, 2017 6:04:52 PM",
-      "dateFinished": "Sep 26, 2017 6:04:53 PM",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:26 PM",
+      "dateFinished": "Nov 12, 2017 9:36:26 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
+      "title": "New Documents By User And Site",
       "text": "select SITE, cm_creator, count(*) as total from alfresco where NOT cm_creator \u003d \u0027System\u0027 group by SITE, cm_creator order by total desc",
       "user": "anonymous",
-      "dateUpdated": "Sep 26, 2017 6:04:52 PM",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
       "config": {
         "tableHide": false,
         "editorSetting": {
           "language": "sql",
           "editOnDblClick": false
         },
-        "colWidth": 12.0,
+        "colWidth": 6.0,
         "editorMode": "ace/mode/sql",
         "editorHide": false,
+        "title": true,
+        "runOnSelectionChange": true,
         "results": {
           "0": {
             "graph": {
@@ -68,7 +395,7 @@
               "optionOpen": false,
               "setting": {
                 "multiBarChart": {
-                  "stacked": false
+                  "stacked": true
                 }
               },
               "commonSetting": {},
@@ -100,7 +427,14 @@
         "enabled": true
       },
       "settings": {
-        "params": {},
+        "params": {
+          "site": [
+            "sales",
+            "engineering",
+            "marketing",
+            "_REPOSITORY_"
+          ]
+        },
         "forms": {}
       },
       "results": {
@@ -108,32 +442,34 @@
         "msg": [
           {
             "type": "TABLE",
-            "data": "SITE\tcm_creator\ttotal\nswsdp\tmjackson\t53\nswsdp\tabeecher\t50\ntwhrahehj\tadmin\t3\n_REPOSITORY_\tadmin\t2\n_REPOSITORY_\tmjackson\t2\n_REPOSITORY_\tabeecher\t1\n"
+            "data": "SITE\tcm_creator\ttotal\nswsdp\tmjackson\t53\nswsdp\tabeecher\t50\n_REPOSITORY_\tmjackson\t2\n_REPOSITORY_\tabeecher\t1\n_REPOSITORY_\tadmin\t1\n"
           }
         ]
       },
       "apps": [],
-      "jobName": "paragraph_1506440928405_-387268090",
+      "jobName": "paragraph_1510522109468_-1176981325",
       "id": "20170914-114835_1610505512",
-      "dateCreated": "Sep 26, 2017 4:48:48 PM",
-      "dateStarted": "Sep 26, 2017 6:04:52 PM",
-      "dateFinished": "Sep 26, 2017 6:04:53 PM",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:26 PM",
+      "dateFinished": "Nov 12, 2017 9:36:26 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
+      "title": "Modified Documents By Site",
       "text": "select SITE, cm_modifier, count(*) as total from alfresco where NOT cm_modifier \u003d \u0027System\u0027 group by SITE, cm_modifier order by total desc",
       "user": "anonymous",
-      "dateUpdated": "Sep 26, 2017 6:04:52 PM",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
       "config": {
         "tableHide": false,
         "editorSetting": {
           "language": "sql",
           "editOnDblClick": false
         },
-        "colWidth": 12.0,
+        "colWidth": 6.0,
         "editorMode": "ace/mode/sql",
         "editorHide": false,
+        "title": true,
         "results": {
           "0": {
             "graph": {
@@ -142,7 +478,7 @@
               "optionOpen": false,
               "setting": {
                 "multiBarChart": {
-                  "stacked": false
+                  "stacked": true
                 }
               },
               "commonSetting": {},
@@ -182,128 +518,32 @@
         "msg": [
           {
             "type": "TABLE",
-            "data": "SITE\tcm_modifier\ttotal\nswsdp\tmjackson\t48\nswsdp\tabeecher\t42\nswsdp\tadmin\t13\ntwhrahehj\tadmin\t3\n_REPOSITORY_\tadmin\t2\n_REPOSITORY_\tmjackson\t2\n_REPOSITORY_\tabeecher\t1\n"
+            "data": "SITE\tcm_modifier\ttotal\nswsdp\tmjackson\t48\nswsdp\tabeecher\t42\nswsdp\tadmin\t13\n_REPOSITORY_\tmjackson\t2\n_REPOSITORY_\tabeecher\t1\n_REPOSITORY_\tadmin\t1\n"
           }
         ]
       },
       "apps": [],
-      "jobName": "paragraph_1506440928405_-387268090",
+      "jobName": "paragraph_1510522109470_-1176596576",
       "id": "20170914-114928_283347429",
-      "dateCreated": "Sep 26, 2017 4:48:48 PM",
-      "dateStarted": "Sep 26, 2017 6:04:53 PM",
-      "dateFinished": "Sep 26, 2017 6:04:53 PM",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:26 PM",
+      "dateFinished": "Nov 12, 2017 9:36:27 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
-      "text": "select SITE, count(*) as total from alfresco where TYPE \u003d \u0027cm:content\u0027 group by SITE order by total desc",
-      "user": "anonymous",
-      "dateUpdated": "Sep 26, 2017 6:04:52 PM",
-      "config": {
-        "colWidth": 12.0,
-        "editorMode": "ace/mode/sql",
-        "results": {
-          "0": {
-            "graph": {
-              "mode": "multiBarChart",
-              "height": 300.0,
-              "optionOpen": false,
-              "setting": {
-                "multiBarChart": {
-                  "stacked": true
-                }
-              },
-              "commonSetting": {},
-              "keys": [
-                {
-                  "name": "SITE",
-                  "index": 0.0,
-                  "aggr": "sum"
-                }
-              ],
-              "groups": [],
-              "values": [
-                {
-                  "name": "total",
-                  "index": 1.0,
-                  "aggr": "sum"
-                }
-              ]
-            },
-            "helium": {}
-          }
-        },
-        "enabled": true,
-        "editorSetting": {
-          "language": "sql",
-          "editOnDblClick": false
-        }
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "SITE\ttotal\n_REPOSITORY_\t152\nswsdp\t47\ntwhrahehj\t2\n"
-          }
-        ]
-      },
-      "apps": [],
-      "jobName": "paragraph_1506440928406_-386113843",
-      "id": "20170914-160910_2071356464",
-      "dateCreated": "Sep 26, 2017 4:48:48 PM",
-      "dateStarted": "Sep 26, 2017 6:04:53 PM",
-      "dateFinished": "Sep 26, 2017 6:04:53 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "select `cm_content.mimetype`, count(*) as total from alfresco where TYPE \u003d \u0027cm:content\u0027 group by `cm_content.mimetype` order by total desc",
-      "user": "anonymous",
-      "dateUpdated": "Sep 26, 2017 6:04:52 PM",
-      "config": {
-        "colWidth": 12.0,
-        "editorMode": "ace/mode/sql",
-        "results": {},
-        "enabled": true,
-        "editorSetting": {
-          "language": "sql",
-          "editOnDblClick": false
-        }
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "cm_content.mimetype\ttotal\ntext/plain\t128\ntext/html\t18\napplication/x-javascript\t10\nimage/jpeg\t10\nimage/png\t10\ntext/xml\t4\napplication/msword\t3\napplication/pdf\t3\napplication/vnd.ms-powerpoint\t2\napplication/json\t1\napplication/vnd.ms-excel\t1\ntext/javascript\t1\nvideo/mp4\t1\n"
-          }
-        ]
-      },
-      "apps": [],
-      "jobName": "paragraph_1506440928406_-386113843",
-      "id": "20170914-161110_326800058",
-      "dateCreated": "Sep 26, 2017 4:48:48 PM",
-      "dateStarted": "Sep 26, 2017 6:04:53 PM",
-      "dateFinished": "Sep 26, 2017 6:04:53 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
+      "title": "Documents By Site \u0026 Mimetype",
       "text": "select SITE, `cm_content.mimetype`, count(*) as total from alfresco where TYPE \u003d \u0027cm:content\u0027 group by SITE, `cm_content.mimetype` order by total desc",
       "user": "anonymous",
-      "dateUpdated": "Sep 26, 2017 6:04:52 PM",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
       "config": {
-        "colWidth": 12.0,
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
         "editorMode": "ace/mode/sql",
+        "title": true,
         "results": {
           "0": {
             "graph": {
@@ -342,10 +582,8 @@
           }
         },
         "enabled": true,
-        "editorSetting": {
-          "language": "sql",
-          "editOnDblClick": false
-        }
+        "tableHide": false,
+        "editorHide": false
       },
       "settings": {
         "params": {},
@@ -356,32 +594,115 @@
         "msg": [
           {
             "type": "TABLE",
-            "data": "SITE\tcm_content.mimetype\ttotal\n_REPOSITORY_\ttext/plain\t128\nswsdp\ttext/html\t12\n_REPOSITORY_\tapplication/x-javascript\t10\nswsdp\timage/png\t10\nswsdp\timage/jpeg\t8\n_REPOSITORY_\ttext/html\t6\n_REPOSITORY_\ttext/xml\t4\nswsdp\tapplication/msword\t3\n_REPOSITORY_\timage/jpeg\t2\nswsdp\tapplication/vnd.ms-powerpoint\t2\ntwhrahehj\tapplication/pdf\t2\n_REPOSITORY_\tapplication/json\t1\n_REPOSITORY_\ttext/javascript\t1\nswsdp\tapplication/pdf\t1\nswsdp\tapplication/vnd.ms-excel\t1\nswsdp\tvideo/mp4\t1\n"
+            "data": "SITE\tcm_content.mimetype\ttotal\n_REPOSITORY_\ttext/plain\t120\nswsdp\ttext/html\t12\n_REPOSITORY_\tapplication/x-javascript\t10\nswsdp\timage/png\t10\nswsdp\timage/jpeg\t8\n_REPOSITORY_\ttext/html\t6\n_REPOSITORY_\ttext/xml\t3\nswsdp\tapplication/msword\t3\n_REPOSITORY_\timage/jpeg\t2\nswsdp\tapplication/vnd.ms-powerpoint\t2\n_REPOSITORY_\tapplication/json\t1\nswsdp\tapplication/pdf\t1\nswsdp\tapplication/vnd.ms-excel\t1\nswsdp\tvideo/mp4\t1\n"
           }
         ]
       },
       "apps": [],
-      "jobName": "paragraph_1506440928406_-386113843",
+      "jobName": "paragraph_1510522109472_-1190832285",
       "id": "20170914-161320_1789718632",
-      "dateCreated": "Sep 26, 2017 4:48:48 PM",
-      "dateStarted": "Sep 26, 2017 6:04:53 PM",
-      "dateFinished": "Sep 26, 2017 6:04:53 PM",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:27 PM",
+      "dateFinished": "Nov 12, 2017 9:36:27 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
+      "title": "All Content By Mimetype",
+      "text": "select `cm_content.mimetype`, count(*) as total from alfresco where TYPE \u003d \u0027cm:content\u0027 group by `cm_content.mimetype` order by total desc",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "pieChart",
+              "height": 324.0,
+              "optionOpen": false,
+              "setting": {
+                "multiBarChart": {
+                  "stacked": false
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "cm_content.mimetype",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "total",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_content.mimetype\ttotal\ntext/plain\t120\ntext/html\t18\napplication/x-javascript\t10\nimage/jpeg\t10\nimage/png\t10\napplication/msword\t3\ntext/xml\t3\napplication/vnd.ms-powerpoint\t2\napplication/json\t1\napplication/pdf\t1\napplication/vnd.ms-excel\t1\nvideo/mp4\t1\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109472_-1190832285",
+      "id": "20170914-161110_326800058",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:27 PM",
+      "dateFinished": "Nov 12, 2017 9:36:27 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Locked Content By User",
       "text": "select cm_lockOwner, count(*) as total from alfresco group by cm_lockOwner",
       "user": "anonymous",
-      "dateUpdated": "Sep 26, 2017 6:04:52 PM",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
       "config": {
-        "colWidth": 12.0,
-        "editorMode": "ace/mode/sql",
-        "results": {},
-        "enabled": true,
         "editorSetting": {
           "language": "sql",
           "editOnDblClick": false
-        }
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "pieChart",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
       },
       "settings": {
         "params": {},
@@ -392,152 +713,415 @@
         "msg": [
           {
             "type": "TABLE",
-            "data": "cm_lockOwner\ttotal\n{en}admin\t1\n"
+            "data": "cm_lockOwner\ttotal\n"
           }
         ]
       },
       "apps": [],
-      "jobName": "paragraph_1506440928407_-386498592",
+      "jobName": "paragraph_1510522109472_-1190832285",
       "id": "20170914-161442_2102184707",
-      "dateCreated": "Sep 26, 2017 4:48:48 PM",
-      "dateStarted": "Sep 26, 2017 6:04:53 PM",
-      "dateFinished": "Sep 26, 2017 6:04:53 PM",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:27 PM",
+      "dateFinished": "Nov 12, 2017 9:36:27 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
-      "text": "select PROPERTIES, count(*) from alfresco group by PROPERTIES",
+      "title": "Largest Documents ",
+      "text": "select cm_name, cm_creator, site, `cm:content.size` from alfresco order by `cm:content.size` DESC limit 20",
       "user": "anonymous",
-      "dateUpdated": "Sep 26, 2017 6:04:53 PM",
-      "config": {
-        "colWidth": 12.0,
-        "editorMode": "ace/mode/sql",
-        "results": {},
-        "enabled": true,
-        "editorSetting": {
-          "language": "sql",
-          "editOnDblClick": false
-        }
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "PROPERTIES\tEXPR$1\nactionDescription\t13\nactionTitle\t13\napplyToChildren\t3\nauthor\t85\nauthorityDisplayName\t12\nauthorityName\t17\nautoVersion\t9\nautoVersionOnUpdateProps\t9\ncascadeCRC\t11\ncascadeHidden\t2\ncascadeIndexControl\t2\ncascadeTx\t11\nclassification\t1\nclassificationReasonCode\t4\nclassificationReasonDescription\t4\nclientVisibilityMask\t2\ncompanyaddress1\t2\ncompanyaddress2\t2\ncompanyaddress3\t2\ncompanyemail\t2\ncompanyfax\t2\ncompanypostcode\t2\ncompanytelephone\t2\ncomponentId\t6\ncontent\t227\ncontentPropertyName\t35\ncreated\t813\ncreator\t813\ndataListItemType\t2\ndateTimeOriginal\t6\ndefinitionName\t16\ndescription\t232\ndisabled\t3\neditInline\t140\nemail\t4\nemailFeedId\t2\nexecuteAsynchronously\t16\nexecutionActionStatus\t9\nexecutionEndDate\t9\nexecutionFailureMessage\t9\nexecutionStartDate\t9\nexemptionCategoryCode\t2\nexemptionCategoryDescription\t2\nexpiryDate\t1\nexposureTime\t6\nfNumber\t6\nfirstName\t4\nflash\t6\nfocalLength\t6\ngoogleusername\t2\ngroupDescriptionKey\t1\ngroupDisplayLabel\t1\ngroupDisplayLabelKey\t1\ngroupId\t1\ngroupModelProperty\t1\ngroupType\t1\nhomeFolder\t4\nhomeFolderProvider\t4\nicon\t49\ninitialVersion\t9\ninstantmsg\t2\ninvert\t3\nisoSpeedRatings\t6\nissueComments\t4\nissueDueDate\t4\nissueID\t4\nissuePriority\t4\nissueStatus\t4\njobtitle\t2\nlastName\t4\nlastThumbnailModification\t2\nlikesRatingSchemeCount\t4\nlikesRatingSchemeTotal\t4\nlocale\t857\nlocation\t2\nlockAdditionalInfo\t1\nlockLifetime\t1\nlockOwner\t1\nlockType\t1\nmanufacturer\t6\nmarkDisplayLabel\t4\nmarkDisplayLabelKey\t4\nmarkId\t4\nmobile\t2\nmodel\t6\nmodelActive\t1\nmodelAuthor\t1\nmodelDescription\t1\nmodelName\t1\nmodelPublishedDate\t1\nmodelVersion\t1\nmodified\t813\nmodifier\t813\nname\t857\nnode-dbid\t857\nnode-uuid\t857\norganization\t2\norganizationId\t2\norientation\t8\nowner\t109\nparameterName\t129\nparameterValue\t129\npersondescription\t2\npixelXDimension\t18\npixelYDimension\t18\npreferenceValues\t3\npublished\t6\nresolutionUnit\t8\nruleType\t3\nsitePreset\t2\nsiteVisibility\t2\nsizeCurrent\t4\nsizeQuota\t2\nskype\t2\nsoftware\t8\nstore-identifier\t857\nstore-protocol\t857\nsystemGroup\t1\ntagScopeCache\t2\ntagScopeSummary\t2\ntaggable\t10\ntelephone\t2\ntemplate\t2\nthumbnailName\t33\ntitle\t259\ntodoDueDate\t5\ntodoNotes\t5\ntodoPriority\t5\ntodoStatus\t5\ntodoTitle\t5\nupdated\t1\nurl\t2\nuserName\t4\nuserStatus\t2\nuserStatusTime\t2\nversionLabel\t9\nversionType\t9\nworkingCopyLabel\t1\nworkingCopyMode\t1\nworkingCopyOwner\t1\nxResolution\t8\nyResolution\t8\n{http://www.alfresco.org/model/action/1.0}actionDescription\t13\n{http://www.alfresco.org/model/action/1.0}actionTitle\t13\n{http://www.alfresco.org/model/action/1.0}definitionName\t16\n{http://www.alfresco.org/model/action/1.0}executeAsynchronously\t13\n{http://www.alfresco.org/model/action/1.0}executionActionStatus\t9\n{http://www.alfresco.org/model/action/1.0}executionEndDate\t9\n{http://www.alfresco.org/model/action/1.0}executionFailureMessage\t9\n{http://www.alfresco.org/model/action/1.0}executionStartDate\t9\n{http://www.alfresco.org/model/action/1.0}invert\t3\n{http://www.alfresco.org/model/action/1.0}parameterName\t129\n{http://www.alfresco.org/model/action/1.0}parameterValue\t129\n{http://www.alfresco.org/model/application/1.0}editInline\t140\n{http://www.alfresco.org/model/application/1.0}icon\t49\n{http://www.alfresco.org/model/content/1.0}author\t85\n{http://www.alfresco.org/model/content/1.0}authorityDisplayName\t12\n{http://www.alfresco.org/model/content/1.0}authorityName\t17\n{http://www.alfresco.org/model/content/1.0}autoVersion\t9\n{http://www.alfresco.org/model/content/1.0}autoVersionOnUpdateProps\t9\n{http://www.alfresco.org/model/content/1.0}companyaddress1\t2\n{http://www.alfresco.org/model/content/1.0}companyaddress2\t2\n{http://www.alfresco.org/model/content/1.0}companyaddress3\t2\n{http://www.alfresco.org/model/content/1.0}companyemail\t2\n{http://www.alfresco.org/model/content/1.0}companyfax\t2\n{http://www.alfresco.org/model/content/1.0}companypostcode\t2\n{http://www.alfresco.org/model/content/1.0}companytelephone\t2\n{http://www.alfresco.org/model/content/1.0}content\t227\n{http://www.alfresco.org/model/content/1.0}contentPropertyName\t35\n{http://www.alfresco.org/model/content/1.0}created\t813\n{http://www.alfresco.org/model/content/1.0}creator\t813\n{http://www.alfresco.org/model/content/1.0}description\t230\n{http://www.alfresco.org/model/content/1.0}email\t4\n{http://www.alfresco.org/model/content/1.0}emailFeedId\t2\n{http://www.alfresco.org/model/content/1.0}expiryDate\t1\n{http://www.alfresco.org/model/content/1.0}firstName\t4\n{http://www.alfresco.org/model/content/1.0}googleusername\t2\n{http://www.alfresco.org/model/content/1.0}homeFolder\t4\n{http://www.alfresco.org/model/content/1.0}homeFolderProvider\t4\n{http://www.alfresco.org/model/content/1.0}initialVersion\t9\n{http://www.alfresco.org/model/content/1.0}instantmsg\t2\n{http://www.alfresco.org/model/content/1.0}jobtitle\t2\n{http://www.alfresco.org/model/content/1.0}lastName\t4\n{http://www.alfresco.org/model/content/1.0}lastThumbnailModification\t2\n{http://www.alfresco.org/model/content/1.0}likesRatingSchemeCount\t4\n{http://www.alfresco.org/model/content/1.0}likesRatingSchemeTotal\t4\n{http://www.alfresco.org/model/content/1.0}location\t2\n{http://www.alfresco.org/model/content/1.0}lockAdditionalInfo\t1\n{http://www.alfresco.org/model/content/1.0}lockLifetime\t1\n{http://www.alfresco.org/model/content/1.0}lockOwner\t1\n{http://www.alfresco.org/model/content/1.0}lockType\t1\n{http://www.alfresco.org/model/content/1.0}mobile\t2\n{http://www.alfresco.org/model/content/1.0}modelActive\t1\n{http://www.alfresco.org/model/content/1.0}modelAuthor\t1\n{http://www.alfresco.org/model/content/1.0}modelDescription\t1\n{http://www.alfresco.org/model/content/1.0}modelName\t1\n{http://www.alfresco.org/model/content/1.0}modelPublishedDate\t1\n{http://www.alfresco.org/model/content/1.0}modelVersion\t1\n{http://www.alfresco.org/model/content/1.0}modified\t813\n{http://www.alfresco.org/model/content/1.0}modifier\t813\n{http://www.alfresco.org/model/content/1.0}name\t857\n{http://www.alfresco.org/model/content/1.0}organization\t2\n{http://www.alfresco.org/model/content/1.0}organizationId\t2\n{http://www.alfresco.org/model/content/1.0}owner\t109\n{http://www.alfresco.org/model/content/1.0}persondescription\t2\n{http://www.alfresco.org/model/content/1.0}preferenceValues\t3\n{http://www.alfresco.org/model/content/1.0}published\t6\n{http://www.alfresco.org/model/content/1.0}sizeCurrent\t4\n{http://www.alfresco.org/model/content/1.0}sizeQuota\t2\n{http://www.alfresco.org/model/content/1.0}skype\t2\n{http://www.alfresco.org/model/content/1.0}tagScopeCache\t2\n{http://www.alfresco.org/model/content/1.0}tagScopeSummary\t2\n{http://www.alfresco.org/model/content/1.0}taggable\t10\n{http://www.alfresco.org/model/content/1.0}telephone\t2\n{http://www.alfresco.org/model/content/1.0}template\t2\n{http://www.alfresco.org/model/content/1.0}thumbnailName\t33\n{http://www.alfresco.org/model/content/1.0}title\t257\n{http://www.alfresco.org/model/content/1.0}updated\t1\n{http://www.alfresco.org/model/content/1.0}userName\t4\n{http://www.alfresco.org/model/content/1.0}userStatus\t2\n{http://www.alfresco.org/model/content/1.0}userStatusTime\t2\n{http://www.alfresco.org/model/content/1.0}versionLabel\t9\n{http://www.alfresco.org/model/content/1.0}versionType\t9\n{http://www.alfresco.org/model/content/1.0}workingCopyLabel\t1\n{http://www.alfresco.org/model/content/1.0}workingCopyMode\t1\n{http://www.alfresco.org/model/content/1.0}workingCopyOwner\t1\n{http://www.alfresco.org/model/datalist/1.0}dataListItemType\t2\n{http://www.alfresco.org/model/datalist/1.0}issueComments\t4\n{http://www.alfresco.org/model/datalist/1.0}issueDueDate\t4\n{http://www.alfresco.org/model/datalist/1.0}issueID\t4\n{http://www.alfresco.org/model/datalist/1.0}issuePriority\t4\n{http://www.alfresco.org/model/datalist/1.0}issueStatus\t4\n{http://www.alfresco.org/model/datalist/1.0}todoDueDate\t5\n{http://www.alfresco.org/model/datalist/1.0}todoNotes\t5\n{http://www.alfresco.org/model/datalist/1.0}todoPriority\t5\n{http://www.alfresco.org/model/datalist/1.0}todoStatus\t5\n{http://www.alfresco.org/model/datalist/1.0}todoTitle\t5\n{http://www.alfresco.org/model/exif/1.0}dateTimeOriginal\t6\n{http://www.alfresco.org/model/exif/1.0}exposureTime\t6\n{http://www.alfresco.org/model/exif/1.0}fNumber\t6\n{http://www.alfresco.org/model/exif/1.0}flash\t6\n{http://www.alfresco.org/model/exif/1.0}focalLength\t6\n{http://www.alfresco.org/model/exif/1.0}isoSpeedRatings\t6\n{http://www.alfresco.org/model/exif/1.0}manufacturer\t6\n{http://www.alfresco.org/model/exif/1.0}model\t6\n{http://www.alfresco.org/model/exif/1.0}orientation\t8\n{http://www.alfresco.org/model/exif/1.0}pixelXDimension\t18\n{http://www.alfresco.org/model/exif/1.0}pixelYDimension\t18\n{http://www.alfresco.org/model/exif/1.0}resolutionUnit\t8\n{http://www.alfresco.org/model/exif/1.0}software\t8\n{http://www.alfresco.org/model/exif/1.0}xResolution\t8\n{http://www.alfresco.org/model/exif/1.0}yResolution\t8\n{http://www.alfresco.org/model/linksmodel/1.0}description\t2\n{http://www.alfresco.org/model/linksmodel/1.0}title\t2\n{http://www.alfresco.org/model/linksmodel/1.0}url\t2\n{http://www.alfresco.org/model/rule/1.0}applyToChildren\t3\n{http://www.alfresco.org/model/rule/1.0}disabled\t3\n{http://www.alfresco.org/model/rule/1.0}executeAsynchronously\t3\n{http://www.alfresco.org/model/rule/1.0}ruleType\t3\n{http://www.alfresco.org/model/securitymarks/1.0}classification\t1\n{http://www.alfresco.org/model/securitymarks/1.0}classificationReasonCode\t4\n{http://www.alfresco.org/model/securitymarks/1.0}classificationReasonDescription\t4\n{http://www.alfresco.org/model/securitymarks/1.0}exemptionCategoryCode\t2\n{http://www.alfresco.org/model/securitymarks/1.0}exemptionCategoryDescription\t2\n{http://www.alfresco.org/model/securitymarks/1.0}groupDescriptionKey\t1\n{http://www.alfresco.org/model/securitymarks/1.0}groupDisplayLabel\t1\n{http://www.alfresco.org/model/securitymarks/1.0}groupDisplayLabelKey\t1\n{http://www.alfresco.org/model/securitymarks/1.0}groupId\t1\n{http://www.alfresco.org/model/securitymarks/1.0}groupModelProperty\t1\n{http://www.alfresco.org/model/securitymarks/1.0}groupType\t1\n{http://www.alfresco.org/model/securitymarks/1.0}markDisplayLabel\t4\n{http://www.alfresco.org/model/securitymarks/1.0}markDisplayLabelKey\t4\n{http://www.alfresco.org/model/securitymarks/1.0}markId\t4\n{http://www.alfresco.org/model/securitymarks/1.0}systemGroup\t1\n{http://www.alfresco.org/model/site/1.0}componentId\t6\n{http://www.alfresco.org/model/site/1.0}sitePreset\t2\n{http://www.alfresco.org/model/site/1.0}siteVisibility\t2\n{http://www.alfresco.org/model/system/1.0}cascadeCRC\t11\n{http://www.alfresco.org/model/system/1.0}cascadeHidden\t2\n{http://www.alfresco.org/model/system/1.0}cascadeIndexControl\t2\n{http://www.alfresco.org/model/system/1.0}cascadeTx\t11\n{http://www.alfresco.org/model/system/1.0}clientVisibilityMask\t2\n{http://www.alfresco.org/model/system/1.0}locale\t857\n{http://www.alfresco.org/model/system/1.0}node-dbid\t857\n{http://www.alfresco.org/model/system/1.0}node-uuid\t857\n{http://www.alfresco.org/model/system/1.0}store-identifier\t857\n{http://www.alfresco.org/model/system/1.0}store-protocol\t857\n"
-          }
-        ]
-      },
-      "apps": [],
-      "jobName": "paragraph_1506440928407_-386498592",
-      "id": "20170914-161623_459763009",
-      "dateCreated": "Sep 26, 2017 4:48:48 PM",
-      "dateStarted": "Sep 26, 2017 6:04:53 PM",
-      "dateFinished": "Sep 26, 2017 6:04:53 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "select NPATH, count(*) from alfresco group by NPATH having NPATH like \u00270/%\u0027",
-      "user": "anonymous",
-      "dateUpdated": "Sep 26, 2017 6:04:53 PM",
-      "config": {
-        "colWidth": 12.0,
-        "editorMode": "ace/mode/sql",
-        "results": {},
-        "enabled": true,
-        "editorSetting": {
-          "language": "sql",
-          "editOnDblClick": false
-        }
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TABLE",
-            "data": "NPATH\tEXPR$1\n0/4f78dc6e000a27fc3bb7e9c70aa6b5d9\t5\n0/525aa1f06ead90c72873d8dab00c81d6\t1\n0/58d3dfc926fbcb0ce0a1213c37dc4711\t1\n0/5b487fd6a02f7430721726163ba0daa9\t1\n0/5d2e55ac8de5a9ed7fa50d1427b42b8f\t1\n0/627cb471ecb6eb3dfd51c7e68292de65\t1\n0/6f959c3f22fd61e29b09c2ee7c1bc03b\t1\n0/73714588eb587e2a207a436130080c9e\t1\n0/9e5cb3fa1850083495559ca2a4ca2de9\t1\n0/9fa92acca1dedc3d9963fba728380129\t1\n0/APP.RM\t2\n0/APP.SHARE\t11\n0/Company Home\t318\n0/Downloads\t1\n0/General\t334\n0/Remote Credentials\t1\n0/SyncSet Definitions\t1\n0/Tags\t1\n0/a6d0d22b8034d056d473607e781cfde5\t5\n0/abeecher-avatar.jpg\t1\n0/c065685adb9bd34bc22561dc73156ab2\t1\n0/categories\t336\n0/mjackson-avatar.jpg\t1\n1/4f78dc6e000a27fc3bb7e9c70aa6b5d9/58d3dfc926fbcb0ce0a1213c37dc4711\t1\n1/4f78dc6e000a27fc3bb7e9c70aa6b5d9/5b487fd6a02f7430721726163ba0daa9\t1\n1/4f78dc6e000a27fc3bb7e9c70aa6b5d9/73714588eb587e2a207a436130080c9e\t1\n1/4f78dc6e000a27fc3bb7e9c70aa6b5d9/9e5cb3fa1850083495559ca2a4ca2de9\t1\n1/APP.RM/c065685adb9bd34bc22561dc73156ab2\t1\n1/APP.SHARE/4f78dc6e000a27fc3bb7e9c70aa6b5d9\t5\n1/APP.SHARE/525aa1f06ead90c72873d8dab00c81d6\t1\n1/APP.SHARE/58d3dfc926fbcb0ce0a1213c37dc4711\t1\n1/APP.SHARE/5b487fd6a02f7430721726163ba0daa9\t1\n1/APP.SHARE/5d2e55ac8de5a9ed7fa50d1427b42b8f\t1\n1/APP.SHARE/627cb471ecb6eb3dfd51c7e68292de65\t1\n1/APP.SHARE/6f959c3f22fd61e29b09c2ee7c1bc03b\t1\n1/APP.SHARE/73714588eb587e2a207a436130080c9e\t1\n1/APP.SHARE/9e5cb3fa1850083495559ca2a4ca2de9\t1\n1/APP.SHARE/a6d0d22b8034d056d473607e781cfde5\t5\n1/Company Home/Data Dictionary\t201\n1/Company Home/Guest Home\t1\n1/Company Home/IMAP Home\t1\n1/Company Home/Imap Attachments\t1\n1/Company Home/Shared\t1\n1/Company Home/Sites\t111\n1/Company Home/User Homes\t1\n1/General/Languages\t18\n1/General/Regions\t257\n1/General/Software Document Classification\t57\n1/General/Tags\t1\n1/a6d0d22b8034d056d473607e781cfde5/525aa1f06ead90c72873d8dab00c81d6\t1\n1/a6d0d22b8034d056d473607e781cfde5/5d2e55ac8de5a9ed7fa50d1427b42b8f\t1\n1/a6d0d22b8034d056d473607e781cfde5/627cb471ecb6eb3dfd51c7e68292de65\t1\n1/a6d0d22b8034d056d473607e781cfde5/6f959c3f22fd61e29b09c2ee7c1bc03b\t1\n1/categories/General\t334\n1/categories/Tags\t1\n2/APP.SHARE/4f78dc6e000a27fc3bb7e9c70aa6b5d9/58d3dfc926fbcb0ce0a1213c37dc4711\t1\n2/APP.SHARE/4f78dc6e000a27fc3bb7e9c70aa6b5d9/5b487fd6a02f7430721726163ba0daa9\t1\n2/APP.SHARE/4f78dc6e000a27fc3bb7e9c70aa6b5d9/73714588eb587e2a207a436130080c9e\t1\n2/APP.SHARE/4f78dc6e000a27fc3bb7e9c70aa6b5d9/9e5cb3fa1850083495559ca2a4ca2de9\t1\n2/APP.SHARE/a6d0d22b8034d056d473607e781cfde5/525aa1f06ead90c72873d8dab00c81d6\t1\n2/APP.SHARE/a6d0d22b8034d056d473607e781cfde5/5d2e55ac8de5a9ed7fa50d1427b42b8f\t1\n2/APP.SHARE/a6d0d22b8034d056d473607e781cfde5/627cb471ecb6eb3dfd51c7e68292de65\t1\n2/APP.SHARE/a6d0d22b8034d056d473607e781cfde5/6f959c3f22fd61e29b09c2ee7c1bc03b\t1\n2/Company Home/Data Dictionary/Email Templates\t59\n2/Company Home/Data Dictionary/Imap Configs\t48\n2/Company Home/Data Dictionary/Messages\t1\n2/Company Home/Data Dictionary/Models\t1\n2/Company Home/Data Dictionary/Node Templates\t1\n2/Company Home/Data Dictionary/Presentation Templates\t12\n2/Company Home/Data Dictionary/Publishing Root\t1\n2/Company Home/Data Dictionary/RSS Templates\t2\n2/Company Home/Data Dictionary/Records Management\t15\n2/Company Home/Data Dictionary/Rendering Actions Space\t1\n2/Company Home/Data Dictionary/Replication Actions Space\t1\n2/Company Home/Data Dictionary/Saved Searches\t1\n2/Company Home/Data Dictionary/Scheduled Actions\t1\n2/Company Home/Data Dictionary/Scripts\t8\n2/Company Home/Data Dictionary/Smart Folder Downloads\t1\n2/Company Home/Data Dictionary/Smart Folder Templates\t2\n2/Company Home/Data Dictionary/Space Templates\t12\n2/Company Home/Data Dictionary/Transfers\t5\n2/Company Home/Data Dictionary/Web Client Extension\t1\n2/Company Home/Data Dictionary/Web Scripts\t24\n2/Company Home/Data Dictionary/Web Scripts Extensions\t2\n2/Company Home/Data Dictionary/Workflow Definitions\t1\n2/Company Home/Sites/surf-config\t2\n2/Company Home/Sites/swsdp\t104\n2/Company Home/Sites/twhrahehj\t4\n2/General/Languages/English\t6\n2/General/Languages/French\t3\n2/General/Languages/German\t4\n2/General/Languages/Spanish\t4\n2/General/Regions/AFRICA\t62\n2/General/Regions/ASIA\t55\n2/General/Regions/EUROPE\t52\n2/General/Regions/LATIN AMERICA\t50\n2/General/Regions/NORTHERN AMERICA\t6\n2/General/Regions/OCEANIA\t31\n2/General/Software Document Classification/Administrative Documents\t7\n2/General/Software Document Classification/Development Plans\t14\n2/General/Software Document Classification/Quality Documents\t11\n2/General/Software Document Classification/Software Descriptions\t15\n2/General/Software Document Classification/Utilization Documents\t9\n2/categories/General/Languages\t18\n2/categories/General/Regions\t257\n2/categories/General/Software Document Classification\t57\n2/categories/General/Tags\t1\n3/Company Home/Data Dictionary/Email Templates/Following Email Templates\t8\n3/Company Home/Data Dictionary/Email Templates/Invite Email Templates\t2\n3/Company Home/Data Dictionary/Email Templates/Notify Email Templates\t9\n3/Company Home/Data Dictionary/Email Templates/Workflow Notification\t8\n3/Company Home/Data Dictionary/Email Templates/activities\t8\n3/Company Home/Data Dictionary/Email Templates/invite\t23\n3/Company Home/Data Dictionary/Imap Configs/Templates\t47\n3/Company Home/Data Dictionary/Presentation Templates/doc_info.ftl\t1\n3/Company Home/Data Dictionary/Presentation Templates/general_example.ftl\t1\n3/Company Home/Data Dictionary/Presentation Templates/localizable.ftl\t1\n3/Company Home/Data Dictionary/Presentation Templates/my_docs.ftl\t1\n3/Company Home/Data Dictionary/Presentation Templates/my_docs_inline.ftl\t1\n3/Company Home/Data Dictionary/Presentation Templates/my_spaces.ftl\t1\n3/Company Home/Data Dictionary/Presentation Templates/my_summary.ftl\t1\n3/Company Home/Data Dictionary/Presentation Templates/readme.ftl\t1\n3/Company Home/Data Dictionary/Presentation Templates/recent_docs.ftl\t1\n3/Company Home/Data Dictionary/Presentation Templates/show_audit.ftl\t1\n3/Company Home/Data Dictionary/Presentation Templates/translatable.ftl\t1\n3/Company Home/Data Dictionary/RSS Templates/RSS_2.0_recent_docs.ftl\t1\n3/Company Home/Data Dictionary/Records Management/Records Management Behavior Scripts\t2\n3/Company Home/Data Dictionary/Records Management/Records Management Email Templates\t4\n3/Company Home/Data Dictionary/Records Management/Records Management Report Templates\t4\n3/Company Home/Data Dictionary/Records Management/Records Management Scripts\t1\n3/Company Home/Data Dictionary/Records Management/imapConfig.json\t1\n3/Company Home/Data Dictionary/Records Management/recordsCustomModel.xml\t1\n3/Company Home/Data Dictionary/Records Management/rm_event_config.json\t1\n3/Company Home/Data Dictionary/Scripts/alfresco docs.js.sample\t1\n3/Company Home/Data Dictionary/Scripts/append copyright.js.sample\t1\n3/Company Home/Data Dictionary/Scripts/backup and log.js.sample\t1\n3/Company Home/Data Dictionary/Scripts/backup.js.sample\t1\n3/Company Home/Data Dictionary/Scripts/example test script.js.sample\t1\n3/Company Home/Data Dictionary/Scripts/start-pooled-review-workflow.js\t1\n3/Company Home/Data Dictionary/Scripts/test return value.js.sample\t1\n3/Company Home/Data Dictionary/Smart Folder Templates/smartFoldersExample.json\t1\n3/Company Home/Data Dictionary/Space Templates/Software Engineering Project\t11\n3/Company Home/Data Dictionary/Transfers/Inbound Transfer Records\t1\n3/Company Home/Data Dictionary/Transfers/Temp\t1\n3/Company Home/Data Dictionary/Transfers/Transfer Target Groups\t2\n3/Company Home/Data Dictionary/Web Scripts Extensions/readme.html\t1\n3/Company Home/Data Dictionary/Web Scripts/org\t19\n3/Company Home/Data Dictionary/Web Scripts/readme.html\t1\n3/Company Home/Data Dictionary/Web Scripts/readme_de.html\t1\n3/Company Home/Data Dictionary/Web Scripts/readme_fr.html\t1\n3/Company Home/Data Dictionary/Web Scripts/readme_ja.html\t1\n3/Company Home/Sites/surf-config/extensions\t1\n3/Company Home/Sites/surf-config/module-deployments\t1\n3/Company Home/Sites/swsdp/dataLists\t12\n3/Company Home/Sites/swsdp/discussions\t9\n3/Company Home/Sites/swsdp/documentLibrary\t75\n3/Company Home/Sites/swsdp/links\t3\n3/Company Home/Sites/swsdp/wiki\t4\n3/Company Home/Sites/twhrahehj/documentLibrary\t3\n3/General/Languages/English/American English\t1\n3/General/Languages/English/Australian English\t1\n3/General/Languages/English/British English\t1\n3/General/Languages/English/Canadian English\t1\n3/General/Languages/English/Indian English\t1\n3/General/Languages/French/Canadian French\t1\n3/General/Languages/French/French French\t1\n3/General/Languages/German/Austrian German\t1\n3/General/Languages/German/German German\t1\n3/General/Languages/German/Swiss German\t1\n3/General/Languages/Spanish/American Spanish\t1\n3/General/Languages/Spanish/Mexican Spanish\t1\n3/General/Languages/Spanish/Spanish\t1\n3/General/Regions/AFRICA/Eastern Africa\t19\n3/General/Regions/AFRICA/Middle Africa\t10\n3/General/Regions/AFRICA/Northern Africa\t8\n3/General/Regions/AFRICA/Southern Africa\t6\n3/General/Regions/AFRICA/Western Africa\t18\n3/General/Regions/ASIA/Eastern Asia\t8\n3/General/Regions/ASIA/South-central Asia\t15\n3/General/Regions/ASIA/South-eastern Asia\t12\n3/General/Regions/ASIA/Western Asia\t19\n3/General/Regions/EUROPE/Eastern Europe\t11\n3/General/Regions/EUROPE/Northern Europe\t14\n3/General/Regions/EUROPE/Southern Europe\t16\n3/General/Regions/EUROPE/Western Europe\t10\n3/General/Regions/LATIN AMERICA/Caribbean\t25\n3/General/Regions/LATIN AMERICA/Central America\t9\n3/General/Regions/LATIN AMERICA/South America\t15\n3/General/Regions/NORTHERN AMERICA/Bermuda\t1\n3/General/Regions/NORTHERN AMERICA/Canada\t1\n3/General/Regions/NORTHERN AMERICA/Greenland\t1\n3/General/Regions/NORTHERN AMERICA/Saint Pierre and Miquelon\t1\n3/General/Regions/NORTHERN AMERICA/United States of America\t1\n3/General/Regions/OCEANIA/Australia and New Zealand\t4\n3/General/Regions/OCEANIA/Melanesia\t6\n3/General/Regions/OCEANIA/Micronesia\t9\n3/General/Regions/OCEANIA/Polynesia\t11\n3/General/Software Document Classification/Administrative Documents/Contract Review Minutes\t1\n3/General/Software Document Classification/Administrative Documents/Development Contract\t1\n3/General/Software Document Classification/Administrative Documents/Extended Contract\t1\n3/General/Software Document Classification/Administrative Documents/Maintenance Contract\t1\n3/General/Software Document Classification/Administrative Documents/Preliminary Contract\t1\n3/General/Software Document Classification/Administrative Documents/Project Meeting Minutes\t1\n3/General/Software Document Classification/Development Plans/Acceptance Plan\t1\n3/General/Software Document Classification/Development Plans/Documentation Plan\t1\n3/General/Software Document Classification/Development Plans/Expense Plan\t1\n3/General/Software Document Classification/Development Plans/Manual Plan\t1\n3/General/Software Document Classification/Development Plans/Method Plan\t1\n3/General/Software Document Classification/Development Plans/Phase Plan\t1\n3/General/Software Document Classification/Development Plans/Quality Plan\t1\n3/General/Software Document Classification/Development Plans/Responsibility Plan\t1\n3/General/Software Document Classification/Development Plans/Risk Plan\t1\n3/General/Software Document Classification/Development Plans/Schedule Plan\t1\n3/General/Software Document Classification/Development Plans/Test Plan\t1\n3/General/Software Document Classification/Development Plans/Version Control Plan\t1\n3/General/Software Document Classification/Development Plans/Work Breakdown Plan\t1\n3/General/Software Document Classification/Quality Documents/Analysis Request\t1\n3/General/Software Document Classification/Quality Documents/Change Request\t1\n3/General/Software Document Classification/Quality Documents/Information Request\t1\n3/General/Software Document Classification/Quality Documents/Inspection Call\t1\n3/General/Software Document Classification/Quality Documents/Inspection Report\t1\n3/General/Software Document Classification/Quality Documents/Reader\u0027s Report\t1\n3/General/Software Document Classification/Quality Documents/Review Call\t1\n3/General/Software Document Classification/Quality Documents/Review Report\t1\n3/General/Software Document Classification/Quality Documents/Test Call\t1\n3/General/Software Document Classification/Quality Documents/Test Report\t1\n3/General/Software Document Classification/Software Descriptions/Main Software Descriptions\t6\n3/General/Software Document Classification/Software Descriptions/Software Description Appendices\t8\n3/General/Software Document Classification/Utilization Documents/Installation Manual\t1\n3/General/Software Document Classification/Utilization Documents/Installations Help\t1\n3/General/Software Document Classification/Utilization Documents/Operator\u0027s Help\t1\n3/General/Software Document Classification/Utilization Documents/Operator\u0027s Manual\t1\n3/General/Software Document Classification/Utilization Documents/Service Help\t1\n3/General/Software Document Classification/Utilization Documents/Service Manual\t1\n3/General/Software Document Classification/Utilization Documents/User\u0027s Help\t1\n3/General/Software Document Classification/Utilization Documents/User\u0027s Manual\t1\n3/categories/General/Languages/English\t6\n3/categories/General/Languages/French\t3\n3/categories/General/Languages/German\t4\n3/categories/General/Languages/Spanish\t4\n3/categories/General/Regions/AFRICA\t62\n3/categories/General/Regions/ASIA\t55\n3/categories/General/Regions/EUROPE\t52\n3/categories/General/Regions/LATIN AMERICA\t50\n3/categories/General/Regions/NORTHERN AMERICA\t6\n3/categories/General/Regions/OCEANIA\t31\n3/categories/General/Software Document Classification/Administrative Documents\t7\n3/categories/General/Software Document Classification/Development Plans\t14\n3/categories/General/Software Document Classification/Quality Documents\t11\n3/categories/General/Software Document Classification/Software Descriptions\t15\n3/categories/General/Software Document Classification/Utilization Documents\t9\n4/Company Home/Data Dictionary/Email Templates/Following Email Templates/following-email.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Following Email Templates/following-email_de.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Following Email Templates/following-email_es.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Following Email Templates/following-email_fr.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Following Email Templates/following-email_it.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Following Email Templates/following-email_ja.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Following Email Templates/following-email_nl.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Invite Email Templates/invite_user_email.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Notify Email Templates/notify_user_email.ftl.sample\t1\n4/Company Home/Data Dictionary/Email Templates/Notify Email Templates/notify_user_email.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Notify Email Templates/notify_user_email_de.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Notify Email Templates/notify_user_email_es.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Notify Email Templates/notify_user_email_fr.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Notify Email Templates/notify_user_email_it.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Notify Email Templates/notify_user_email_ja.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Notify Email Templates/notify_user_email_nl.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Workflow Notification/wf-email.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Workflow Notification/wf-email_de.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Workflow Notification/wf-email_es.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Workflow Notification/wf-email_fr.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Workflow Notification/wf-email_it.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Workflow Notification/wf-email_ja.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/Workflow Notification/wf-email_nl.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/activities/activities-email.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/activities/activities-email_de.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/activities/activities-email_es.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/activities/activities-email_fr.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/activities/activities-email_it.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/activities/activities-email_ja.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/activities/activities-email_nl.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email-add-direct.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email-add-direct.html_de.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email-add-direct.html_es.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email-add-direct.html_fr.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email-add-direct.html_it.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email-add-direct.html_ja.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email-add-direct.html_nl.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email-moderated.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email_de.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email_es.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email_fr.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email_it.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email_ja.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/invite-email_nl.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/new-user-email.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/new-user-email_de.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/new-user-email_es.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/new-user-email_fr.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/new-user-email_it.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/new-user-email_ja.html.ftl\t1\n4/Company Home/Data Dictionary/Email Templates/invite/new-user-email_nl.html.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody-texthtml.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody-textplain.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_alfresco.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_alfresco_de.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_alfresco_es.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_alfresco_fr.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_alfresco_it.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_alfresco_ja.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_alfresco_nb.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_alfresco_nl.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_alfresco_pt_BR.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_alfresco_ru.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_alfresco_zh_CN.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_share.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_share_de.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_share_es.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_share_fr.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_share_it.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_share_ja.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_share_nb.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_share_nl.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_share_pt_BR.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_share_ru.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_texthtml_share_zh_CN.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_alfresco.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_alfresco_de.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_alfresco_es.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_alfresco_fr.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_alfresco_it.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_alfresco_ja.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_alfresco_nb.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_alfresco_nl.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_alfresco_pt_BR.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_alfresco_ru.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_alfresco_zh_CN.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_share.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_share_de.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_share_es.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_share_fr.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_share_it.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_share_ja.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_share_nb.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_share_nl.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_share_pt_BR.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_share_ru.ftl\t1\n4/Company Home/Data Dictionary/Imap Configs/Templates/emailbody_textplain_share_zh_CN.ftl\t1\n4/Company Home/Data Dictionary/Records Management/Records Management Behavior Scripts/onCreate_supersedes.js\t1\n4/Company Home/Data Dictionary/Records Management/Records Management Email Templates/notify-records-due-for-review-email.ftl\t1\n4/Company Home/Data Dictionary/Records Management/Records Management Email Templates/record-rejected-email.ftl\t1\n4/Company Home/Data Dictionary/Records Management/Records Management Email Templates/record-superseded-email.ftl\t1\n4/Company Home/Data Dictionary/Records Management/Records Management Report Templates/report_rmr_destructionReport.html.ftl\t1\n4/Company Home/Data Dictionary/Records Management/Records Management Report Templates/report_rmr_holdReport.html.ftl\t1\n4/Company Home/Data Dictionary/Records Management/Records Management Report Templates/report_rmr_transferReport.html.ftl\t1\n4/Company Home/Data Dictionary/Space Templates/Software Engineering Project/Discussions\t1\n4/Company Home/Data Dictionary/Space Templates/Software Engineering Project/Documentation\t6\n4/Company Home/Data Dictionary/Space Templates/Software Engineering Project/Presentations\t1\n4/Company Home/Data Dictionary/Space Templates/Software Engineering Project/Quality Assurance\t1\n4/Company Home/Data Dictionary/Space Templates/Software Engineering Project/UI Design\t1\n4/Company Home/Data Dictionary/Transfers/Transfer Target Groups/Default Group\t1\n4/Company Home/Data Dictionary/Web Scripts/org/alfresco\t18\n4/Company Home/Sites/swsdp/dataLists/71824d77-9cd8-44c3-b3e4-dbca7e17dc49\t5\n4/Company Home/Sites/swsdp/dataLists/aea88103-517e-4aa0-a3be-de258d0e6465\t6\n4/Company Home/Sites/swsdp/discussions/post-1297807546884_964\t5\n4/Company Home/Sites/swsdp/discussions/post-1297807581026_873\t3\n4/Company Home/Sites/swsdp/documentLibrary/Agency Files\t45\n4/Company Home/Sites/swsdp/documentLibrary/Budget Files\t12\n4/Company Home/Sites/swsdp/documentLibrary/Meeting Notes\t10\n4/Company Home/Sites/swsdp/documentLibrary/Presentations\t7\n4/Company Home/Sites/swsdp/links/link-1297806194371_850\t1\n4/Company Home/Sites/swsdp/links/link-1297806244007_178\t1\n4/Company Home/Sites/swsdp/wiki/Main_Page\t1\n4/Company Home/Sites/swsdp/wiki/Meetings\t1\n4/Company Home/Sites/swsdp/wiki/Milestones\t1\n4/Company Home/Sites/twhrahehj/documentLibrary/apache-solr-ref-guide-6.6 (Working Copy).pdf\t1\n4/Company Home/Sites/twhrahehj/documentLibrary/apache-solr-ref-guide-6.6.pdf\t1\n4/General/Regions/AFRICA/Eastern Africa/Burundi\t1\n4/General/Regions/AFRICA/Eastern Africa/Comoros\t1\n4/General/Regions/AFRICA/Eastern Africa/Djibouti\t1\n4/General/Regions/AFRICA/Eastern Africa/Eritrea\t1\n4/General/Regions/AFRICA/Eastern Africa/Ethiopia\t1\n4/General/Regions/AFRICA/Eastern Africa/Kenya\t1\n4/General/Regions/AFRICA/Eastern Africa/Madagascar\t1\n4/General/Regions/AFRICA/Eastern Africa/Malawi\t1\n4/General/Regions/AFRICA/Eastern Africa/Mauritius\t1\n4/General/Regions/AFRICA/Eastern Africa/Mozambique\t1\n4/General/Regions/AFRICA/Eastern Africa/Reunion\t1\n4/General/Regions/AFRICA/Eastern Africa/Rwanda\t1\n4/General/Regions/AFRICA/Eastern Africa/Seychelles\t1\n4/General/Regions/AFRICA/Eastern Africa/Somalia\t1\n4/General/Regions/AFRICA/Eastern Africa/Uganda\t1\n4/General/Regions/AFRICA/Eastern Africa/United Republic of Tanzania\t1\n4/General/Regions/AFRICA/Eastern Africa/Zambia\t1\n4/General/Regions/AFRICA/Eastern Africa/Zimbabwe\t1\n4/General/Regions/AFRICA/Middle Africa/Angola\t1\n4/General/Regions/AFRICA/Middle Africa/Cameroon\t1\n4/General/Regions/AFRICA/Middle Africa/Central African Republic\t1\n4/General/Regions/AFRICA/Middle Africa/Chad\t1\n4/General/Regions/AFRICA/Middle Africa/Congo\t1\n4/General/Regions/AFRICA/Middle Africa/Democratic Republic of the Congo\t1\n4/General/Regions/AFRICA/Middle Africa/Equatorial Guinea\t1\n4/General/Regions/AFRICA/Middle Africa/Gabon\t1\n4/General/Regions/AFRICA/Middle Africa/Sao Tome and Principe\t1\n4/General/Regions/AFRICA/Northern Africa/Algeria\t1\n4/General/Regions/AFRICA/Northern Africa/Egypt\t1\n4/General/Regions/AFRICA/Northern Africa/Libyan Arab Jamahiriya\t1\n4/General/Regions/AFRICA/Northern Africa/Morocco\t1\n4/General/Regions/AFRICA/Northern Africa/Sudan\t1\n4/General/Regions/AFRICA/Northern Africa/Tunisia\t1\n4/General/Regions/AFRICA/Northern Africa/Western Sahara\t1\n4/General/Regions/AFRICA/Southern Africa/Botswana\t1\n4/General/Regions/AFRICA/Southern Africa/Lesotho\t1\n4/General/Regions/AFRICA/Southern Africa/Namibia\t1\n4/General/Regions/AFRICA/Southern Africa/South Africa\t1\n4/General/Regions/AFRICA/Southern Africa/Swaziland\t1\n4/General/Regions/AFRICA/Western Africa/Benin\t1\n4/General/Regions/AFRICA/Western Africa/Burkina Faso\t1\n4/General/Regions/AFRICA/Western Africa/Cape Verde\t1\n4/General/Regions/AFRICA/Western Africa/Cote d\u0027Ivoire\t1\n4/General/Regions/AFRICA/Western Africa/Gambia\t1\n4/General/Regions/AFRICA/Western Africa/Ghana\t1\n4/General/Regions/AFRICA/Western Africa/Guinea\t1\n4/General/Regions/AFRICA/Western Africa/Guinea-Bissau\t1\n4/General/Regions/AFRICA/Western Africa/Liberia\t1\n4/General/Regions/AFRICA/Western Africa/Mali\t1\n4/General/Regions/AFRICA/Western Africa/Mauritania\t1\n4/General/Regions/AFRICA/Western Africa/Niger\t1\n4/General/Regions/AFRICA/Western Africa/Nigeria\t1\n4/General/Regions/AFRICA/Western Africa/Saint Helena\t1\n4/General/Regions/AFRICA/Western Africa/Senegal\t1\n4/General/Regions/AFRICA/Western Africa/Sierra Leone\t1\n4/General/Regions/AFRICA/Western Africa/Togo\t1\n4/General/Regions/ASIA/Eastern Asia/China\t1\n4/General/Regions/ASIA/Eastern Asia/Democratic People\u0027s Republic of Korea\t1\n4/General/Regions/ASIA/Eastern Asia/Hong Kong SAR\t1\n4/General/Regions/ASIA/Eastern Asia/Japan\t1\n4/General/Regions/ASIA/Eastern Asia/Macao, China\t1\n4/General/Regions/ASIA/Eastern Asia/Mongolia\t1\n4/General/Regions/ASIA/Eastern Asia/Republic of Korea\t1\n4/General/Regions/ASIA/South-central Asia/Afghanistan\t1\n4/General/Regions/ASIA/South-central Asia/Bangladesh\t1\n4/General/Regions/ASIA/South-central Asia/Bhutan\t1\n4/General/Regions/ASIA/South-central Asia/India\t1\n4/General/Regions/ASIA/South-central Asia/Iran (Islamic Republic of)\t1\n4/General/Regions/ASIA/South-central Asia/Kazakhstan\t1\n4/General/Regions/ASIA/South-central Asia/Kyrgyzstan\t1\n4/General/Regions/ASIA/South-central Asia/Maldives\t1\n4/General/Regions/ASIA/South-central Asia/Nepal\t1\n4/General/Regions/ASIA/South-central Asia/Pakistan\t1\n4/General/Regions/ASIA/South-central Asia/Sri Lanka\t1\n4/General/Regions/ASIA/South-central Asia/Tajikistan\t1\n4/General/Regions/ASIA/South-central Asia/Turkmenistan\t1\n4/General/Regions/ASIA/South-central Asia/Uzbekistan\t1\n4/General/Regions/ASIA/South-eastern Asia/Brunei Darussalam\t1\n4/General/Regions/ASIA/South-eastern Asia/Cambodia\t1\n4/General/Regions/ASIA/South-eastern Asia/Indonesia\t1\n4/General/Regions/ASIA/South-eastern Asia/Lao People\u0027s Democratic Republic\t1\n4/General/Regions/ASIA/South-eastern Asia/Malaysia\t1\n4/General/Regions/ASIA/South-eastern Asia/Myanmar\t1\n4/General/Regions/ASIA/South-eastern Asia/Philippines\t1\n4/General/Regions/ASIA/South-eastern Asia/Singapore\t1\n4/General/Regions/ASIA/South-eastern Asia/Thailand\t1\n4/General/Regions/ASIA/South-eastern Asia/Timor-Leste\t1\n4/General/Regions/ASIA/South-eastern Asia/Viet Nam\t1\n4/General/Regions/ASIA/Western Asia/Armenia\t1\n4/General/Regions/ASIA/Western Asia/Azerbaijan\t1\n4/General/Regions/ASIA/Western Asia/Bahrain\t1\n4/General/Regions/ASIA/Western Asia/Cyprus\t1\n4/General/Regions/ASIA/Western Asia/Georgia\t1\n4/General/Regions/ASIA/Western Asia/Iraq\t1\n4/General/Regions/ASIA/Western Asia/Israel\t1\n4/General/Regions/ASIA/Western Asia/Jordan\t1\n4/General/Regions/ASIA/Western Asia/Kuwait\t1\n4/General/Regions/ASIA/Western Asia/Lebanon\t1\n4/General/Regions/ASIA/Western Asia/Occupied Palestinian Territory\t1\n4/General/Regions/ASIA/Western Asia/Oman\t1\n4/General/Regions/ASIA/Western Asia/Qatar\t1\n4/General/Regions/ASIA/Western Asia/Saudi Arabia\t1\n4/General/Regions/ASIA/Western Asia/Syrian Arab Republic\t1\n4/General/Regions/ASIA/Western Asia/Turkey\t1\n4/General/Regions/ASIA/Western Asia/United Arab Emirates\t1\n4/General/Regions/ASIA/Western Asia/Yemen\t1\n4/General/Regions/EUROPE/Eastern Europe/Belarus\t1\n4/General/Regions/EUROPE/Eastern Europe/Bulgaria\t1\n4/General/Regions/EUROPE/Eastern Europe/Czech Republic\t1\n4/General/Regions/EUROPE/Eastern Europe/Hungary\t1\n4/General/Regions/EUROPE/Eastern Europe/Poland\t1\n4/General/Regions/EUROPE/Eastern Europe/Republic of Moldova\t1\n4/General/Regions/EUROPE/Eastern Europe/Romania\t1\n4/General/Regions/EUROPE/Eastern Europe/Russian Federation\t1\n4/General/Regions/EUROPE/Eastern Europe/Slovakia\t1\n4/General/Regions/EUROPE/Eastern Europe/Ukraine\t1\n4/General/Regions/EUROPE/Northern Europe/Channel Islands\t1\n4/General/Regions/EUROPE/Northern Europe/Denmark\t1\n4/General/Regions/EUROPE/Northern Europe/Estonia\t1\n4/General/Regions/EUROPE/Northern Europe/Faeroe Islands\t1\n4/General/Regions/EUROPE/Northern Europe/Finland\t1\n4/General/Regions/EUROPE/Northern Europe/Iceland\t1\n4/General/Regions/EUROPE/Northern Europe/Ireland\t1\n4/General/Regions/EUROPE/Northern Europe/Isle of Man\t1\n4/General/Regions/EUROPE/Northern Europe/Latvia\t1\n4/General/Regions/EUROPE/Northern Europe/Lithuania\t1\n4/General/Regions/EUROPE/Northern Europe/Norway\t1\n4/General/Regions/EUROPE/Northern Europe/Sweden\t1\n4/General/Regions/EUROPE/Northern Europe/United Kingdom\t1\n4/General/Regions/EUROPE/Southern Europe/Albania\t1\n4/General/Regions/EUROPE/Southern Europe/Andorra\t1\n4/General/Regions/EUROPE/Southern Europe/Bosnia and Herzegovina\t1\n4/General/Regions/EUROPE/Southern Europe/Croatia\t1\n4/General/Regions/EUROPE/Southern Europe/Gibraltar\t1\n4/General/Regions/EUROPE/Southern Europe/Greece\t1\n4/General/Regions/EUROPE/Southern Europe/Holy See\t1\n4/General/Regions/EUROPE/Southern Europe/Italy\t1\n4/General/Regions/EUROPE/Southern Europe/Malta\t1\n4/General/Regions/EUROPE/Southern Europe/Portugal\t1\n4/General/Regions/EUROPE/Southern Europe/San Marino\t1\n4/General/Regions/EUROPE/Southern Europe/Slovenia\t1\n4/General/Regions/EUROPE/Southern Europe/Spain\t1\n4/General/Regions/EUROPE/Southern Europe/The Former Yugoslav Republic of Macedonia\t1\n4/General/Regions/EUROPE/Southern Europe/Yugoslavia\t1\n4/General/Regions/EUROPE/Western Europe/Austria\t1\n4/General/Regions/EUROPE/Western Europe/Belgium\t1\n4/General/Regions/EUROPE/Western Europe/France\t1\n4/General/Regions/EUROPE/Western Europe/Germany\t1\n4/General/Regions/EUROPE/Western Europe/Liechtenstein\t1\n4/General/Regions/EUROPE/Western Europe/Luxembourg\t1\n4/General/Regions/EUROPE/Western Europe/Monaco\t1\n4/General/Regions/EUROPE/Western Europe/Netherlands\t1\n4/General/Regions/EUROPE/Western Europe/Switzerland\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Anguilla\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Antigua and Barbuda\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Aruba\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Bahamas\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Barbados\t1\n4/General/Regions/LATIN AMERICA/Caribbean/British Virgin Islands\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Cayman Islands\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Cuba\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Dominica\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Dominican Republic\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Grenada\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Guadeloupe\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Haiti\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Jamaica\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Martinique\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Montserrat\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Netherlands Antilles\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Puerto Rico\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Saint Kitts and Nevis\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Saint Lucia\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Saint Vincent and Grenadines\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Trinidad and Tobago\t1\n4/General/Regions/LATIN AMERICA/Caribbean/Turks and Caicos Islands\t1\n4/General/Regions/LATIN AMERICA/Caribbean/United States Virgin Islands\t1\n4/General/Regions/LATIN AMERICA/Central America/Belize\t1\n4/General/Regions/LATIN AMERICA/Central America/Costa Rica\t1\n4/General/Regions/LATIN AMERICA/Central America/El Salvador\t1\n4/General/Regions/LATIN AMERICA/Central America/Guatemala\t1\n4/General/Regions/LATIN AMERICA/Central America/Honduras\t1\n4/General/Regions/LATIN AMERICA/Central America/Mexico\t1\n4/General/Regions/LATIN AMERICA/Central America/Nicaragua\t1\n4/General/Regions/LATIN AMERICA/Central America/Panama\t1\n4/General/Regions/LATIN AMERICA/South America/Argentina\t1\n4/General/Regions/LATIN AMERICA/South America/Bolivia\t1\n4/General/Regions/LATIN AMERICA/South America/Brazil\t1\n4/General/Regions/LATIN AMERICA/South America/Chile\t1\n4/General/Regions/LATIN AMERICA/South America/Colombia\t1\n4/General/Regions/LATIN AMERICA/South America/Ecuador\t1\n4/General/Regions/LATIN AMERICA/South America/Falkland Islands (Malvinas)\t1\n4/General/Regions/LATIN AMERICA/South America/French Guiana\t1\n4/General/Regions/LATIN AMERICA/South America/Guyana\t1\n4/General/Regions/LATIN AMERICA/South America/Paraguay\t1\n4/General/Regions/LATIN AMERICA/South America/Peru\t1\n4/General/Regions/LATIN AMERICA/South America/Suriname\t1\n4/General/Regions/LATIN AMERICA/South America/Uruguay\t1\n4/General/Regions/LATIN AMERICA/South America/Venezuela\t1\n4/General/Regions/OCEANIA/Australia and New Zealand/Australia\t1\n4/General/Regions/OCEANIA/Australia and New Zealand/New Zealand\t1\n4/General/Regions/OCEANIA/Australia and New Zealand/Norfolk Island\t1\n4/General/Regions/OCEANIA/Melanesia/Fiji\t1\n4/General/Regions/OCEANIA/Melanesia/New Caledonia\t1\n4/General/Regions/OCEANIA/Melanesia/Papua New Guinea\t1\n4/General/Regions/OCEANIA/Melanesia/Solomon Islands\t1\n4/General/Regions/OCEANIA/Melanesia/Vanuatu\t1\n4/General/Regions/OCEANIA/Micronesia/Federated States of Micronesia\t1\n4/General/Regions/OCEANIA/Micronesia/Guam\t1\n4/General/Regions/OCEANIA/Micronesia/Johnston Island\t1\n4/General/Regions/OCEANIA/Micronesia/Kiribati\t1\n4/General/Regions/OCEANIA/Micronesia/Marshall Islands\t1\n4/General/Regions/OCEANIA/Micronesia/Nauru\t1\n4/General/Regions/OCEANIA/Micronesia/Northern Mariana Islands\t1\n4/General/Regions/OCEANIA/Micronesia/Palau\t1\n4/General/Regions/OCEANIA/Polynesia/American Samoa\t1\n4/General/Regions/OCEANIA/Polynesia/Cook Islands\t1\n4/General/Regions/OCEANIA/Polynesia/French Polynesia\t1\n4/General/Regions/OCEANIA/Polynesia/Niue\t1\n4/General/Regions/OCEANIA/Polynesia/Pitcairn\t1\n4/General/Regions/OCEANIA/Polynesia/Samoa\t1\n4/General/Regions/OCEANIA/Polynesia/Tokelau\t1\n4/General/Regions/OCEANIA/Polynesia/Tonga\t1\n4/General/Regions/OCEANIA/Polynesia/Tuvalu\t1\n4/General/Regions/OCEANIA/Polynesia/Wallis and Futuna Islands\t1\n4/General/Software Document Classification/Software Descriptions/Main Software Descriptions/Architecture Description\t1\n4/General/Software Document Classification/Software Descriptions/Main Software Descriptions/Configuration Description\t1\n4/General/Software Document Classification/Software Descriptions/Main Software Descriptions/Implementation Description\t1\n4/General/Software Document Classification/Software Descriptions/Main Software Descriptions/Requirement Description\t1\n4/General/Software Document Classification/Software Descriptions/Main Software Descriptions/Short System Description\t1\n4/General/Software Document Classification/Software Descriptions/Software Description Appendices/External Message Description\t1\n4/General/Software Document Classification/Software Descriptions/Software Description Appendices/Initialization Description\t1\n4/General/Software Document Classification/Software Descriptions/Software Description Appendices/Internal Message Description\t1\n4/General/Software Document Classification/Software Descriptions/Software Description Appendices/Process Description\t1\n4/General/Software Document Classification/Software Descriptions/Software Description Appendices/Record Description\t1\n4/General/Software Document Classification/Software Descriptions/Software Description Appendices/Terminology Description\t1\n4/General/Software Document Classification/Software Descriptions/Software Description Appendices/User Interface Description\t1\n4/categories/General/Languages/English/American English\t1\n4/categories/General/Languages/English/Australian English\t1\n4/categories/General/Languages/English/British English\t1\n4/categories/General/Languages/English/Canadian English\t1\n4/categories/General/Languages/English/Indian English\t1\n4/categories/General/Languages/French/Canadian French\t1\n4/categories/General/Languages/French/French French\t1\n4/categories/General/Languages/German/Austrian German\t1\n4/categories/General/Languages/German/German German\t1\n4/categories/General/Languages/German/Swiss German\t1\n4/categories/General/Languages/Spanish/American Spanish\t1\n4/categories/General/Languages/Spanish/Mexican Spanish\t1\n4/categories/General/Languages/Spanish/Spanish\t1\n4/categories/General/Regions/AFRICA/Eastern Africa\t19\n4/categories/General/Regions/AFRICA/Middle Africa\t10\n4/categories/General/Regions/AFRICA/Northern Africa\t8\n4/categories/General/Regions/AFRICA/Southern Africa\t6\n4/categories/General/Regions/AFRICA/Western Africa\t18\n4/categories/General/Regions/ASIA/Eastern Asia\t8\n4/categories/General/Regions/ASIA/South-central Asia\t15\n4/categories/General/Regions/ASIA/South-eastern Asia\t12\n4/categories/General/Regions/ASIA/Western Asia\t19\n4/categories/General/Regions/EUROPE/Eastern Europe\t11\n4/categories/General/Regions/EUROPE/Northern Europe\t14\n4/categories/General/Regions/EUROPE/Southern Europe\t16\n4/categories/General/Regions/EUROPE/Western Europe\t10\n4/categories/General/Regions/LATIN AMERICA/Caribbean\t25\n4/categories/General/Regions/LATIN AMERICA/Central America\t9\n4/categories/General/Regions/LATIN AMERICA/South America\t15\n4/categories/General/Regions/NORTHERN AMERICA/Bermuda\t1\n4/categories/General/Regions/NORTHERN AMERICA/Canada\t1\n4/categories/General/Regions/NORTHERN AMERICA/Greenland\t1\n4/categories/General/Regions/NORTHERN AMERICA/Saint Pierre and Miquelon\t1\n4/categories/General/Regions/NORTHERN AMERICA/United States of America\t1\n4/categories/General/Regions/OCEANIA/Australia and New Zealand\t4\n4/categories/General/Regions/OCEANIA/Melanesia\t6\n4/categories/General/Regions/OCEANIA/Micronesia\t9\n4/categories/General/Regions/OCEANIA/Polynesia\t11\n4/categories/General/Software Document Classification/Administrative Documents/Contract Review Minutes\t1\n4/categories/General/Software Document Classification/Administrative Documents/Development Contract\t1\n4/categories/General/Software Document Classification/Administrative Documents/Extended Contract\t1\n4/categories/General/Software Document Classification/Administrative Documents/Maintenance Contract\t1\n4/categories/General/Software Document Classification/Administrative Documents/Preliminary Contract\t1\n4/categories/General/Software Document Classification/Administrative Documents/Project Meeting Minutes\t1\n4/categories/General/Software Document Classification/Development Plans/Acceptance Plan\t1\n4/categories/General/Software Document Classification/Development Plans/Documentation Plan\t1\n4/categories/General/Software Document Classification/Development Plans/Expense Plan\t1\n4/categories/General/Software Document Classification/Development Plans/Manual Plan\t1\n4/categories/General/Software Document Classification/Development Plans/Method Plan\t1\n4/categories/General/Software Document Classification/Development Plans/Phase Plan\t1\n4/categories/General/Software Document Classification/Development Plans/Quality Plan\t1\n4/categories/General/Software Document Classification/Development Plans/Responsibility Plan\t1\n4/categories/General/Software Document Classification/Development Plans/Risk Plan\t1\n4/categories/General/Software Document Classification/Development Plans/Schedule Plan\t1\n4/categories/General/Software Document Classification/Development Plans/Test Plan\t1\n4/categories/General/Software Document Classification/Development Plans/Version Control Plan\t1\n4/categories/General/Software Document Classification/Development Plans/Work Breakdown Plan\t1\n4/categories/General/Software Document Classification/Quality Documents/Analysis Request\t1\n4/categories/General/Software Document Classification/Quality Documents/Change Request\t1\n4/categories/General/Software Document Classification/Quality Documents/Information Request\t1\n4/categories/General/Software Document Classification/Quality Documents/Inspection Call\t1\n4/categories/General/Software Document Classification/Quality Documents/Inspection Report\t1\n4/categories/General/Software Document Classification/Quality Documents/Reader\u0027s Report\t1\n4/categories/General/Software Document Classification/Quality Documents/Review Call\t1\n4/categories/General/Software Document Classification/Quality Documents/Review Report\t1\n4/categories/General/Software Document Classification/Quality Documents/Test Call\t1\n4/categories/General/Software Document Classification/Quality Documents/Test Report\t1\n4/categories/General/Software Document Classification/Software Descriptions/Main Software Descriptions\t6\n4/categories/General/Software Document Classification/Software Descriptions/Software Description Appendices\t8\n4/categories/General/Software Document Classification/Utilization Documents/Installation Manual\t1\n4/categories/General/Software Document Classification/Utilization Documents/Installations Help\t1\n4/categories/General/Software Document Classification/Utilization Documents/Operator\u0027s Help\t1\n4/categories/General/Software Document Classification/Utilization Documents/Operator\u0027s Manual\t1\n4/categories/General/Software Document Classification/Utilization Documents/Service Help\t1\n4/categories/General/Software Document Classification/Utilization Documents/Service Manual\t1\n4/categories/General/Software Document Classification/Utilization Documents/User\u0027s Help\t1\n4/categories/General/Software Document Classification/Utilization Documents/User\u0027s Manual\t1\n5/Company Home/Data Dictionary/Space Templates/Software Engineering Project/Documentation/Drafts\t1\n5/Company Home/Data Dictionary/Space Templates/Software Engineering Project/Documentation/Pending Approval\t1\n5/Company Home/Data Dictionary/Space Templates/Software Engineering Project/Documentation/Published\t1\n5/Company Home/Data Dictionary/Space Templates/Software Engineering Project/Documentation/Samples\t2\n5/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample\t17\n5/Company Home/Sites/swsdp/dataLists/71824d77-9cd8-44c3-b3e4-dbca7e17dc49/42fcbae6-b1fe-4028-9f85-9ad7f81a8e3b\t1\n5/Company Home/Sites/swsdp/dataLists/71824d77-9cd8-44c3-b3e4-dbca7e17dc49/50046ccd-9034-420f-925b-0530836488c4\t1\n5/Company Home/Sites/swsdp/dataLists/71824d77-9cd8-44c3-b3e4-dbca7e17dc49/66028f46-c074-4cf5-9f37-8490e51ca540\t1\n5/Company Home/Sites/swsdp/dataLists/71824d77-9cd8-44c3-b3e4-dbca7e17dc49/e6fc15e9-5caf-4f17-857e-7b0cfbc655a9\t1\n5/Company Home/Sites/swsdp/dataLists/aea88103-517e-4aa0-a3be-de258d0e6465/35b8be80-170f-40af-a173-513758b83165\t1\n5/Company Home/Sites/swsdp/dataLists/aea88103-517e-4aa0-a3be-de258d0e6465/567ee439-4ebc-40cf-a783-3e561ad5a605\t1\n5/Company Home/Sites/swsdp/dataLists/aea88103-517e-4aa0-a3be-de258d0e6465/7a0bb872-bf7c-457b-831e-95f94efb9816\t1\n5/Company Home/Sites/swsdp/dataLists/aea88103-517e-4aa0-a3be-de258d0e6465/9198bd31-a664-4584-a271-b529daf4793b\t1\n5/Company Home/Sites/swsdp/dataLists/aea88103-517e-4aa0-a3be-de258d0e6465/eb1c2fda-4868-4384-b29e-78c01b6601ec\t1\n5/Company Home/Sites/swsdp/discussions/post-1297807546884_964/post-1297807546884_964\t1\n5/Company Home/Sites/swsdp/discussions/post-1297807546884_964/post-1297807619797_315\t1\n5/Company Home/Sites/swsdp/discussions/post-1297807546884_964/post-1297807729794_112\t1\n5/Company Home/Sites/swsdp/discussions/post-1297807546884_964/post-1297807767790_183\t1\n5/Company Home/Sites/swsdp/discussions/post-1297807581026_873/post-1297807581026_873\t1\n5/Company Home/Sites/swsdp/discussions/post-1297807581026_873/post-1297807650635_649\t1\n5/Company Home/Sites/swsdp/documentLibrary/Agency Files/Contracts\t4\n5/Company Home/Sites/swsdp/documentLibrary/Agency Files/Images\t24\n5/Company Home/Sites/swsdp/documentLibrary/Agency Files/Logo Files\t5\n5/Company Home/Sites/swsdp/documentLibrary/Agency Files/Mock-Ups\t9\n5/Company Home/Sites/swsdp/documentLibrary/Agency Files/Video Files\t2\n5/Company Home/Sites/swsdp/documentLibrary/Budget Files/Invoices\t5\n5/Company Home/Sites/swsdp/documentLibrary/Budget Files/budget.xls\t6\n5/Company Home/Sites/swsdp/documentLibrary/Meeting Notes/Meeting Notes 2011-01-27.doc\t3\n5/Company Home/Sites/swsdp/documentLibrary/Meeting Notes/Meeting Notes 2011-02-03.doc\t3\n5/Company Home/Sites/swsdp/documentLibrary/Meeting Notes/Meeting Notes 2011-02-10.doc\t3\n5/Company Home/Sites/swsdp/documentLibrary/Presentations/Project Objectives.ppt\t3\n5/Company Home/Sites/swsdp/documentLibrary/Presentations/Project Overview.ppt\t3\n5/categories/General/Regions/AFRICA/Eastern Africa/Burundi\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Comoros\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Djibouti\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Eritrea\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Ethiopia\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Kenya\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Madagascar\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Malawi\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Mauritius\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Mozambique\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Reunion\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Rwanda\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Seychelles\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Somalia\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Uganda\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/United Republic of Tanzania\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Zambia\t1\n5/categories/General/Regions/AFRICA/Eastern Africa/Zimbabwe\t1\n5/categories/General/Regions/AFRICA/Middle Africa/Angola\t1\n5/categories/General/Regions/AFRICA/Middle Africa/Cameroon\t1\n5/categories/General/Regions/AFRICA/Middle Africa/Central African Republic\t1\n5/categories/General/Regions/AFRICA/Middle Africa/Chad\t1\n5/categories/General/Regions/AFRICA/Middle Africa/Congo\t1\n5/categories/General/Regions/AFRICA/Middle Africa/Democratic Republic of the Congo\t1\n5/categories/General/Regions/AFRICA/Middle Africa/Equatorial Guinea\t1\n5/categories/General/Regions/AFRICA/Middle Africa/Gabon\t1\n5/categories/General/Regions/AFRICA/Middle Africa/Sao Tome and Principe\t1\n5/categories/General/Regions/AFRICA/Northern Africa/Algeria\t1\n5/categories/General/Regions/AFRICA/Northern Africa/Egypt\t1\n5/categories/General/Regions/AFRICA/Northern Africa/Libyan Arab Jamahiriya\t1\n5/categories/General/Regions/AFRICA/Northern Africa/Morocco\t1\n5/categories/General/Regions/AFRICA/Northern Africa/Sudan\t1\n5/categories/General/Regions/AFRICA/Northern Africa/Tunisia\t1\n5/categories/General/Regions/AFRICA/Northern Africa/Western Sahara\t1\n5/categories/General/Regions/AFRICA/Southern Africa/Botswana\t1\n5/categories/General/Regions/AFRICA/Southern Africa/Lesotho\t1\n5/categories/General/Regions/AFRICA/Southern Africa/Namibia\t1\n5/categories/General/Regions/AFRICA/Southern Africa/South Africa\t1\n5/categories/General/Regions/AFRICA/Southern Africa/Swaziland\t1\n5/categories/General/Regions/AFRICA/Western Africa/Benin\t1\n5/categories/General/Regions/AFRICA/Western Africa/Burkina Faso\t1\n5/categories/General/Regions/AFRICA/Western Africa/Cape Verde\t1\n5/categories/General/Regions/AFRICA/Western Africa/Cote d\u0027Ivoire\t1\n5/categories/General/Regions/AFRICA/Western Africa/Gambia\t1\n5/categories/General/Regions/AFRICA/Western Africa/Ghana\t1\n5/categories/General/Regions/AFRICA/Western Africa/Guinea\t1\n5/categories/General/Regions/AFRICA/Western Africa/Guinea-Bissau\t1\n5/categories/General/Regions/AFRICA/Western Africa/Liberia\t1\n5/categories/General/Regions/AFRICA/Western Africa/Mali\t1\n5/categories/General/Regions/AFRICA/Western Africa/Mauritania\t1\n5/categories/General/Regions/AFRICA/Western Africa/Niger\t1\n5/categories/General/Regions/AFRICA/Western Africa/Nigeria\t1\n5/categories/General/Regions/AFRICA/Western Africa/Saint Helena\t1\n5/categories/General/Regions/AFRICA/Western Africa/Senegal\t1\n5/categories/General/Regions/AFRICA/Western Africa/Sierra Leone\t1\n5/categories/General/Regions/AFRICA/Western Africa/Togo\t1\n5/categories/General/Regions/ASIA/Eastern Asia/China\t1\n5/categories/General/Regions/ASIA/Eastern Asia/Democratic People\u0027s Republic of Korea\t1\n5/categories/General/Regions/ASIA/Eastern Asia/Hong Kong SAR\t1\n5/categories/General/Regions/ASIA/Eastern Asia/Japan\t1\n5/categories/General/Regions/ASIA/Eastern Asia/Macao, China\t1\n5/categories/General/Regions/ASIA/Eastern Asia/Mongolia\t1\n5/categories/General/Regions/ASIA/Eastern Asia/Republic of Korea\t1\n5/categories/General/Regions/ASIA/South-central Asia/Afghanistan\t1\n5/categories/General/Regions/ASIA/South-central Asia/Bangladesh\t1\n5/categories/General/Regions/ASIA/South-central Asia/Bhutan\t1\n5/categories/General/Regions/ASIA/South-central Asia/India\t1\n5/categories/General/Regions/ASIA/South-central Asia/Iran (Islamic Republic of)\t1\n5/categories/General/Regions/ASIA/South-central Asia/Kazakhstan\t1\n5/categories/General/Regions/ASIA/South-central Asia/Kyrgyzstan\t1\n5/categories/General/Regions/ASIA/South-central Asia/Maldives\t1\n5/categories/General/Regions/ASIA/South-central Asia/Nepal\t1\n5/categories/General/Regions/ASIA/South-central Asia/Pakistan\t1\n5/categories/General/Regions/ASIA/South-central Asia/Sri Lanka\t1\n5/categories/General/Regions/ASIA/South-central Asia/Tajikistan\t1\n5/categories/General/Regions/ASIA/South-central Asia/Turkmenistan\t1\n5/categories/General/Regions/ASIA/South-central Asia/Uzbekistan\t1\n5/categories/General/Regions/ASIA/South-eastern Asia/Brunei Darussalam\t1\n5/categories/General/Regions/ASIA/South-eastern Asia/Cambodia\t1\n5/categories/General/Regions/ASIA/South-eastern Asia/Indonesia\t1\n5/categories/General/Regions/ASIA/South-eastern Asia/Lao People\u0027s Democratic Republic\t1\n5/categories/General/Regions/ASIA/South-eastern Asia/Malaysia\t1\n5/categories/General/Regions/ASIA/South-eastern Asia/Myanmar\t1\n5/categories/General/Regions/ASIA/South-eastern Asia/Philippines\t1\n5/categories/General/Regions/ASIA/South-eastern Asia/Singapore\t1\n5/categories/General/Regions/ASIA/South-eastern Asia/Thailand\t1\n5/categories/General/Regions/ASIA/South-eastern Asia/Timor-Leste\t1\n5/categories/General/Regions/ASIA/South-eastern Asia/Viet Nam\t1\n5/categories/General/Regions/ASIA/Western Asia/Armenia\t1\n5/categories/General/Regions/ASIA/Western Asia/Azerbaijan\t1\n5/categories/General/Regions/ASIA/Western Asia/Bahrain\t1\n5/categories/General/Regions/ASIA/Western Asia/Cyprus\t1\n5/categories/General/Regions/ASIA/Western Asia/Georgia\t1\n5/categories/General/Regions/ASIA/Western Asia/Iraq\t1\n5/categories/General/Regions/ASIA/Western Asia/Israel\t1\n5/categories/General/Regions/ASIA/Western Asia/Jordan\t1\n5/categories/General/Regions/ASIA/Western Asia/Kuwait\t1\n5/categories/General/Regions/ASIA/Western Asia/Lebanon\t1\n5/categories/General/Regions/ASIA/Western Asia/Occupied Palestinian Territory\t1\n5/categories/General/Regions/ASIA/Western Asia/Oman\t1\n5/categories/General/Regions/ASIA/Western Asia/Qatar\t1\n5/categories/General/Regions/ASIA/Western Asia/Saudi Arabia\t1\n5/categories/General/Regions/ASIA/Western Asia/Syrian Arab Republic\t1\n5/categories/General/Regions/ASIA/Western Asia/Turkey\t1\n5/categories/General/Regions/ASIA/Western Asia/United Arab Emirates\t1\n5/categories/General/Regions/ASIA/Western Asia/Yemen\t1\n5/categories/General/Regions/EUROPE/Eastern Europe/Belarus\t1\n5/categories/General/Regions/EUROPE/Eastern Europe/Bulgaria\t1\n5/categories/General/Regions/EUROPE/Eastern Europe/Czech Republic\t1\n5/categories/General/Regions/EUROPE/Eastern Europe/Hungary\t1\n5/categories/General/Regions/EUROPE/Eastern Europe/Poland\t1\n5/categories/General/Regions/EUROPE/Eastern Europe/Republic of Moldova\t1\n5/categories/General/Regions/EUROPE/Eastern Europe/Romania\t1\n5/categories/General/Regions/EUROPE/Eastern Europe/Russian Federation\t1\n5/categories/General/Regions/EUROPE/Eastern Europe/Slovakia\t1\n5/categories/General/Regions/EUROPE/Eastern Europe/Ukraine\t1\n5/categories/General/Regions/EUROPE/Northern Europe/Channel Islands\t1\n5/categories/General/Regions/EUROPE/Northern Europe/Denmark\t1\n5/categories/General/Regions/EUROPE/Northern Europe/Estonia\t1\n5/categories/General/Regions/EUROPE/Northern Europe/Faeroe Islands\t1\n5/categories/General/Regions/EUROPE/Northern Europe/Finland\t1\n5/categories/General/Regions/EUROPE/Northern Europe/Iceland\t1\n5/categories/General/Regions/EUROPE/Northern Europe/Ireland\t1\n5/categories/General/Regions/EUROPE/Northern Europe/Isle of Man\t1\n5/categories/General/Regions/EUROPE/Northern Europe/Latvia\t1\n5/categories/General/Regions/EUROPE/Northern Europe/Lithuania\t1\n5/categories/General/Regions/EUROPE/Northern Europe/Norway\t1\n5/categories/General/Regions/EUROPE/Northern Europe/Sweden\t1\n5/categories/General/Regions/EUROPE/Northern Europe/United Kingdom\t1\n5/categories/General/Regions/EUROPE/Southern Europe/Albania\t1\n5/categories/General/Regions/EUROPE/Southern Europe/Andorra\t1\n5/categories/General/Regions/EUROPE/Southern Europe/Bosnia and Herzegovina\t1\n5/categories/General/Regions/EUROPE/Southern Europe/Croatia\t1\n5/categories/General/Regions/EUROPE/Southern Europe/Gibraltar\t1\n5/categories/General/Regions/EUROPE/Southern Europe/Greece\t1\n5/categories/General/Regions/EUROPE/Southern Europe/Holy See\t1\n5/categories/General/Regions/EUROPE/Southern Europe/Italy\t1\n5/categories/General/Regions/EUROPE/Southern Europe/Malta\t1\n5/categories/General/Regions/EUROPE/Southern Europe/Portugal\t1\n5/categories/General/Regions/EUROPE/Southern Europe/San Marino\t1\n5/categories/General/Regions/EUROPE/Southern Europe/Slovenia\t1\n5/categories/General/Regions/EUROPE/Southern Europe/Spain\t1\n5/categories/General/Regions/EUROPE/Southern Europe/The Former Yugoslav Republic of Macedonia\t1\n5/categories/General/Regions/EUROPE/Southern Europe/Yugoslavia\t1\n5/categories/General/Regions/EUROPE/Western Europe/Austria\t1\n5/categories/General/Regions/EUROPE/Western Europe/Belgium\t1\n5/categories/General/Regions/EUROPE/Western Europe/France\t1\n5/categories/General/Regions/EUROPE/Western Europe/Germany\t1\n5/categories/General/Regions/EUROPE/Western Europe/Liechtenstein\t1\n5/categories/General/Regions/EUROPE/Western Europe/Luxembourg\t1\n5/categories/General/Regions/EUROPE/Western Europe/Monaco\t1\n5/categories/General/Regions/EUROPE/Western Europe/Netherlands\t1\n5/categories/General/Regions/EUROPE/Western Europe/Switzerland\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Anguilla\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Antigua and Barbuda\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Aruba\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Bahamas\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Barbados\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/British Virgin Islands\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Cayman Islands\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Cuba\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Dominica\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Dominican Republic\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Grenada\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Guadeloupe\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Haiti\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Jamaica\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Martinique\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Montserrat\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Netherlands Antilles\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Puerto Rico\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Saint Kitts and Nevis\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Saint Lucia\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Saint Vincent and Grenadines\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Trinidad and Tobago\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/Turks and Caicos Islands\t1\n5/categories/General/Regions/LATIN AMERICA/Caribbean/United States Virgin Islands\t1\n5/categories/General/Regions/LATIN AMERICA/Central America/Belize\t1\n5/categories/General/Regions/LATIN AMERICA/Central America/Costa Rica\t1\n5/categories/General/Regions/LATIN AMERICA/Central America/El Salvador\t1\n5/categories/General/Regions/LATIN AMERICA/Central America/Guatemala\t1\n5/categories/General/Regions/LATIN AMERICA/Central America/Honduras\t1\n5/categories/General/Regions/LATIN AMERICA/Central America/Mexico\t1\n5/categories/General/Regions/LATIN AMERICA/Central America/Nicaragua\t1\n5/categories/General/Regions/LATIN AMERICA/Central America/Panama\t1\n5/categories/General/Regions/LATIN AMERICA/South America/Argentina\t1\n5/categories/General/Regions/LATIN AMERICA/South America/Bolivia\t1\n5/categories/General/Regions/LATIN AMERICA/South America/Brazil\t1\n5/categories/General/Regions/LATIN AMERICA/South America/Chile\t1\n5/categories/General/Regions/LATIN AMERICA/South America/Colombia\t1\n5/categories/General/Regions/LATIN AMERICA/South America/Ecuador\t1\n5/categories/General/Regions/LATIN AMERICA/South America/Falkland Islands (Malvinas)\t1\n5/categories/General/Regions/LATIN AMERICA/South America/French Guiana\t1\n5/categories/General/Regions/LATIN AMERICA/South America/Guyana\t1\n5/categories/General/Regions/LATIN AMERICA/South America/Paraguay\t1\n5/categories/General/Regions/LATIN AMERICA/South America/Peru\t1\n5/categories/General/Regions/LATIN AMERICA/South America/Suriname\t1\n5/categories/General/Regions/LATIN AMERICA/South America/Uruguay\t1\n5/categories/General/Regions/LATIN AMERICA/South America/Venezuela\t1\n5/categories/General/Regions/OCEANIA/Australia and New Zealand/Australia\t1\n5/categories/General/Regions/OCEANIA/Australia and New Zealand/New Zealand\t1\n5/categories/General/Regions/OCEANIA/Australia and New Zealand/Norfolk Island\t1\n5/categories/General/Regions/OCEANIA/Melanesia/Fiji\t1\n5/categories/General/Regions/OCEANIA/Melanesia/New Caledonia\t1\n5/categories/General/Regions/OCEANIA/Melanesia/Papua New Guinea\t1\n5/categories/General/Regions/OCEANIA/Melanesia/Solomon Islands\t1\n5/categories/General/Regions/OCEANIA/Melanesia/Vanuatu\t1\n5/categories/General/Regions/OCEANIA/Micronesia/Federated States of Micronesia\t1\n5/categories/General/Regions/OCEANIA/Micronesia/Guam\t1\n5/categories/General/Regions/OCEANIA/Micronesia/Johnston Island\t1\n5/categories/General/Regions/OCEANIA/Micronesia/Kiribati\t1\n5/categories/General/Regions/OCEANIA/Micronesia/Marshall Islands\t1\n5/categories/General/Regions/OCEANIA/Micronesia/Nauru\t1\n5/categories/General/Regions/OCEANIA/Micronesia/Northern Mariana Islands\t1\n5/categories/General/Regions/OCEANIA/Micronesia/Palau\t1\n5/categories/General/Regions/OCEANIA/Polynesia/American Samoa\t1\n5/categories/General/Regions/OCEANIA/Polynesia/Cook Islands\t1\n5/categories/General/Regions/OCEANIA/Polynesia/French Polynesia\t1\n5/categories/General/Regions/OCEANIA/Polynesia/Niue\t1\n5/categories/General/Regions/OCEANIA/Polynesia/Pitcairn\t1\n5/categories/General/Regions/OCEANIA/Polynesia/Samoa\t1\n5/categories/General/Regions/OCEANIA/Polynesia/Tokelau\t1\n5/categories/General/Regions/OCEANIA/Polynesia/Tonga\t1\n5/categories/General/Regions/OCEANIA/Polynesia/Tuvalu\t1\n5/categories/General/Regions/OCEANIA/Polynesia/Wallis and Futuna Islands\t1\n5/categories/General/Software Document Classification/Software Descriptions/Main Software Descriptions/Architecture Description\t1\n5/categories/General/Software Document Classification/Software Descriptions/Main Software Descriptions/Configuration Description\t1\n5/categories/General/Software Document Classification/Software Descriptions/Main Software Descriptions/Implementation Description\t1\n5/categories/General/Software Document Classification/Software Descriptions/Main Software Descriptions/Requirement Description\t1\n5/categories/General/Software Document Classification/Software Descriptions/Main Software Descriptions/Short System Description\t1\n5/categories/General/Software Document Classification/Software Descriptions/Software Description Appendices/External Message Description\t1\n5/categories/General/Software Document Classification/Software Descriptions/Software Description Appendices/Initialization Description\t1\n5/categories/General/Software Document Classification/Software Descriptions/Software Description Appendices/Internal Message Description\t1\n5/categories/General/Software Document Classification/Software Descriptions/Software Description Appendices/Process Description\t1\n5/categories/General/Software Document Classification/Software Descriptions/Software Description Appendices/Record Description\t1\n5/categories/General/Software Document Classification/Software Descriptions/Software Description Appendices/Terminology Description\t1\n5/categories/General/Software Document Classification/Software Descriptions/Software Description Appendices/User Interface Description\t1\n6/Company Home/Data Dictionary/Space Templates/Software Engineering Project/Documentation/Samples/system-overview.html\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/blogsearch.get.atom.400.ftl\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/blogsearch.get.atom.ftl\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/blogsearch.get.desc.xml\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/blogsearch.get.html.400.ftl\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/blogsearch.get.html.ftl\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/blogsearch.get.js\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/categorysearch.get.atom.404.ftl\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/categorysearch.get.atom.ftl\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/categorysearch.get.desc.xml\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/categorysearch.get.html.404.ftl\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/categorysearch.get.html.ftl\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/categorysearch.get.js\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/folder.get.atom.ftl\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/folder.get.desc.xml\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/folder.get.html.ftl\t1\n6/Company Home/Data Dictionary/Web Scripts/org/alfresco/sample/folder.get.js\t1\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Contracts/Project Contract.pdf\t3\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Images/coins.JPG\t2\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Images/graph.JPG\t2\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Images/grass.jpg\t3\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Images/header.png\t2\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Images/low consumption bulb.png\t2\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Images/money.JPG\t2\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Images/plugs.jpg\t2\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Images/turbine.JPG\t2\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Images/wind turbine.JPG\t2\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Images/windmill.png\t2\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Images/wires.JPG\t2\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Logo Files/GE Logo.png\t2\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Logo Files/logo.png\t2\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Mock-Ups/sample 1.png\t2\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Mock-Ups/sample 2.png\t3\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Mock-Ups/sample 3.png\t3\n6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Video Files/WebSiteReview.mp4\t1\n6/Company Home/Sites/swsdp/documentLibrary/Budget Files/Invoices/inv I200-109.png\t2\n6/Company Home/Sites/swsdp/documentLibrary/Budget Files/Invoices/inv I200-189.png\t2\n6/Company Home/Sites/swsdp/documentLibrary/Budget Files/budget.xls/budget.xls discussion\t3\n6/Company Home/Sites/swsdp/documentLibrary/Budget Files/budget.xls/doclib\t1\n"
-          }
-        ]
-      },
-      "apps": [],
-      "jobName": "paragraph_1506440928408_-388422337",
-      "id": "20170914-161925_234474183",
-      "dateCreated": "Sep 26, 2017 4:48:48 PM",
-      "dateStarted": "Sep 26, 2017 6:04:54 PM",
-      "dateFinished": "Sep 26, 2017 6:04:54 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "%sql select cm_name from alfresco where  cm_name\u003d\u0027${Alfresco}\u0027\n",
-      "user": "anonymous",
-      "dateUpdated": "Sep 26, 2017 6:04:53 PM",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
       "config": {
         "tableHide": false,
         "editorSetting": {
           "language": "sql",
           "editOnDblClick": false
         },
-        "colWidth": 12.0,
+        "colWidth": 6.0,
         "editorMode": "ace/mode/sql",
         "editorHide": false,
-        "runOnSelectionChange": true,
+        "title": true,
         "results": {},
         "enabled": true
       },
       "settings": {
-        "params": {
-          "fields": [
-            "cm_name",
-            "cm_title",
-            "cm_description"
-          ],
-          "cm_name": "\u0027Alfresco\u0027",
-          "\u0027Alfresco\u0027": "",
-          "\u003d\u0027Alfresco\u0027": "",
-          "Alfresco": "alfresco"
-        },
-        "forms": {
-          "Alfresco": {
-            "name": "Alfresco",
-            "defaultValue": "",
-            "hidden": false
-          }
-        }
+        "params": {},
+        "forms": {}
       },
       "results": {
         "code": "SUCCESS",
         "msg": [
           {
             "type": "TABLE",
-            "data": "cm_name\nalfresco\nalfresco docs.js.sample\nemailbody_texthtml_alfresco.ftl\nGROUP_ALFRESCO_SEARCH_ADMINISTRATORS\nGROUP_ALFRESCO_MODEL_ADMINISTRATORS\nGROUP_ALFRESCO_ADMINISTRATORS\nemailbody_textplain_alfresco.ftl\nemailbody_texthtml_alfresco_fr.ftl\nemailbody_textplain_alfresco_ru.ftl\nemailbody_textplain_alfresco_de.ftl\nemailbody_texthtml_alfresco_ru.ftl\nemailbody_texthtml_alfresco_nl.ftl\nemailbody_textplain_alfresco_es.ftl\nemailbody_texthtml_alfresco_it.ftl\nemailbody_textplain_alfresco_fr.ftl\nemailbody_texthtml_alfresco_ja.ftl\nemailbody_texthtml_alfresco_de.ftl\nemailbody_textplain_alfresco_it.ftl\nemailbody_texthtml_alfresco_nb.ftl\nemailbody_textplain_alfresco_ja.ftl\nemailbody_textplain_alfresco_nl.ftl\nemailbody_texthtml_alfresco_es.ftl\nemailbody_textplain_alfresco_nb.ftl\nemailbody_texthtml_alfresco_zh_CN.ftl\nemailbody_textplain_alfresco_pt_BR.ftl\nemailbody_texthtml_alfresco_pt_BR.ftl\nemailbody_textplain_alfresco_zh_CN.ftl\n"
+            "data": "cm_name\tcm_creator\tSITE\tcm:content.size\nWebSiteReview.mp4\tabeecher\t[swsdp]\t3737049\nProject Overview.ppt\tmjackson\t[swsdp]\t2898432\nProject Objectives.ppt\tmjackson\t[swsdp]\t2117632\nwebpreview\tmjackson\t[swsdp]\t976492\ninv I200-189.png\tmjackson\t[swsdp]\t777461\nwindmill.png\tabeecher\t[swsdp]\t679602\nwebpreview\tmjackson\t[swsdp]\t672905\nmoney.JPG\tabeecher\t[swsdp]\t540412\ncoins.JPG\tabeecher\t[swsdp]\t501641\nProject Contract.pdf\tabeecher\t[swsdp]\t381778\nsample 2.png\tabeecher\t[swsdp]\t375396\nsample 3.png\tabeecher\t[swsdp]\t350217\ngraph.JPG\tabeecher\t[swsdp]\t342155\nimgpreview\tmjackson\t[swsdp]\t266338\ninv I200-109.png\tmjackson\t[swsdp]\t212734\nimgpreview\tmjackson\t[swsdp]\t196506\nsample 1.png\tabeecher\t[swsdp]\t188533\nlow consumption bulb.png\tabeecher\t[swsdp]\t172648\nturbine.JPG\tabeecher\t[swsdp]\t165798\nimgpreview\tmjackson\t[swsdp]\t155620\n"
           }
         ]
       },
       "apps": [],
-      "jobName": "paragraph_1506440928409_-388807086",
-      "id": "20170914-161954_146592320",
-      "dateCreated": "Sep 26, 2017 4:48:48 PM",
-      "dateStarted": "Sep 26, 2017 6:04:54 PM",
-      "dateFinished": "Sep 26, 2017 6:04:54 PM",
+      "jobName": "paragraph_1510522109473_-1191217034",
+      "id": "20171002-151248_2042166563",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:27 PM",
+      "dateFinished": "Nov 12, 2017 9:36:28 PM",
       "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Count of Content Modified In The Last 60 Days",
+      "text": "select cm_modified_day, count(*) from alfresco where cm_modified \u003e\u003d \u0027NOW/DAY-60DAYS\u0027 group by cm_modified_day",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "lineChart",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_modified_day\tEXPR$1\n2017-09-13\t0\n2017-09-14\t0\n2017-09-15\t0\n2017-09-16\t0\n2017-09-17\t0\n2017-09-18\t0\n2017-09-19\t0\n2017-09-20\t0\n2017-09-21\t0\n2017-09-22\t0\n2017-09-23\t0\n2017-09-24\t0\n2017-09-25\t0\n2017-09-26\t0\n2017-09-27\t0\n2017-09-28\t0\n2017-09-29\t0\n2017-09-30\t0\n2017-10-01\t0\n2017-10-02\t0\n2017-10-03\t0\n2017-10-04\t0\n2017-10-05\t0\n2017-10-06\t0\n2017-10-07\t0\n2017-10-08\t0\n2017-10-09\t0\n2017-10-10\t0\n2017-10-11\t0\n2017-10-12\t0\n2017-10-13\t0\n2017-10-14\t0\n2017-10-15\t0\n2017-10-16\t0\n2017-10-17\t0\n2017-10-18\t0\n2017-10-19\t0\n2017-10-20\t0\n2017-10-21\t0\n2017-10-22\t0\n2017-10-23\t0\n2017-10-24\t0\n2017-10-25\t0\n2017-10-26\t0\n2017-10-27\t0\n2017-10-28\t0\n2017-10-29\t0\n2017-10-30\t0\n2017-10-31\t0\n2017-11-01\t0\n2017-11-02\t0\n2017-11-03\t0\n2017-11-04\t0\n2017-11-05\t0\n2017-11-06\t0\n2017-11-07\t0\n2017-11-08\t0\n2017-11-09\t0\n2017-11-10\t0\n2017-11-11\t0\n2017-11-12\t686\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109473_-1191217034",
+      "id": "20171102-160319_1005463480",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:28 PM",
+      "dateFinished": "Nov 12, 2017 9:36:28 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Volume of Content Modified In The Last 60 Days",
+      "text": "select cm_modified_day, sum(`cm:content.size`) as `Sum`, max (`cm:content.size`) as `Max` from alfresco\nwhere cm_modified \u003e\u003d \u0027NOW/DAY-60DAYS\u0027 AND cm_modified \u003c\u003d \u0027NOW/DAY+1DAY\u0027 group by cm_modified_day\norder by cm_modified_day desc",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "lineChart",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_modified_day\tSum\tMax\n2017-11-12\t461007\t10436\n2017-11-11\tnull\tnull\n2017-11-10\tnull\tnull\n2017-11-09\tnull\tnull\n2017-11-08\tnull\tnull\n2017-11-07\tnull\tnull\n2017-11-06\tnull\tnull\n2017-11-05\tnull\tnull\n2017-11-04\tnull\tnull\n2017-11-03\tnull\tnull\n2017-11-02\tnull\tnull\n2017-11-01\tnull\tnull\n2017-10-31\tnull\tnull\n2017-10-30\tnull\tnull\n2017-10-29\tnull\tnull\n2017-10-28\tnull\tnull\n2017-10-27\tnull\tnull\n2017-10-26\tnull\tnull\n2017-10-25\tnull\tnull\n2017-10-24\tnull\tnull\n2017-10-23\tnull\tnull\n2017-10-22\tnull\tnull\n2017-10-21\tnull\tnull\n2017-10-20\tnull\tnull\n2017-10-19\tnull\tnull\n2017-10-18\tnull\tnull\n2017-10-17\tnull\tnull\n2017-10-16\tnull\tnull\n2017-10-15\tnull\tnull\n2017-10-14\tnull\tnull\n2017-10-13\tnull\tnull\n2017-10-12\tnull\tnull\n2017-10-11\tnull\tnull\n2017-10-10\tnull\tnull\n2017-10-09\tnull\tnull\n2017-10-08\tnull\tnull\n2017-10-07\tnull\tnull\n2017-10-06\tnull\tnull\n2017-10-05\tnull\tnull\n2017-10-04\tnull\tnull\n2017-10-03\tnull\tnull\n2017-10-02\tnull\tnull\n2017-10-01\tnull\tnull\n2017-09-30\tnull\tnull\n2017-09-29\tnull\tnull\n2017-09-28\tnull\tnull\n2017-09-27\tnull\tnull\n2017-09-26\tnull\tnull\n2017-09-25\tnull\tnull\n2017-09-24\tnull\tnull\n2017-09-23\tnull\tnull\n2017-09-22\tnull\tnull\n2017-09-21\tnull\tnull\n2017-09-20\tnull\tnull\n2017-09-19\tnull\tnull\n2017-09-18\tnull\tnull\n2017-09-17\tnull\tnull\n2017-09-16\tnull\tnull\n2017-09-15\tnull\tnull\n2017-09-14\tnull\tnull\n2017-09-13\tnull\tnull\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109473_-1191217034",
+      "id": "20171027-171139_407740552",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:28 PM",
+      "dateFinished": "Nov 12, 2017 9:36:28 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Content By Type",
+      "text": "select TYPE, count(*) as `Count` from alfresco group by TYPE",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "TYPE\tCount\n{http://www.alfresco.org/model/action/1.0}action\t10\n{http://www.alfresco.org/model/action/1.0}actioncondition\t3\n{http://www.alfresco.org/model/action/1.0}actionparameter\t129\n{http://www.alfresco.org/model/action/1.0}compositeaction\t3\n{http://www.alfresco.org/model/content/1.0}authorityContainer\t10\n{http://www.alfresco.org/model/content/1.0}category\t335\n{http://www.alfresco.org/model/content/1.0}category_root\t1\n{http://www.alfresco.org/model/content/1.0}content\t170\n{http://www.alfresco.org/model/content/1.0}folder\t67\n{http://www.alfresco.org/model/content/1.0}mlRoot\t1\n{http://www.alfresco.org/model/content/1.0}person\t4\n{http://www.alfresco.org/model/content/1.0}systemfolder\t4\n{http://www.alfresco.org/model/content/1.0}thumbnail\t35\n{http://www.alfresco.org/model/content/1.0}zone\t3\n{http://www.alfresco.org/model/content/smartfolder/1.0}smartFolderTemplate\t1\n{http://www.alfresco.org/model/datalist/1.0}dataList\t2\n{http://www.alfresco.org/model/datalist/1.0}issue\t4\n{http://www.alfresco.org/model/datalist/1.0}todoList\t5\n{http://www.alfresco.org/model/forum/1.0}forum\t1\n{http://www.alfresco.org/model/forum/1.0}post\t7\n{http://www.alfresco.org/model/forum/1.0}topic\t3\n{http://www.alfresco.org/model/linksmodel/1.0}link\t2\n{http://www.alfresco.org/model/publishing/1.0}Environment\t1\n{http://www.alfresco.org/model/rule/1.0}rule\t3\n{http://www.alfresco.org/model/site/1.0}site\t1\n{http://www.alfresco.org/model/site/1.0}sites\t1\n{http://www.alfresco.org/model/system/1.0}container\t8\n{http://www.alfresco.org/model/system/1.0}store_root\t1\n{http://www.alfresco.org/model/transfer/1.0}transferGroup\t1\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109473_-1191217034",
+      "id": "20171027-160437_1598747271",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:28 PM",
+      "dateFinished": "Nov 12, 2017 9:36:28 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Content by Property",
+      "text": "select PROPERTIES, count(*) from alfresco group by PROPERTIES order by count(*) DESC limit 20",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:41:35 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "PROPERTIES\tEXPR$1\nlocale\t816\nname\t816\nnode-dbid\t816\nnode-uuid\t816\nstore-identifier\t816\nstore-protocol\t816\n{http://www.alfresco.org/model/content/1.0}name\t816\n{http://www.alfresco.org/model/system/1.0}locale\t816\n{http://www.alfresco.org/model/system/1.0}node-dbid\t816\n{http://www.alfresco.org/model/system/1.0}node-uuid\t816\n{http://www.alfresco.org/model/system/1.0}store-identifier\t816\n{http://www.alfresco.org/model/system/1.0}store-protocol\t816\ncreated\t792\ncreator\t792\nmodified\t792\nmodifier\t792\n{http://www.alfresco.org/model/content/1.0}created\t792\n{http://www.alfresco.org/model/content/1.0}creator\t792\n{http://www.alfresco.org/model/content/1.0}modified\t792\n{http://www.alfresco.org/model/content/1.0}modifier\t792\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109474_-1190062787",
+      "id": "20170914-161623_459763009",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Nov 12, 2017 9:36:28 PM",
+      "dateFinished": "Nov 12, 2017 9:36:28 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "select cm_created_month, sum(`cm:content.size`) as `Sum`, max(`cm:content.size`) as `Max`, \ncount(*) as `Count` from alfresco \nwhere cm_created \u003e\u003d \u0027NOW/YEAR-4YEARS\u0027 group by cm_created_month\norder by cm_created_month asc",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:42:37 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/sql",
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_created_month\tSum\tMax\tCount\n2013-01\tnull\tnull\t0\n2013-02\tnull\tnull\t0\n2013-03\tnull\tnull\t0\n2013-04\tnull\tnull\t0\n2013-05\tnull\tnull\t0\n2013-06\tnull\tnull\t0\n2013-07\tnull\tnull\t0\n2013-08\tnull\tnull\t0\n2013-09\tnull\tnull\t0\n2013-10\tnull\tnull\t0\n2013-11\tnull\tnull\t0\n2013-12\tnull\tnull\t0\n2014-01\tnull\tnull\t0\n2014-02\tnull\tnull\t0\n2014-03\tnull\tnull\t0\n2014-04\tnull\tnull\t0\n2014-05\tnull\tnull\t0\n2014-06\tnull\tnull\t0\n2014-07\tnull\tnull\t0\n2014-08\tnull\tnull\t0\n2014-09\tnull\tnull\t0\n2014-10\tnull\tnull\t0\n2014-11\tnull\tnull\t0\n2014-12\tnull\tnull\t0\n2015-01\tnull\tnull\t0\n2015-02\tnull\tnull\t0\n2015-03\tnull\tnull\t0\n2015-04\tnull\tnull\t0\n2015-05\tnull\tnull\t0\n2015-06\tnull\tnull\t0\n2015-07\tnull\tnull\t0\n2015-08\tnull\tnull\t0\n2015-09\t5170\t2823\t2\n2015-10\tnull\tnull\t0\n2015-11\tnull\tnull\t0\n2015-12\tnull\tnull\t0\n2016-01\tnull\tnull\t0\n2016-02\tnull\tnull\t0\n2016-03\tnull\tnull\t0\n2016-04\tnull\tnull\t0\n2016-05\tnull\tnull\t0\n2016-06\tnull\tnull\t0\n2016-07\tnull\tnull\t0\n2016-08\tnull\tnull\t0\n2016-09\tnull\tnull\t0\n2016-10\tnull\tnull\t0\n2016-11\tnull\tnull\t0\n2016-12\tnull\tnull\t0\n2017-01\tnull\tnull\t0\n2017-02\tnull\tnull\t0\n2017-03\tnull\tnull\t0\n2017-04\tnull\tnull\t0\n2017-05\tnull\tnull\t0\n2017-06\tnull\tnull\t0\n2017-07\tnull\tnull\t0\n2017-08\tnull\tnull\t0\n2017-09\tnull\tnull\t0\n2017-10\tnull\tnull\t0\n2017-11\t461007\t10436\t686\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522618963_-67414758",
+      "id": "20171112-213658_2018524099",
+      "dateCreated": "Nov 12, 2017 9:36:58 PM",
+      "dateStarted": "Nov 12, 2017 9:42:37 PM",
+      "dateFinished": "Nov 12, 2017 9:42:37 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "select TYPE, count(*) as `Count` from alfresco group by TYPE",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:42:46 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "TYPE\tCount\n{http://www.alfresco.org/model/action/1.0}action\t10\n{http://www.alfresco.org/model/action/1.0}actioncondition\t3\n{http://www.alfresco.org/model/action/1.0}actionparameter\t129\n{http://www.alfresco.org/model/action/1.0}compositeaction\t3\n{http://www.alfresco.org/model/content/1.0}authorityContainer\t10\n{http://www.alfresco.org/model/content/1.0}category\t335\n{http://www.alfresco.org/model/content/1.0}category_root\t1\n{http://www.alfresco.org/model/content/1.0}content\t170\n{http://www.alfresco.org/model/content/1.0}folder\t67\n{http://www.alfresco.org/model/content/1.0}mlRoot\t1\n{http://www.alfresco.org/model/content/1.0}person\t4\n{http://www.alfresco.org/model/content/1.0}systemfolder\t4\n{http://www.alfresco.org/model/content/1.0}thumbnail\t35\n{http://www.alfresco.org/model/content/1.0}zone\t3\n{http://www.alfresco.org/model/content/smartfolder/1.0}smartFolderTemplate\t1\n{http://www.alfresco.org/model/datalist/1.0}dataList\t2\n{http://www.alfresco.org/model/datalist/1.0}issue\t4\n{http://www.alfresco.org/model/datalist/1.0}todoList\t5\n{http://www.alfresco.org/model/forum/1.0}forum\t1\n{http://www.alfresco.org/model/forum/1.0}post\t7\n{http://www.alfresco.org/model/forum/1.0}topic\t3\n{http://www.alfresco.org/model/linksmodel/1.0}link\t2\n{http://www.alfresco.org/model/publishing/1.0}Environment\t1\n{http://www.alfresco.org/model/rule/1.0}rule\t3\n{http://www.alfresco.org/model/site/1.0}site\t1\n{http://www.alfresco.org/model/site/1.0}sites\t1\n{http://www.alfresco.org/model/system/1.0}container\t8\n{http://www.alfresco.org/model/system/1.0}store_root\t1\n{http://www.alfresco.org/model/transfer/1.0}transferGroup\t1\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522957366_-952446142",
+      "id": "20171112-214237_103307648",
+      "dateCreated": "Nov 12, 2017 9:42:37 PM",
+      "dateStarted": "Nov 12, 2017 9:42:46 PM",
+      "dateFinished": "Nov 12, 2017 9:42:46 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "select cm_created_year, sum(`cm:content.size`) as Total, max(`cm:content.size`) as `Max` from alfresco \nwhere cm_created \u003e\u003d \u0027NOW/YEAR-4YEARS\u0027 group by cm_created_year\norder by cm_created_year desc",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:42:57 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_created_year\tTotal\tMax\n2017\t461007\t10436\n2016\tnull\tnull\n2015\t5170\t2823\n2014\tnull\tnull\n2013\tnull\tnull\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522966784_1478027984",
+      "id": "20171112-214246_695171275",
+      "dateCreated": "Nov 12, 2017 9:42:46 PM",
+      "dateStarted": "Nov 12, 2017 9:42:57 PM",
+      "dateFinished": "Nov 12, 2017 9:42:57 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "select cm_created_day as `Day`, sum(`cm:content.size`) as `Sum`, max(`cm:content.size`) as `Max` from alfresco \nwhere cm_created \u003e\u003d \u0027NOW/DAY-30DAYS\u0027 AND cm_created \u003c\u003d \u0027NOW/DAY+1DAY\u0027 group by cm_created_day\norder by cm_created_day desc",
+      "user": "anonymous",
+      "dateUpdated": "Nov 12, 2017 9:43:05 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_created_day\tSum\tMax\n2017-11-12\t461007\t10436\n2017-11-11\tnull\tnull\n2017-11-10\tnull\tnull\n2017-11-09\tnull\tnull\n2017-11-08\tnull\tnull\n2017-11-07\tnull\tnull\n2017-11-06\tnull\tnull\n2017-11-05\tnull\tnull\n2017-11-04\tnull\tnull\n2017-11-03\tnull\tnull\n2017-11-02\tnull\tnull\n2017-11-01\tnull\tnull\n2017-10-31\tnull\tnull\n2017-10-30\tnull\tnull\n2017-10-29\tnull\tnull\n2017-10-28\tnull\tnull\n2017-10-27\tnull\tnull\n2017-10-26\tnull\tnull\n2017-10-25\tnull\tnull\n2017-10-24\tnull\tnull\n2017-10-23\tnull\tnull\n2017-10-22\tnull\tnull\n2017-10-21\tnull\tnull\n2017-10-20\tnull\tnull\n2017-10-19\tnull\tnull\n2017-10-18\tnull\tnull\n2017-10-17\tnull\tnull\n2017-10-16\tnull\tnull\n2017-10-15\tnull\tnull\n2017-10-14\tnull\tnull\n2017-10-13\tnull\tnull\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522977167_-840853637",
+      "id": "20171112-214257_435141902",
+      "dateCreated": "Nov 12, 2017 9:42:57 PM",
+      "dateStarted": "Nov 12, 2017 9:43:05 PM",
+      "dateFinished": "Nov 12, 2017 9:43:05 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "user": "anonymous",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522985415_280704731",
+      "id": "20171112-214305_1699946168",
+      "dateCreated": "Nov 12, 2017 9:43:05 PM",
+      "status": "READY",
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Alfresco Sample Queries",
+  "name": "Insight Engine EA - Example Dashboard",
   "id": "2CVRR91J2",
   "angularObjects": {
     "2CUZK9W4Z:shared_process": []
   },
-  "config": {},
+  "config": {
+    "looknfeel": "default",
+    "personalizedMode": "false"
+  },
   "info": {}
 }
