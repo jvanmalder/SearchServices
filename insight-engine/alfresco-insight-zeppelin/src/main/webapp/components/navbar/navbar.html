@@ -48,7 +48,7 @@ limitations under the License.
             </div>
           </ul>
         </li>
-        <li><a href="#/jobmanager">Job</a></li>
+        <li ng-if="ticket.principal && ticket.principal === 'admin'"><a href="#/jobmanager">Job</a></li>
       </ul>
 
       <ul class="nav navbar-nav navbar-right" style="margin-right:5px;">
@@ -93,12 +93,12 @@ limitations under the License.
             <span ng-if="!ticket" style="margin: 5px;"></span>
             <ul class="dropdown-menu">
               <li><a href="" data-toggle="modal" data-target="#aboutModal">About Zeppelin</a></li>
-              <li role="separator" style="margin: 5px 0;" class="divider"></li>
-              <li><a href="#/interpreter">Interpreter</a></li>
-              <li><a href="#/notebookRepos">Notebook Repos</a></li>
-              <li><a href="#/credential">Credential</a></li>
-              <li><a href="#/helium">Helium</a></li>
-              <li><a href="#/configuration">Configuration</a></li>
+              <li ng-if="ticket.principal && ticket.principal === 'admin'" role="separator" style="margin: 5px 0;" class="divider"></li>
+              <li ng-if="ticket.principal && ticket.principal === 'admin'"><a href="#/interpreter">Interpreter</a></li>
+              <!-- <li><a href="#/notebookRepos">Notebook Repos</a></li> -->
+              <li ng-if="ticket.principal && ticket.principal === 'admin'"><a href="#/credential">Credential</a></li>
+              <!-- <li><a href="#/helium">Helium</a></li> -->
+              <li ng-if="ticket.principal && ticket.principal === 'admin'"><a href="#/configuration">Configuration</a></li>
               <li ng-if="ticket.principal && ticket.principal !== 'anonymous'" role="separator" style="margin: 5px 0;" class="divider"></li>
               <li ng-if="ticket.principal && ticket.principal !== 'anonymous'"><a ng-click="navbar.logout()">Logout</a></li>
             </ul>
