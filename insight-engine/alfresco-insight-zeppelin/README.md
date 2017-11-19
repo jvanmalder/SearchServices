@@ -2,6 +2,12 @@
 
 This projects takes the Apache Zeppelin project and customizes it for our own purposes.
 
+#####*Login credentials:*
+
+User name: admin
+
+Password: admin
+
 ### Get the code
 Git:
 

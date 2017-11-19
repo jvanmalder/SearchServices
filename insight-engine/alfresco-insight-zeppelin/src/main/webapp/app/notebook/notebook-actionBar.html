@@ -250,25 +250,13 @@ limitations under the License.
           <i class="fa fa-keyboard-o"></i>
         </span>
         <!-- FIXME: Workaround -->
-        <span ng-if="note.id === '2CVRR91J2' && isOwner">
-        <span class="setting-btn"
-              type="button"
-              ng-click="toggleSetting()"
-              tooltip-placement="bottom" uib-tooltip="Interpreter binding">
-          <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
-        </span>
-        </span>
-        <!-- FIXME: Workaround -->
-        <span ng-if="note.id !== '2CVRR91J2'">
-        <span class="setting-btn"
-              type="button"
-              ng-click="toggleSetting()"
-              tooltip-placement="bottom" uib-tooltip="Interpreter binding">
-          <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
-        </span>
-        </span>
-        <!-- FIXME: Workaround -->
         <span ng-if="isOwner">
+        <span class="setting-btn"
+              type="button"
+              ng-click="toggleSetting()"
+              tooltip-placement="bottom" uib-tooltip="Interpreter binding">
+          <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
+        </span>
         <span class="setting-btn"
               type="button"
               ng-click="togglePermissions()"
