@@ -91,7 +91,19 @@ RUN echo "$LOG_TAG Backup original Zeppelin WAR file" && \
 RUN echo "$LOG_TAG Create zeppelin-evn file and change port number for Zeppelin" && \
     cd ${Z_HOME}/conf && \
     cp zeppelin-env.sh.template zeppelin-env.sh && \
-    echo "\nexport ZEPPELIN_PORT=${Z_PORT}" >> zeppelin-env.sh
+    echo "\nexport ZEPPELIN_PORT=${Z_PORT}" >> zeppelin-env.sh && \
+    echo "\nexport ZEPPELIN_NOTEBOOK_PUBLIC="false" >> zeppelin-env.sh"
+
+RUN echo "$LOG_TAG Create shiro.ini file" && \
+    cd ${Z_HOME}/conf && \
+    cp shiro.ini.template shiro.ini && \
+    sed -i -e 's/admin = password1, admin/admin = admin, admin/g' \
+    -e 's/#\/api\/interpreter\/\*\* = authc, roles\[admin\]/\/api\/interpreter\/\*\* = authc, roles\[admin\]/g' \
+    -e 's/#\/api\/configurations\/\*\* = authc, roles\[admin\]/\/api\/configurations\/\*\* = authc, roles\[admin\]/g' \
+    -e 's/#\/api\/credential\/\*\* = authc, roles\[admin\]/\/api\/credential\/\*\* = authc, roles\[admin\]/g' \
+    -e 's/user1 = password2, role1, role2/#user1 = password2, role1, role2/g' \
+    -e 's/user2 = password3, role3/#user2 = password3, role3/g' \
+    -e 's/user3 = password4, role2/#user3 = password4, role2/g' shiro.ini
 
 RUN echo "$LOG_TAG Create folders for InsightJDBC driver and sample notebook" && \
     cd ${Z_HOME} && \
@@ -99,10 +111,15 @@ RUN echo "$LOG_TAG Create folders for InsightJDBC driver and sample notebook" &&
     cd ${Z_HOME}/notebook && \
     mkdir ${Z_SAMPLE_NOTEBOOK}
 
+RUN echo "$LOG_TAG Install nano" && \
+    apt-get -y update && \
+    apt-get -y install nano
+
 COPY ${project.artifactId}-${project.version}.war ${Z_HOME}/zeppelin-web-${Z_VERSION}.war
 COPY note.json ${Z_HOME}/notebook/${Z_SAMPLE_NOTEBOOK}
 COPY ${alfresco-insight-jdbc.name}-${alfresco-insight-jdbc.version}.jar ${Z_HOME}/alfresco
 COPY interpreter.json ${Z_HOME}/conf
+COPY notebook-authorization.json ${Z_HOME}/conf
 
 EXPOSE ${Z_PORT}
 
