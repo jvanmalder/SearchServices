@@ -8,6 +8,8 @@ User name: admin
 
 Password: admin
 
+No other users will be created by default. You have to edit the shiro.ini file and add new users. To be able to do that a text editor called "nano" is installed on the docker image.
+
 ### Get the code
 Git:
 
