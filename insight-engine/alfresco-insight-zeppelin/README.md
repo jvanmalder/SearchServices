@@ -8,7 +8,7 @@ User name: admin
 
 Password: admin
 
-No other users will be created by default. You have to edit the shiro.ini file and add new users. To be able to do that a text editor called "nano" is installed on the docker image.
+Apart from the admin user there are there more users defined, i.e. user1/user1, user2/user2 and user3/user3. If you want to add more users or change the configuration (e.g. add the users to roles) the you can edit the shiro.ini file under the "conf" folder. To be able to do that a text editor called "nano" is installed on the docker image.
 
 ### Get the code
 Git:
