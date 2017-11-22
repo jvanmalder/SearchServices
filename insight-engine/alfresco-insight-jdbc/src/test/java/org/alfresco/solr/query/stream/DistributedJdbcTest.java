@@ -48,7 +48,6 @@ public class DistributedJdbcTest extends AbstractStreamTest
         String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
-        Class.forName("org.apache.solr.client.solrj.io.sql.InsightEngineDriverImpl");
         Properties props = getConnectionProperties(alfrescoJson);
         String connectionString = getConnectionString();
         Connection con = null;
