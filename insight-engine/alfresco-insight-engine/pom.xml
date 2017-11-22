@@ -85,6 +85,12 @@
          <artifactId>solr-langid</artifactId>
          <version>${solr.version}</version>
          <scope>provided</scope>
+         <exclusions>
+             <exclusion>
+                 <artifactId>xercesImpl</artifactId>
+                 <groupId>xerces</groupId>
+             </exclusion>
+         </exclusions>
       </dependency>
       <!-- Test dependencies -->
       <dependency>
