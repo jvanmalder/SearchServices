@@ -59,6 +59,11 @@ class ConnectionImpl implements Connection {
   // This is the only place which we had to do some changes
   // ******************************************************
   // ******************************************************
+  // 09.10.2017
+  // The method getCatalog in this class had to be
+  // changed as well.
+  // ******************************************************
+  // ******************************************************
   ConnectionImpl(String url, String zkHost, String collection, Properties properties) throws SQLException {
     this.url = url;
     // *************
@@ -187,9 +192,21 @@ class ConnectionImpl implements Connection {
 
   }
 
+  // ********************************************
+  // ********************************************
+  // This change was needed for DbVisualizer.
+  // Apache Zeppelin did not require this change.
+  // ********************************************
+  // ********************************************
   @Override
   public String getCatalog() throws SQLException {
-    return this.client.getZkHost();
+    // *************
+    // *************
+    // Original code
+    // *************
+    // *************
+    // return this.client.getZkHost();
+    return "";
   }
 
   @Override

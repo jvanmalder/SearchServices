@@ -44,6 +44,24 @@ To do this click on ``anonymous`` link on the top right hand corner and select `
 The shaded jar from this project needs to be added under the ``Dependencies`` section. It can be either an absolute path or Maven GAV coordinates. After that, save the changes and create a ``Notebook``.
 A new notebook can be created from the ``Notebook`` link on the top left corner. Click on the link and then click on ``Create new notebook`` menu link. Give the notebook a name and select the newly created interpreter from the ``Default Interpreter`` drop down. Then click on the ``Create Note`` button. You can now execute SQL queries in your new notebook. Just write your SQL query and click the ``Run`` button.
 
+### Configuring other tools
+
+The configuration might differ in other tools but the JDBC driver should work with them as well. Here are the steps how to configure DbVisualizer:
+
+ - From the toolbar select "Tools -> Driver Manager"
+ - In the "Driver Manager" window click the "Create a new Driver" button (that's the green plus icon in the toolbar)
+ - Give the new driver a name, e.g. ``Alfresco`` and specify the URL Format, i.e. ``jdbc:alfresco://<connection_string>/?collection=<collection>``. No need to replace ``<connection_string>`` or ``<collection>`` here
+ - Next the JDBC driver has to be added. Click the "Open file" button (that's the the yellow folder button) and select the Alfresco JDBC driver
+ - A new driver has been added. Close the window and add a new database connection
+ - Click the "Create new database connection" button (the button is on the "Databases" tab and is a DB icon with a green plus on it)
+ - Enter a connection alias and select the Database Driver, i.e. ``Alfresco``
+ - Then enter the Database URL in the popup window, i.e. ``jdbc:alfresco://localhost:8983?collection=alfresco`` and click "Finish"
+ - We need to add two more properties. In order to do that click on the "Properties" tab and select "Driver Properties"
+ - Add the following two properties and click the "Apply" button:
+
+``alfresco.shards=http://localhost:8983/solr/alfresco``
+
+``json={"tenants":[""],"locales":["en_US"],"defaultNamespace":"http://www.alfresco.org/model/content/1.0","textAttributes":[],"defaultFTSOperator":"OR","defaultFTSFieldOperator":"OR","anyDenyDenies":true,"query":"name:*","templates":[],"allAttributes":[],"queryConsistency":"DEFAULT","authorities":["GROUP_EVERYONE","ROLE_ADMINISTRATOR","ROLE_AUTHENTICATED","admin"]}``
 
 
 ### License
