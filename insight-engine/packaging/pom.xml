@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <artifactId>alfresco-insight-engine-distribution</artifactId>
    <name>Alfresco Insight Engine Distribution</name>
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-insight-engine-parent</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0-EA</version>
       <relativePath>../pom.xml</relativePath>
    </parent>
    <properties>
@@ -65,9 +63,7 @@
                   </goals>
                   <configuration>
                      <target>
-                        <unzip
-                           src="${project.build.directory}/dependency/${alfresco.search.dependency.name}-${alfresco.search.dependency.version}.zip"
-                           dest="${project.build.directory}/dependency/" />
+                        <unzip src="${project.build.directory}/dependency/${alfresco.search.dependency.name}-${alfresco.search.dependency.version}.zip" dest="${project.build.directory}/dependency/" />
                      </target>
                   </configuration>
                </execution>
@@ -79,9 +75,7 @@
                   </goals>
                   <configuration>
                      <target>
-                        <copy
-                           file="${project.build.directory}/dependency/alfresco-insight-engine-${project.version}.jar"
-                           todir="${project.build.directory}/dependency/${alfresco.search.dependency.name}/solr/server/solr-webapp/webapp/WEB-INF/lib/" />
+                        <copy file="${project.build.directory}/dependency/alfresco-insight-engine-${project.version}.jar" todir="${project.build.directory}/dependency/${alfresco.search.dependency.name}/solr/server/solr-webapp/webapp/WEB-INF/lib/" />
                      </target>
                   </configuration>
                </execution>
@@ -93,9 +87,7 @@
                   </goals>
                   <configuration>
                      <target>
-                        <chmod
-                           file="${project.build.directory}/dependency/${alfresco.search.dependency.name}/solr/bin/solr"
-                           perm="755" />
+                        <chmod file="${project.build.directory}/dependency/${alfresco.search.dependency.name}/solr/bin/solr" perm="755" />
                      </target>
                   </configuration>
                </execution>
@@ -107,9 +99,7 @@
                   </goals>
                   <configuration>
                      <target>
-                        <copy
-                           file="${project.build.directory}/../../alfresco-insight-engine/src/main/resources/solr/solrconfig_insight.xml"
-                           todir="${project.build.directory}/dependency/${alfresco.search.dependency.name}/solrhome/templates/rerank/conf/" />
+                        <copy file="${project.build.directory}/../../alfresco-insight-engine/src/main/resources/solr/solrconfig_insight.xml" todir="${project.build.directory}/dependency/${alfresco.search.dependency.name}/solrhome/templates/rerank/conf/" />
                      </target>
                   </configuration>
                </execution>
