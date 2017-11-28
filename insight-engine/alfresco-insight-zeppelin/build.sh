@@ -7,10 +7,10 @@ set -e
 cd "$bamboo_working_directory"
 
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
-dockerImage="docker-internal.alfresco.com/insight-zeppelin:$bamboo_maven_version"
+dockerImage="quay.io/alfresco/insight-zeppelin:$bamboo_maven_version"
 echo "Building $dockerImage from $nicebranch using version $bamboo_maven_version"
 
-docker build --build-arg branch=$nicebranch --build-arg version=$bamboo_maven_version -t $dockerImage target
+docker build -t $dockerImage target/docker-resources
 
 if [ "${nicebranch}" = "local" ]
 then
