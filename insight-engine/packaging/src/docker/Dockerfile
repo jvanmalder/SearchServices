@@ -1,27 +1,27 @@
-# Alfresco Insight Engine Docker image
-FROM openjdk:8u111-jdk-alpine
+# Alfresco Insight Engine ${project.version} Docker Image
 
-ARG url
-ARG branch
-ARG version
-ENV URL ${url:-https://nightlybuilds.alfresco.com/InsightEngine/$branch/LATEST/Distribution/alfresco-insight-engine-distribution-$version.zip}
-ENV ZIP alfresco-insight-engine.zip
+FROM quay.io/alfresco/alfresco-base-java:0.1.0
+LABEL creator="Tuna Aksoy" maintainer="Alfresco Search Services Team"
+
 ENV DIST_DIR /opt/alfresco-insight-engine
+ENV SOLR_ZIP ${project.build.finalName}.zip
 ENV LANG C.UTF-8
+ENV OPENSSL_VERSION 1.0.2k-8.el7
 
-RUN addgroup solr && adduser -s /bin/bash -D -G solr solr
+COPY "$SOLR_ZIP" .
+
+RUN groupadd solr && useradd -s /bin/bash -g solr solr
 RUN set -x \
-   && apk add --no-cache --virtual .fetch-deps \
-      ca-certificates \
-      vim unzip lsof \
-      bash openssl wget \
-   && wget --no-check-certificate -O "$ZIP" "$URL" \
-   && unzip "$ZIP" -d /opt/ && rm "$ZIP"\
+   && yum update -y \
+   && yum install -y unzip \
+   && yum install -y lsof ca-certificates openssl-$OPENSSL_VERSION \
+   && yum clean all \
+   && unzip "$SOLR_ZIP" -d /opt/ && rm "$SOLR_ZIP" \
    && mkdir -p $DIST_DIR/data \
-   && mv $DIST_DIR/solrhome/alfrescoModels $DIST_DIR/data/  \
+   && mv $DIST_DIR/solrhome/alfrescoModels $DIST_DIR/data/ \
    && chown -R solr:solr $DIST_DIR \
    && echo '#Docker Setup' >> $DIST_DIR/solr.in.sh \
-    && echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.data.dir.root=$DIST_DIR/data -Dsolr.solr.model.dir=$DIST_DIR/data/alfrescoModels"' >> $DIST_DIR/solr.in.sh
+   && echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.data.dir.root=$DIST_DIR/data -Dsolr.solr.model.dir=$DIST_DIR/data/alfrescoModels"' >> $DIST_DIR/solr.in.sh
 
 WORKDIR $DIST_DIR
 
