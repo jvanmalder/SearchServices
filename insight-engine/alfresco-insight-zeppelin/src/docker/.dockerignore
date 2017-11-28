@@ -1,7 +1,0 @@
-**
-!Dockerfile
-!${project.artifactId}-${project.version}.war
-!${alfresco-insight-jdbc.name}-${alfresco-insight-jdbc.version}.jar
-!interpreter.json
-!note.json
-!notebook-authorization.json

@@ -52,13 +52,13 @@
             <artifactId>maven-resources-plugin</artifactId>
             <executions>
                <execution>
-                  <id>copy-resources</id>
-                  <phase>validate</phase>
+                  <id>copy-docker-resources</id>
+                  <phase>package</phase>
                   <goals>
                      <goal>copy-resources</goal>
                   </goals>
                   <configuration>
-                     <outputDirectory>${project.build.directory}</outputDirectory>
+                     <outputDirectory>${project.build.directory}/docker-resources</outputDirectory>
                      <resources>
                         <resource>
                            <directory>src/docker</directory>
@@ -67,6 +67,12 @@
                         <resource>
                            <directory>src/zeppelin</directory>
                            <filtering>true</filtering>
+                        </resource>
+                        <resource>
+                           <directory>${project.build.directory}</directory>
+                           <includes>
+                              <include>${project.build.finalName}.war</include>
+                           </includes>
                         </resource>
                      </resources>
                   </configuration>
@@ -91,7 +97,7 @@
                            <version>${alfresco-insight-jdbc.version}</version>
                         </artifactItem>
                      </artifactItems>
-                     <outputDirectory>${project.build.directory}</outputDirectory>
+                     <outputDirectory>${project.build.directory}/docker-resources</outputDirectory>
                      <useBaseVersion>true</useBaseVersion>
                   </configuration>
                </execution>
