@@ -226,6 +226,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     {
         return sqlQuery(sql, alfrescoJson, "UTC", 0);
     }
+
     public List<Tuple> sqlQuery(String sql, String alfrescoJson, String timezone, long now) throws IOException
     {
         System.out.println("######### AFRESCO SQL #######");

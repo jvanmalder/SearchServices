@@ -357,7 +357,7 @@ public class StreamHandler extends RequestHandlerBase implements SolrCoreAware, 
             daemons.put(daemonStream.getId(), daemonStream);
             rsp.add("result-set", new DaemonResponseStream("Deamon:"+daemonStream.getId()+" started on "+coreName));
         } else {
-            rsp.add("result-set", new TimerStream(new ExceptionStream(tupleStream)));
+            rsp.add("result-set", new TimerStream(new AlfrescoExceptionStream(tupleStream)));
         }
     }
 

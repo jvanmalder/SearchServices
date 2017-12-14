@@ -498,7 +498,6 @@ public class JDBCStream extends TupleStream implements Expressible {
   }
   
   public Tuple read() throws IOException {
-    
     try{
       Map<Object,Object> fields = new HashMap<>();
       if(resultSet.next()){

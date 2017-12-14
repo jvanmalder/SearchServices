@@ -64,7 +64,7 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue(tuples.get(0).getLong("barb") == 2);
         assertTrue(tuples.get(1).getLong("barb") == 2);
 
-        sql = "select SITE, count(*) AS docsPerSite from alfresco where `cm:content` = 'world' group by SITE having count(*) > 1";
+        sql = "select SITE, count(*) AS docsPerSite from alfresco where `cm:content` = 'world' group by SITE having count(*) > 1 AND count(*) < 10000";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
         assertTrue("_REPOSITORY_".equals(tuples.get(0).getString(("SITE"))));
@@ -110,10 +110,6 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue(tuples.get(1).getDouble("EXPR$1") == 45);
         assertTrue(tuples.get(1).getDouble("EXPR$2") == 10);
 
-        sql = "select cm_creator, count(*) from alfresco group by cm_creator having count(*) = 2";
-        tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 1);
-        assertTrue("creator1".equals(tuples.get(0).getString(("cm_creator"))));
 
         sql = "select `cm_content.mimetype`, count(*) from alfresco group by `cm_content.mimetype` having count(*) < 4 order by count(*) asc";
         tuples = sqlQuery(sql, alfrescoJson);
@@ -145,7 +141,23 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 1);
         assertTrue(tuples.get(0).getString("TYPE").equals("{http://www.alfresco.org/test/solrtest}testSuperType"));
         assertTrue(tuples.get(0).getLong("EXPR$1") == 4);
-    }
 
+        sql = "select cm_creator, count(*) from alfresco group by cm_creator having count(*) = 2";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
+        assertTrue("creator1".equals(tuples.get(0).getString(("cm_creator"))));
+
+        sql = "select cm_name, count(*) from alfresco group by cm_name having (count(*) > 1 AND cm_name = 'bill') order by count(*) asc";
+        try {
+            sqlQuery(sql, alfrescoJson);
+            throw new Exception("Exception should have been thrown");
+        } catch (Throwable e) {
+            if(e.getMessage().equals("Exception should have been thrown")) {
+                throw e;
+            } else {
+                assertTrue(e.getMessage().contains("HAVING clause can only be applied to aggregate functions."));
+            }
+        }
+    }
 }
 

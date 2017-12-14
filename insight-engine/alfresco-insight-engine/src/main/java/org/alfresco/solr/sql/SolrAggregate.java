@@ -51,7 +51,9 @@ class SolrAggregate extends Aggregate implements SolrRel {
       List<AggregateCall> aggCalls) {
     super(cluster, traitSet, child, indicator, groupSet, groupSets, aggCalls);
     assert getConvention() == SolrRel.CONVENTION;
-    assert getConvention() == child.getConvention();
+    if(getConvention() != child.getConvention()) {
+        throw new RuntimeException("HAVING clause can only be applied to aggregate functions.");
+    }
   }
 
   @Override

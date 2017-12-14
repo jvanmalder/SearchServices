@@ -19,10 +19,10 @@ package org.apache.solr.handler;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.solr.query.AbstractQParser;
 import org.alfresco.solr.sql.AlfrescoCalciteSolrDriver;
+import org.alfresco.solr.stream.AlfrescoExceptionStream;
 import org.apache.calcite.config.Lex;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.client.solrj.io.comp.StreamComparator;
-import org.apache.solr.client.solrj.io.stream.ExceptionStream;
 import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CommonParams;
@@ -134,7 +134,7 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
 
       tupleStream = new SqlHandlerStream(url, sql, null, properties, driverClass, includeMetadata);
 
-      tupleStream = new StreamHandler.TimerStream(new ExceptionStream(tupleStream));
+      tupleStream = new StreamHandler.TimerStream(new AlfrescoExceptionStream(tupleStream));
 
       rsp.add("result-set", tupleStream);
     } catch(Exception e) {
@@ -156,7 +156,7 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
   }
 
   /*
-   * Only necessary for SolrJ JDBC driver since metadata has to be passed back
+   * Only necessary for SolrJ JDBC driver since metadata has to be passed backF
    */
   private static class SqlHandlerStream extends CalciteJDBCStream {
     private final boolean includeMetadata;
