@@ -68,6 +68,35 @@ public class DistributedJdbcTest extends AbstractStreamTest
             stmt.close();
             con.close();
         }
+
+        sql = "select cm_name, count(*) from alfresco group by cm_name having (count(*) > 1 AND cm_name = 'bill') order by count(*) asc";
+        try {
+            try {
+                con = DriverManager.getConnection(connectionString, props);
+                stmt = con.createStatement();
+                rs = stmt.executeQuery(sql);
+                int i=0;
+                while (rs.next()) {
+                    ++i;
+                    assertNotNull(rs.getString("DBID"));
+                }
+                throw new Exception("Exception should have been thrown");
+            } finally {
+                rs.close();
+                stmt.close();
+                con.close();
+            }
+        } catch (Throwable e) {
+            if(e.getMessage().equals("Exception should have been thrown")) {
+                throw e;
+            } else {
+                assertTrue(e.getMessage().contains("HAVING clause can only be applied to aggregate functions."));
+            }
+        } finally {
+            rs.close();
+            stmt.close();
+            con.close();
+        }
     }
 
     private String getConnectionString() {
