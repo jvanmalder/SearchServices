@@ -39,8 +39,9 @@ import org.junit.Test;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedJdbcTest extends AbstractStreamTest
 {
+
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(1, this);
+    public JettyServerRule jetty = new JettyServerRule(1, this, getSolrCoreProps());
 
     @Test
     public void testSearch() throws Exception
@@ -114,6 +115,16 @@ public class DistributedJdbcTest extends AbstractStreamTest
         Properties props = new Properties();
         props.put("json", json);
         props.put("alfresco.shards", shards);
+        //Add the basicauth username and passwords required by test framework
+        props.put("user", "test");
+        props.put("password", "pass");
+        return props;
+    }
+
+    private Properties getSolrCoreProps() {
+        Properties props = new Properties();
+        //This tells the test framework to enforce basic auth.
+        props.put("BasicAuth", "true");
         return props;
     }
 

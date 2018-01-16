@@ -119,7 +119,7 @@ class StatementImpl implements Statement {
             params.set(propertyName, this.connection.getProperties().getProperty(propertyName));
           }
 
-          Replica rep = shuffler.get(0);
+          Replica rep = shuffler.get();
           ZkCoreNodeProps zkProps = new ZkCoreNodeProps(rep);
           String url = zkProps.getCoreUrl();
           return new SolrStream(url, params);
