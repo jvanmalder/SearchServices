@@ -263,8 +263,22 @@ public class AlfrescoSolrStream extends SolrStream {
             modifiableSolrParams.remove("qt");
         }
 
+        String user = requestParams.get("user");
+        String password = requestParams.get("password");
+
+        if(user != null) {
+            ModifiableSolrParams modifiableSolrParams = (ModifiableSolrParams) requestParams;
+            modifiableSolrParams.remove("user");
+            modifiableSolrParams.remove("password");
+        }
+
         String wt = requestParams.get(CommonParams.WT, "json");
         AlfrescoStreamHandler.AlfrescoQueryRequest query = new AlfrescoStreamHandler.AlfrescoQueryRequest(json, requestParams);
+
+        if(user != null && password != null) {
+            query.setBasicAuthCredentials(user, password);
+        }
+
         query.setPath(p);
         query.setResponseParser(new InputStreamResponseParser(wt));
         query.setMethod(SolrRequest.METHOD.POST);
