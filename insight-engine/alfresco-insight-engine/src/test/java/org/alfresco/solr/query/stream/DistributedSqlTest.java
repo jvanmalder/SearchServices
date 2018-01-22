@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.query.stream;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.lucene.util.LuceneTestCase;
@@ -54,7 +55,24 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 2);
         assertNodes(tuples, node1, node2);
         assertFieldNotNull(tuples, "LID");
-
+        //SEARCH-679
+        sql = "SELECT DBID,cm_created FROM alfresco order by `cm:created`";
+        tuples = sqlQuery(sql, alfrescoJson2);
+        assertNotNull(tuples);
+        assertTrue(tuples.size() == 2);
+        sql = "SELECT DBID,cm_created FROM alfresco order by cm_created";
+        tuples = sqlQuery(sql, alfrescoJson2);
+        assertNotNull(tuples);
+        assertTrue(tuples.size() == 2);
+        try
+        {
+            sql = "SELECT DBID,cm_created FROM alfresco order by cm_fake";
+            tuples = sqlQuery(sql, alfrescoJson2);
+        }
+        catch (IOException e) 
+        {
+            assertNotNull(e);
+        }
         sql = "select DBID, LID from alfresco where `cm:content` = 'world' order by DBID limit 1";
         tuples = sqlQuery(sql, alfrescoJson2);
         assertTrue(tuples.size() == 1);
@@ -212,6 +230,7 @@ public class DistributedSqlTest extends AbstractStreamTest
             assertNotNull(e);
             assertTrue(e.getLocalizedMessage().contains("Column 'bob' not found in any table"));
         }
+
     }
 
 }
