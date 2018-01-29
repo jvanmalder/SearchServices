@@ -785,7 +785,7 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
     if(bucket.endsWith("_day")) {
       gap = "+1DAY";
       field = bucket.replace("_day", "");
-      format = "YYYY-MM-dd";
+      format = "yyyy-MM-dd"; 
 
       FilterData.Filter filter = fdata.getFilter(field);
 
@@ -828,7 +828,7 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
             end = NOW + DEFAULT_END_DATE_MONTH;
         }
 
-        format = "YYYY-MM";
+        format = "yyyy-MM";
     } else if(bucket.endsWith("_year")) {
       gap = "+1YEAR";
       field = bucket.replace("_year", "");
@@ -852,7 +852,7 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
             end = NOW + DEFAULT_END_DATE_YEAR;
         }
 
-        format = "YYYY";
+        format = "yyyy";
     }
 
     TupleStream tupleStream = new TimeSeriesStream(zkHost, collection, solrParams, metrics, bucket, start, end, gap, format, tz, now);
