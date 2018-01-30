@@ -26,9 +26,6 @@
 package org.alfresco.solr.stream;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.io.SolrClientCache;
@@ -68,7 +66,6 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
     private String gap;
     private String field;
     private String format;
-    private DateTimeFormatter formatter;
     private String timeZone;
     private String now;
     
@@ -272,7 +269,6 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
       if(format != null) 
       {
           this.format = format;
-          formatter = DateTimeFormatter.ofPattern(format, Locale.ROOT);
       }
       this.timeZone = timeZone;
       this.now = now;
@@ -498,10 +494,9 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
             NamedList bucket = (NamedList)allBuckets.get(b);
             Object val = bucket.get("val");
 
-            if(formatter != null)
+            if(format != null)
             {
-                LocalDateTime localDateTime = LocalDateTime.ofInstant(((java.util.Date) val).toInstant(), ZoneOffset.UTC);
-                val = localDateTime.format(formatter);
+                val = DateFormatUtils.format((java.util.Date) val, format);
             }
             Tuple t = currentTuple.clone();
             t.put(field, val);

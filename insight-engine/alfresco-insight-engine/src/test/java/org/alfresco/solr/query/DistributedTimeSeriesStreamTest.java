@@ -18,18 +18,34 @@
  */
 package org.alfresco.solr.query;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.*;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.StringPropertyValue;
+import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.stream.AlfrescoSolrStream;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
@@ -38,10 +54,9 @@ import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
-import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.common.params.SolrParams;
 import org.junit.Rule;
 import org.junit.Test;
@@ -161,7 +176,7 @@ public class DistributedTimeSeriesStreamTest extends AbstractAlfrescoDistributed
                                                     "start=\"2000-01-01T01:00:00.000Z\", " +
                                                     "end=\"2000-05-31T01:00:00.000Z\", " +
                                                     "gap=\"+1MONTH\", " +
-                                                    "format=\"YYYY-MM\", " +
+                                                    "format=\"yyyy-MM\", " +
                                                     "count(*)))";
 
         String shards = getShardsString(clusterClients);
