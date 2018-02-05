@@ -11,7 +11,6 @@
    </parent>
    <properties>
       <project.timestamp>${maven.build.timestamp}</project.timestamp>
-      <project.build.key>${bamboo_fullBuildKey}</project.build.key>
       <project.revision.key>${bamboo_repository_revision_number}</project.revision.key>
    </properties>
    <build>
@@ -101,6 +100,41 @@
                      <target>
                         <copy file="${project.build.directory}/../../alfresco-insight-engine/src/main/resources/solr/solrconfig_insight.xml" todir="${project.build.directory}/dependency/${alfresco.search.dependency.name}/solrhome/templates/rerank/conf/" />
                      </target>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <!-- DO NOT CHANGE THE FORMATTING IN THIS PLUGIN CONFIGURATION -->
+            <groupId>com.google.code.maven-replacer-plugin</groupId>
+            <artifactId>replacer</artifactId>
+            <executions>
+               <execution>
+                  <id>alter-index.html</id>
+                  <phase>prepare-package</phase>
+                  <goals>
+                     <goal>replace</goal>
+                  </goals>
+                  <configuration>
+                     <file>${project.build.directory}/dependency/${alfresco.search.dependency.name}/solr/server/solr-webapp/webapp/partials/index.html</file>
+                     <replacements>
+                        <replacement>
+                              <token>&lt;li class="solr solr_spec_version"&gt;</token>
+                              <value>
+              &lt;li class="alfresco"&gt;&lt;dl class="clearfix"&gt;
+                &lt;dt&gt;&lt;span&gt;Insight Engine&lt;/span&gt;&lt;/dt&gt;
+                  &lt;dd&gt;\${project.version}&lt;/dd&gt;
+              &lt;/dl&gt;&lt;/li&gt;
+
+              &lt;li&gt;&lt;dl class="clearfix"&gt;
+                &lt;dt&gt;&lt;span&gt;&lt;/span&gt;&lt;/dt&gt;
+                  &lt;dd&gt;\${project.revision.key} - \${project.timestamp}&lt;/dd&gt;
+              &lt;/dl&gt;&lt;/li&gt;
+
+              &lt;li class="solr solr_spec_version"&gt;
+                           </value>
+                        </replacement>
+                     </replacements>
                   </configuration>
                </execution>
             </executions>

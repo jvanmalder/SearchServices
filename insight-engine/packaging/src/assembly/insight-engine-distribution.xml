@@ -14,6 +14,11 @@
          <filtered>true</filtered>
       </fileSet>
       <fileSet>
+         <directory>>${project.build.outputDirectory}/classes/solr/server/solr-webapp/webapp/partials</directory>
+         <outputDirectory>./solr/server/solr-webapp/webapp/partials</outputDirectory>
+         <filtered>true</filtered>
+      </fileSet>
+      <fileSet>
          <directory>target/dependency/${alfresco.search.dependency.name}</directory>
          <outputDirectory>.</outputDirectory>
       </fileSet>
