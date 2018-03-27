@@ -1,6 +1,6 @@
 # Alfresco Insight Engine ${project.version} Docker Image
 
-FROM quay.io/alfresco/alfresco-base-java:0.1.0
+FROM quay.io/alfresco/alfresco-base-java:8u161-oracle-centos-7
 LABEL creator="Tuna Aksoy" maintainer="Alfresco Search Services Team"
 
 ENV DIST_DIR /opt/alfresco-insight-engine
