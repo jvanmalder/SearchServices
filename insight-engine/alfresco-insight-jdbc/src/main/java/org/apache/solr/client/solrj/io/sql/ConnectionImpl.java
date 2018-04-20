@@ -37,6 +37,7 @@ package org.apache.solr.client.solrj.io.sql;
 
 import java.sql.*;
 import java.util.Map;
+import java.util.Set;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -80,6 +81,19 @@ class ConnectionImpl implements Connection {
     this.properties = properties;
     this.connectionStatement = createStatement();
     this.databaseMetaData = new DatabaseMetaDataImpl(this, this.connectionStatement);
+
+    /*
+    * Add any properties that start with javax. to the system props. This will set the SSL properties where the HTTP
+    * client can find them if they are passed in by the code using the JDBC driver.
+    */
+    
+    Set keys = properties.keySet();
+    for(Object k : keys) {
+        String key = (String)k;
+        if(key.startsWith("javax.")) {
+            System.setProperty(key, properties.getProperty(key));
+        }
+    }
   }
 
   String getUrl() {

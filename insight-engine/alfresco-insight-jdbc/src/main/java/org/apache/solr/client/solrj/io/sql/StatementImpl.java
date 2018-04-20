@@ -141,7 +141,7 @@ class StatementImpl implements Statement {
         StringBuilder url = new StringBuilder();
         url
             // TODO: Hard coded as "http://" for the time being. This will be addressed with SEARCH-552
-            .append("http://")
+            .append(getScheme())
             .append(uri.getHost())
             .append(":")
             .append(uri.getPort())
@@ -160,6 +160,14 @@ class StatementImpl implements Statement {
   @Override
   public ResultSet executeQuery(String sql) throws SQLException {
     return this.executeQueryImpl(sql);
+  }
+
+  public String getScheme() {
+    if(System.getProperty("javax.net.ssl.keyStore") != null) {
+      return "https://";
+    } else {
+      return "http://";
+    }
   }
 
   @Override
