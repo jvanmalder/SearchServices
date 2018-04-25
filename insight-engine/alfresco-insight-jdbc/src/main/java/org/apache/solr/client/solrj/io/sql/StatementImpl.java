@@ -35,6 +35,9 @@
  */
 package org.apache.solr.client.solrj.io.sql;
 
+import static org.apache.solr.client.solrj.io.sql.InsightEngineDriverUtil.isJDBCProtocol;
+import static org.apache.solr.client.solrj.io.sql.InsightEngineDriverUtil.buildJson;
+
 import java.io.IOException;
 import java.net.URI;
 import java.sql.Connection;
@@ -47,7 +50,6 @@ import org.alfresco.solr.stream.AlfrescoSolrStream;
 import org.apache.solr.client.solrj.io.stream.SolrStream;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
-
 class StatementImpl implements Statement {
 
   private final ConnectionImpl connection;
@@ -128,28 +130,38 @@ class StatementImpl implements Statement {
         }
       */
 
-      try {
-
-        ModifiableSolrParams params = new ModifiableSolrParams();
-        params.set(CommonParams.QT, "/sql");
-        params.set("stmt", sql);
-        for(String propertyName : this.connection.getProperties().stringPropertyNames()) {
-          params.set(propertyName, this.connection.getProperties().getProperty(propertyName));
-        }
-
-        URI uri = new URI(this.connection.getUrl().replaceFirst("jdbc:", ""));
-        StringBuilder url = new StringBuilder();
-        url
-            // TODO: Hard coded as "http://" for the time being. This will be addressed with SEARCH-552
-            .append(getScheme())
-            .append(uri.getHost())
-            .append(":")
-            .append(uri.getPort())
-            .append("/solr/")
-            .append(this.connection.getCollection());
-
-        AlfrescoSolrStream alfrescoSolrStream = new AlfrescoSolrStream(url.toString(), params);
-        alfrescoSolrStream.setJson(params.get("json"));
+      try 
+      {
+          ModifiableSolrParams params = new ModifiableSolrParams();
+          params.set(CommonParams.QT, "/sql");
+          params.set("stmt", sql);
+          for(String propertyName : this.connection.getProperties().stringPropertyNames()) 
+          {
+              params.set(propertyName, this.connection.getProperties().getProperty(propertyName));
+          }
+          AlfrescoSolrStream alfrescoSolrStream = null;
+          StringBuilder url = new StringBuilder();
+          URI uri = new URI(this.connection.getUrl().replaceFirst("jdbc:", ""));
+          url
+          .append(getScheme())
+          .append(uri.getHost())
+          .append(":")
+          .append(uri.getPort());
+          if(isDirectJDBC())
+          {
+              url.append("/solr/")
+              .append(this.connection.getCollection());
+          }
+          else
+          {
+              //Build the Rest API json body.
+              url.append("/alfresco/api/-default-/public/search/versions/1");
+              String jsonSql = buildJson(sql,null);
+              params.add("json",jsonSql);
+              
+          }
+          alfrescoSolrStream = new AlfrescoSolrStream(url.toString(), params);
+          alfrescoSolrStream.setJson(params.get("json"));
 
         return alfrescoSolrStream;
       } catch (Exception e) {
@@ -162,6 +174,19 @@ class StatementImpl implements Statement {
     return this.executeQueryImpl(sql);
   }
 
+  /**
+   * Flag to see if call should be made directly to solr and not 
+   * via the alfresco rest api.
+   * @return
+   */
+  public boolean isDirectJDBC()
+  {
+      if(System.getProperty("org.alfresco.search.jdbc.direct") != null) 
+      {
+          return true;
+      }
+      return false;
+  }
   public String getScheme() {
     if(System.getProperty("javax.net.ssl.keyStore") != null) {
       return "https://";
@@ -433,4 +458,5 @@ class StatementImpl implements Statement {
     String secondToLastToken = tokens[tokens.length-2];
     return ("limit").equalsIgnoreCase(secondToLastToken);
   }
+
 }
