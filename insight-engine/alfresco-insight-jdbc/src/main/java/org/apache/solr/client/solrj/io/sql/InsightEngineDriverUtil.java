@@ -54,8 +54,26 @@ public class InsightEngineDriverUtil extends DriverImpl
        body.append("{");
        body.append("\"stmt\":" + "\"" + sql + "\",");
        body.append("\"format\":\"solr\",");
-       body.append("\"locales\":[\"en_UK\",\"en_US\"]");
+       body.append("\"locales\":" + buildLocales(locales) +",");
+       body.append("\"includeMetadata\":\"true\"");
        body.append("}");
        return body.toString();
+   }
+   private static String buildLocales(String[] locales)
+   {
+       StringBuilder sb = new StringBuilder("[");
+       if(locales != null && locales.length > 0 )
+       {
+           for (int i=0; i<locales.length; i++)
+           {
+               sb.append("\""+ locales[i] +"\"");
+               if(locales.length -1 != i)
+               {
+                   sb.append(",");
+               }
+           }
+       }
+       sb.append("]");
+       return sb.toString();
    }
 }
