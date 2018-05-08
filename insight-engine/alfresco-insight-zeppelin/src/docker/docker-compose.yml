@@ -1,29 +1,74 @@
-version: '3'
+version: "3"
+
 services:
-  platform:
-    image: docker-internal.alfresco.com/platform:5.2.3-SNAPSHOT
-    environment:
-      JAVA_TOOL_OPTIONS: "-Dsolr.host=search -Dsolr.port=8983 -Dsolr.secureComms=none -Dsolr.base.url=/solr -Dindex.subsystem.name=solr6"
-    ports:
-      - "7203:7203" #JMX connect via service:jmx:rmi:///jndi/rmi://localhost:7203/jmxrmi
-      - "5005:5005" #Java debugging
-      - "8081:8080" #Browser port for Alfresco
-      - "8082:8080" #Browser port for Share
-      - "8084:8080" #Browser port for API Explorer
-  search:
-    image: quay.io/alfresco/insight-engine:1.0.0-SNAPSHOT
-    environment:
-      #Solr needs to know how to register itself with Alfresco
-      SOLR_ALFRESCO_HOST: platform
-      SOLR_ALFRESCO_PORT: 8080
-      #Alfresco needs to know how to call solr
-      SOLR_SOLR_HOST: search
-      SOLR_SOLR_PORT: 8983
-      #Create the default alfresco and archive cores
-      SOLR_CREATE_ALFRESCO_DEFAULTS: alfresco,archive
-    ports:
-      - "8083:8983" #Browser port for Solr
-  zeppelin:
-    image: quay.io/alfresco/insight-zeppelin:1.0.0-SNAPSHOT
-    ports:
-      - "9090:9090"
+    alfresco:
+        image: alfresco/alfresco-content-repository:6.0.0-RC4
+        environment:
+            JAVA_OPTS : "
+                -Ddb.driver=org.postgresql.Driver
+                -Ddb.username=alfresco
+                -Ddb.password=alfresco
+                -Ddb.url=jdbc:postgresql://postgres:5432/alfresco
+                -Dsolr.host=search
+                -Dsolr.port=8983
+                -Dsolr.secureComms=none
+                -Dsolr.base.url=/solr
+                -Dindex.subsystem.name=solr6
+                -Dalfresco-pdf-renderer.url=http://alfresco-pdf-renderer:8090/
+                -Djodconverter.url=http://libreoffice:8090/
+                -Dimg.url=http://imagemagick:8090/
+                -Ddeployment.method=DOCKER_COMPOSE
+                "
+        ports:
+            - 8082:8080 #Browser port
+
+    alfresco-pdf-renderer:
+        image: alfresco/alfresco-pdf-renderer:0.10
+        ports:
+            - 8090:8090
+
+    imagemagick:
+        image: alfresco/alfresco-imagemagick:0.10
+        ports:
+            - 8091:8090
+
+    libreoffice:
+        image: alfresco/alfresco-libreoffice:0.10
+        ports:
+            - 8092:8090
+
+    share:
+        image: alfresco/alfresco-share:6.0.0-rc1
+        environment:
+            - REPO_HOST=alfresco
+            - REPO_PORT=8080
+        ports:
+            - 8080:8080
+
+    postgres:
+        image: postgres:10.1
+        environment:
+            - POSTGRES_PASSWORD=alfresco
+            - POSTGRES_USER=alfresco
+            - POSTGRES_DB=alfresco
+        ports:
+            - 5432:5432
+
+    search:
+        image: alfresco/alfresco-insight-engine:1.0.0-EA
+        environment:
+            #Solr needs to know how to register itself with Alfresco
+            - SOLR_ALFRESCO_HOST=alfresco
+            - SOLR_ALFRESCO_PORT=8080
+            #Alfresco needs to know how to call solr
+            - SOLR_SOLR_HOST=search
+            - SOLR_SOLR_PORT=8983
+            #Create the default alfresco and archive cores
+            - SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive
+        ports:
+            - 8083:8983 #Browser port
+
+    zeppelin:
+        image: alfresco/alfresco-insight-zeppelin:1.0.0-EA2
+        ports:
+            - "9090:9090"
