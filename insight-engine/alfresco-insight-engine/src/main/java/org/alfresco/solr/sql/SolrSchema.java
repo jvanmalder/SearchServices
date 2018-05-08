@@ -71,14 +71,7 @@ class SolrSchema extends AbstractSchema {
     //Add fields from schema.
     Map<String, String> fields = getIndexedFieldsInfo();
     boolean isDate = false;
-    //Add properties from data model.
-    Collection<QName> properties = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getAllProperties(null);
-    properties.forEach(property -> 
-    {
-        PropertyDefinition def = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getProperty(property);
-        fields.put(property.getPrefixString(), def.getDataType().getJavaClassName());
-    });
-    
+
     Set<Map.Entry<String, String>> set = fields.entrySet();
     for(Map.Entry<String, String> entry : set) {
         String ltype = entry.getValue();

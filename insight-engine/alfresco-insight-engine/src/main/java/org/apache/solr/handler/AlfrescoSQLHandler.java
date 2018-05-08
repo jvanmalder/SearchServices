@@ -58,8 +58,6 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
   private static String defaultZkhost = null;
   private static String defaultWorkerCollection = null;
 
-  static final String sqlNonCloudErrorMsg = "/sql handler only works in Solr Cloud mode";
-
   private boolean isCloud = false;
   private String localCore;
 
@@ -161,6 +159,7 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
   private static class SqlHandlerStream extends CalciteJDBCStream {
     private final boolean includeMetadata;
     private boolean firstTuple = true;
+    private Tuple firstTupleRead = null;
     List<String> metadataFields = new ArrayList<>();
     Map<String, String> metadataAliases = new HashMap<>();
 
@@ -177,36 +176,139 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
       // Return a metadata tuple as the first tuple and then pass through to the JDBCStream.
       if(firstTuple) {
         try {
-          Map<String, Object> fields = new HashMap<>();
+            firstTupleRead = super.read();
+            Map<String, Object> fields = new HashMap<>();
 
-          firstTuple = false;
+            firstTuple = false;
 
-          ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 
-          for(int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
-            String columnName = resultSetMetaData.getColumnName(i);
-            String columnLabel = resultSetMetaData.getColumnLabel(i);
-            metadataFields.add(columnName);
-            metadataAliases.put(columnName, columnLabel);
-          }
+            int columnCount = resultSetMetaData.getColumnCount();
 
-          if(includeMetadata) {
-            fields.put("isMetadata", true);
-            fields.put("fields", metadataFields);
-            fields.put("aliases", metadataAliases);
-            return new Tuple(fields);
-          }
+            for(int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
+                String columnName = resultSetMetaData.getColumnName(i);
+
+                if(columnCount > 30) {
+                    //This is likely a select * query. Apply these rules.
+                    if (columnName.contains(":") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("_query_")) {
+                        continue;
+                    }
+
+                    if (columnName.equals("score") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.endsWith("_day") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.endsWith("_month") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.endsWith("_year") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("READER") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("DENIED") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("TXCOMMITTIME") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("S_ACLTXID") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("S_TXID") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("S_INTXID") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("ACLTXCOMMITTIME") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("ACLTXID") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("TXID") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("S_INACLTXID") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("S_ACLTXCOMMITTIME") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("S_TXCOMMITTIME") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("INACLTXID") && firstTupleRead.get(columnName) == null) {
+                        continue;
+                    }
+
+                    if (columnName.equals("FIELDS")) {
+                        continue;
+                    }
+
+                    if (columnName.equals("PROPERTIES")) {
+                        continue;
+                    }
+                }
+
+
+                String columnLabel = resultSetMetaData.getColumnLabel(i);
+                metadataFields.add(columnName);
+                metadataAliases.put(columnName, columnLabel);
+            }
+
+            if(includeMetadata) {
+                fields.put("isMetadata", true);
+                fields.put("fields", metadataFields);
+                fields.put("aliases", metadataAliases);
+                return new Tuple(fields);
+            }
         } catch (SQLException e) {
           throw new IOException(e);
         }
       }
 
-      Tuple tuple = super.read();
-      if(!tuple.EOF) {
-        tuple.fieldNames = metadataFields;
-        tuple.fieldLabels = metadataAliases;
+      if(firstTupleRead != null) {
+          if (!firstTupleRead.EOF) {
+              firstTupleRead.fieldNames = metadataFields;
+              firstTupleRead.fieldLabels = metadataAliases;
+          }
+
+          Tuple ttup = firstTupleRead;
+          firstTupleRead = null;
+          return ttup;
+      } else {
+          Tuple tuple = super.read();
+          if (!tuple.EOF) {
+              tuple.fieldNames = metadataFields;
+              tuple.fieldLabels = metadataAliases;
+          }
+          return tuple;
       }
-      return tuple;
     }
   }
 
