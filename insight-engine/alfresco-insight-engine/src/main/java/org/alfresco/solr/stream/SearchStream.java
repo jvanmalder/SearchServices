@@ -270,7 +270,7 @@ public class SearchStream extends TupleStream implements Expressible  {
     }
 
     private void fill(Map map, SolrDocument doc) {
-        if (this.fieldList != null) {
+        if (this.fieldList != null && !allFields()) {
             for(String key : this.fieldList) {
                 Object o = doc.getFieldValue(key.replace(':','_'));
                 map.put(key, o);
@@ -278,10 +278,25 @@ public class SearchStream extends TupleStream implements Expressible  {
         } else {
             for(String key : doc.getFieldNames()) {
                 Object o = doc.getFieldValue(key);
+                if(o instanceof Integer) {
+                    o = ((Integer)o).longValue();
+                } else if(o instanceof Float) {
+                    o = ((Float)o).doubleValue();
+                }
                 map.put(key, o);
             }
         }
     }
+
+    private boolean allFields() {
+        for(String f : fieldList) {
+            if(f.trim().equals("*")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public void close() throws IOException
     {

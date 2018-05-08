@@ -446,6 +446,9 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
   }
 
   private String getFields(List<Map.Entry<String, Class>> fields) {
+      if(fields.size() > 30) {
+          return "id,*";
+      }
     StringBuilder buf = new StringBuilder();
     for(Map.Entry<String, Class> field : fields) {
 
