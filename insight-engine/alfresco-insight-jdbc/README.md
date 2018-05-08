@@ -52,10 +52,6 @@ The configuration might differ in other tools but the JDBC driver should work wi
  - Click the "Create new database connection" button (the button is on the "Databases" tab and is a DB icon with a green plus on it)
  - Enter a connection alias and select the Database Driver, i.e. ``Alfresco``
  - Then enter the Database URL in the popup window, i.e. ``jdbc:alfresco://localhost:8983?collection=alfresco`` and click "Finish"
- - We need to add two more properties. In order to do that click on the "Properties" tab and select "Driver Properties"
- - Add the following two properties and click the "Apply" button:
-
-``alfresco.shards=http://localhost:8983/solr/alfresco``
 
 ### License
 Copyright (C) 2005 - 2018 Alfresco Software Limited
