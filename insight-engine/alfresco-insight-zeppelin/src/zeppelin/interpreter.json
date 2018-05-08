@@ -32,7 +32,7 @@
       ],
       "dependencies": [
         {
-          "groupArtifactVersion": "/zeppelin/alfresco/alfresco-insight-jdbc-1.0.0-SNAPSHOT.jar",
+          "groupArtifactVersion": "/zeppelin/alfresco/alfresco-insight-jdbc-1.0.0-EA.jar",
           "local": false
         }
       ],
