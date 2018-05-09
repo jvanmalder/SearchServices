@@ -29,6 +29,8 @@ import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -39,7 +41,16 @@ import org.junit.Test;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedJdbcTest extends AbstractStreamTest
 {
-
+    @BeforeClass
+    public static void setupJDBC()
+    {
+        System.setProperty("org.alfresco.search.jdbc.direct", "true");
+    }
+    @AfterClass
+    public static void teardownJDBC()
+    {
+        System.clearProperty("org.alfresco.search.jdbc.direct");
+    }
     @Rule
     public JettyServerRule jetty = new JettyServerRule(1, this, getSolrCoreProps());
 

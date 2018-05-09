@@ -36,10 +36,6 @@ To do this click on ``anonymous`` link on the top right hand corner and select `
 
 ``default.driver=org.apache.solr.client.solrj.io.sql.InsightEngineDriverImpl``
 
-``default.alfresco.shards=http://localhost:8983/solr/alfresco``
-
-``default.json={"tenants":[""],"locales":["en_US"],"defaultNamespace":"http://www.alfresco.org/model/content/1.0","textAttributes":[],"defaultFTSOperator":"OR","defaultFTSFieldOperator":"OR","anyDenyDenies":true,"query":"name:*","templates":[],"allAttributes":[],"queryConsistency":"DEFAULT","authorities":["GROUP_EVERYONE","ROLE_ADMINISTRATOR","ROLE_AUTHENTICATED","admin"]}``
-
 
 The shaded jar from this project needs to be added under the ``Dependencies`` section. It can be either an absolute path or Maven GAV coordinates. After that, save the changes and create a ``Notebook``.
 A new notebook can be created from the ``Notebook`` link on the top left corner. Click on the link and then click on ``Create new notebook`` menu link. Give the notebook a name and select the newly created interpreter from the ``Default Interpreter`` drop down. Then click on the ``Create Note`` button. You can now execute SQL queries in your new notebook. Just write your SQL query and click the ``Run`` button.
@@ -56,16 +52,9 @@ The configuration might differ in other tools but the JDBC driver should work wi
  - Click the "Create new database connection" button (the button is on the "Databases" tab and is a DB icon with a green plus on it)
  - Enter a connection alias and select the Database Driver, i.e. ``Alfresco``
  - Then enter the Database URL in the popup window, i.e. ``jdbc:alfresco://localhost:8983?collection=alfresco`` and click "Finish"
- - We need to add two more properties. In order to do that click on the "Properties" tab and select "Driver Properties"
- - Add the following two properties and click the "Apply" button:
-
-``alfresco.shards=http://localhost:8983/solr/alfresco``
-
-``json={"tenants":[""],"locales":["en_US"],"defaultNamespace":"http://www.alfresco.org/model/content/1.0","textAttributes":[],"defaultFTSOperator":"OR","defaultFTSFieldOperator":"OR","anyDenyDenies":true,"query":"name:*","templates":[],"allAttributes":[],"queryConsistency":"DEFAULT","authorities":["GROUP_EVERYONE","ROLE_ADMINISTRATOR","ROLE_AUTHENTICATED","admin"]}``
-
 
 ### License
-Copyright (C) 2005 - 2017 Alfresco Software Limited
+Copyright (C) 2005 - 2018 Alfresco Software Limited
 
 This file is part of the Alfresco software.
 If the software was purchased under a paid Alfresco license, the terms of
