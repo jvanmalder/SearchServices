@@ -158,6 +158,7 @@ class StatementImpl implements Statement {
               url.append("/alfresco/api/-default-/public/search/versions/1");
               String jsonSql = buildJson(sql,null);
               params.add("json",jsonSql);
+              params.add("TZ");
               
           }
           alfrescoSolrStream = new AlfrescoSolrStream(url.toString(), params);
