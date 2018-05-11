@@ -30,12 +30,13 @@ To stop Zeppelin just pass the ``stop`` parameter. I.e.
 Once the application is started you need to create a new ``Interpreter``.
 
 To do this click on ``anonymous`` link on the top right hand corner and select ``Interpreter``. You can create a new ``Interpreter`` by clicking the ``Create`` button (top right hand corner). Give a name to your new ``Interpreter`` and select the interpreter group ``jdbc``. And then add the following properties:
+Assuming, ACS Repository is running on localhost:8080,
 
-
-``default.url=jdbc:alfresco://localhost:8983?collection=alfresco``
+``default.url=jdbc:alfresco://localhost:8080?collection=alfresco``
 
 ``default.driver=org.apache.solr.client.solrj.io.sql.InsightEngineDriverImpl``
 
+Ensure that the default.user and default.password are set to default username and password for ACS.
 
 The shaded jar from this project needs to be added under the ``Dependencies`` section. It can be either an absolute path or Maven GAV coordinates. After that, save the changes and create a ``Notebook``.
 A new notebook can be created from the ``Notebook`` link on the top left corner. Click on the link and then click on ``Create new notebook`` menu link. Give the notebook a name and select the newly created interpreter from the ``Default Interpreter`` drop down. Then click on the ``Create Note`` button. You can now execute SQL queries in your new notebook. Just write your SQL query and click the ``Run`` button.
@@ -51,7 +52,7 @@ The configuration might differ in other tools but the JDBC driver should work wi
  - A new driver has been added. Close the window and add a new database connection
  - Click the "Create new database connection" button (the button is on the "Databases" tab and is a DB icon with a green plus on it)
  - Enter a connection alias and select the Database Driver, i.e. ``Alfresco``
- - Then enter the Database URL in the popup window, i.e. ``jdbc:alfresco://localhost:8983?collection=alfresco`` and click "Finish"
+ - Then enter the Database URL in the popup window, i.e. ``jdbc:alfresco://localhost:8080?collection=alfresco`` and click "Finish"
 
 ### License
 Copyright (C) 2005 - 2018 Alfresco Software Limited
