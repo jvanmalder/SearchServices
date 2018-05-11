@@ -30,9 +30,9 @@ To stop Zeppelin just pass the ``stop`` parameter. I.e.
 Once the application is started you need to create a new ``Interpreter``.
 
 To do this click on ``anonymous`` link on the top right hand corner and select ``Interpreter``. You can create a new ``Interpreter`` by clicking the ``Create`` button (top right hand corner). Give a name to your new ``Interpreter`` and select the interpreter group ``jdbc``. And then add the following properties:
+Assuming, ACS Repository is running on localhost:8080,
 
-
-``default.url=jdbc:alfresco://localhost:8983?collection=alfresco``
+``default.url=jdbc:alfresco://localhost:8080?collection=alfresco``
 
 ``default.driver=org.apache.solr.client.solrj.io.sql.InsightEngineDriverImpl``
 
