@@ -5,15 +5,13 @@
       "name": "alfresco",
       "group": "jdbc",
       "properties": {
-        "default.json": "{\"tenants\":[\"\"],\"locales\":[\"en_US\"],\"defaultNamespace\":\"http://www.alfresco.org/model/content/1.0\",\"textAttributes\":[],\"defaultFTSOperator\":\"OR\",\"defaultFTSFieldOperator\":\"OR\",\"anyDenyDenies\":true,\"query\":\"name:*\",\"templates\":[],\"allAttributes\":[],\"queryConsistency\":\"DEFAULT\",\"authorities\":[\"GROUP_EVERYONE\",\"ROLE_ADMINISTRATOR\",\"ROLE_AUTHENTICATED\",\"admin\"]}",
-        "default.password": "",
+        "default.password": "admin",
         "zeppelin.jdbc.auth.type": "",
         "common.max_count": "1000",
-        "default.alfresco.shards": "http://localhost:8983/solr/alfresco",
         "zeppelin.jdbc.principal": "",
-        "default.user": "gpadmin",
+        "default.user": "admin",
         "default.driver": "org.apache.solr.client.solrj.io.sql.InsightEngineDriverImpl",
-        "default.url": "jdbc:alfresco://search:8983?collection\u003dalfresco",
+        "default.url": "jdbc:alfresco://alfresco:8080?collection\u003dalfresco",
         "zeppelin.jdbc.keytab.location": "",
         "zeppelin.jdbc.concurrent.use": "true",
         "zeppelin.jdbc.concurrent.max_connection": "10"
@@ -32,7 +30,7 @@
       ],
       "dependencies": [
         {
-          "groupArtifactVersion": "/zeppelin/alfresco/alfresco-insight-jdbc-1.0.0-EA.jar",
+          "groupArtifactVersion": "/zeppelin/alfresco/alfresco-insight-jdbc-1.0.0-SNAPSHOT.jar",
           "local": false
         }
       ],
