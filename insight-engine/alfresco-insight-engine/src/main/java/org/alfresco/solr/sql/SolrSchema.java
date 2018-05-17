@@ -18,8 +18,6 @@ package org.alfresco.solr.sql;
 
 import java.util.*;
 
-import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
@@ -201,11 +199,37 @@ class SolrSchema extends AbstractSchema {
   }
 
   private void addSelectStarFields() {
+      selectStarFields.add("id");
       selectStarFields.add("DBID");
       selectStarFields.add("OWNER");
+      selectStarFields.add("DOC_TYPE");
+      selectStarFields.add("TYPE");
+      selectStarFields.add("ANCESTOR");
+      selectStarFields.add("QNAME");
+      selectStarFields.add("SITE");
+      selectStarFields.add("LID");
+      selectStarFields.add("PATH");
+      selectStarFields.add("PARENT");
+      selectStarFields.add("PRIMARYPARENT");
+      selectStarFields.add("FTSSTATUS");
+      selectStarFields.add("cm:author");
+      selectStarFields.add("cm:name");
       selectStarFields.add("cm:title");
       selectStarFields.add("cm:created");
       selectStarFields.add("cm:owner");
+      selectStarFields.add("cm:content");
+      selectStarFields.add("cm_initialVersion");
+      selectStarFields.add("cm_versionLabel");
+      selectStarFields.add("cm:modified");
+      selectStarFields.add("cm:modifier");
+      selectStarFields.add("cm:organization");
+      selectStarFields.add("cm:thumbnailName");
+      selectStarFields.add("cm:updated");
+      selectStarFields.add("cm:content.locale");
+      selectStarFields.add("cm:location");
+      selectStarFields.add("cm_content.size");
+      selectStarFields.add("cm_content.locale");
+      selectStarFields.add("cm_content.mimetype");
+      selectStarFields.add("cm_content.encoding");
   }
-
 }
