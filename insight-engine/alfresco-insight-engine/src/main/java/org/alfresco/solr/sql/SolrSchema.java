@@ -16,12 +16,7 @@
  */
 package org.alfresco.solr.sql;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -44,16 +39,23 @@ import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.RefCounted;
+import org.apache.solr.handler.AlfrescoSQLHandler;
 
 class SolrSchema extends AbstractSchema {
   final Properties properties;
   final SolrCore core;
   final String[] postfixes = {"_day", "_month", "_year"};
+  final Set selectStarFields = new HashSet();
+  final boolean isSelectStar;
 
   SolrSchema(SolrCore core, Properties properties) {
     super();
     this.core = core;
     this.properties = properties;
+    this.isSelectStar = Boolean.parseBoolean(properties.getProperty(AlfrescoSQLHandler.IS_SELECT_STAR));
+    if(isSelectStar) {
+        addSelectStarFields();
+    }
   }
 
   @Override
@@ -72,11 +74,13 @@ class SolrSchema extends AbstractSchema {
     Map<String, String> fields = getIndexedFieldsInfo();
     boolean isDate = false;
 
+
     Set<Map.Entry<String, String>> set = fields.entrySet();
+
     for(Map.Entry<String, String> entry : set) {
         String ltype = entry.getValue();
         RelDataType type;
-        switch (ltype) 
+        switch (ltype)
         {
             case "solr.StrField":
             case "solr.TextField":
@@ -113,12 +117,13 @@ class SolrSchema extends AbstractSchema {
               type = typeFactory.createJavaType(String.class);
         }
         addFieldInfo(fieldInfo, entry, type, null);
-        if(isDate) 
+        if(isDate)
         {
             isDate = false;
             addTimeFields(fieldInfo, entry, typeFactory.createJavaType(String.class));
         }
     }
+
     fieldInfo.add("_query_",typeFactory.createJavaType(String.class));
     fieldInfo.add("score", typeFactory.createJavaType(Double.class));
 
@@ -132,8 +137,17 @@ class SolrSchema extends AbstractSchema {
   }
 
   private void addFieldInfo(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type, String postfix) {
+
+      if(isSelectStar) {
+        if(!selectStarFields.contains(entry.getKey())) {
+            return;
+        }
+      }
+
     fieldInfo.add(entry.getKey()+getPostfix(postfix), type).nullable(true);
-    try {
+
+    try
+    {
       String[] withPrefix = QName.splitPrefixedQName(entry.getKey());
       String prefix = withPrefix[0];
       if (prefix != null && !prefix.isEmpty())
@@ -185,4 +199,13 @@ class SolrSchema extends AbstractSchema {
       refCounted.decref();
     }
   }
+
+  private void addSelectStarFields() {
+      selectStarFields.add("DBID");
+      selectStarFields.add("OWNER");
+      selectStarFields.add("cm:title");
+      selectStarFields.add("cm:created");
+      selectStarFields.add("cm:owner");
+  }
+
 }

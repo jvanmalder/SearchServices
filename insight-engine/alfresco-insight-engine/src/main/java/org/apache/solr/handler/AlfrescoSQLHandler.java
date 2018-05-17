@@ -57,6 +57,7 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
 
   private static String defaultZkhost = null;
   private static String defaultWorkerCollection = null;
+  public static final String IS_SELECT_STAR = "SELECT_STAR";
 
   private boolean isCloud = false;
   private String localCore;
@@ -84,6 +85,7 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
     req.setParams(params);
 
     String sql = params.get("stmt");
+
     // Set defaults for parameters
     params.set("numWorkers", params.getInt("numWorkers", 1));
     params.set("workerCollection", params.get("workerCollection", defaultWorkerCollection));
@@ -130,6 +132,8 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
         properties.put(AbstractQParser.ALFRESCO_JSON, json);
       }
 
+      properties.setProperty(IS_SELECT_STAR, Boolean.toString(isSelectStar(sql)));
+
       tupleStream = new SqlHandlerStream(url, sql, null, properties, driverClass, includeMetadata);
 
       tupleStream = new StreamHandler.TimerStream(new AlfrescoExceptionStream(tupleStream));
@@ -144,6 +148,15 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
       rsp.add("result-set", new StreamHandler.DummyErrorStream(e));
     }
   }
+
+    private boolean isSelectStar(String sql) {
+        String s = sql.toLowerCase();
+        if(s.contains("select *") && s.contains(" * from")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
   public String getDescription() {
     return "SQLHandler";
@@ -162,6 +175,7 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
     private Tuple firstTupleRead = null;
     List<String> metadataFields = new ArrayList<>();
     Map<String, String> metadataAliases = new HashMap<>();
+    private boolean isSelectStar;
 
     SqlHandlerStream(String connectionUrl, String sqlQuery, StreamComparator definedSort,
                      Properties connectionProperties, String driverClassName, boolean includeMetadata)
@@ -169,6 +183,7 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
       super(connectionUrl, sqlQuery, definedSort, connectionProperties, driverClassName);
 
       this.includeMetadata = includeMetadata;
+      this.isSelectStar = Boolean.parseBoolean(connectionProperties.getProperty(AlfrescoSQLHandler.IS_SELECT_STAR));
     }
 
     @Override
@@ -183,13 +198,11 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
 
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 
-            int columnCount = resultSetMetaData.getColumnCount();
-
             for(int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
                 String columnName = resultSetMetaData.getColumnName(i);
 
-                if(columnCount > 30) {
-                    //This is likely a select * query. Apply these rules.
+                if(isSelectStar) {
+
                     if (columnName.contains(":") && firstTupleRead.get(columnName) == null) {
                         continue;
                     }
