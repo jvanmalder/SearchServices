@@ -35,7 +35,6 @@
  */
 package org.apache.solr.client.solrj.io.sql;
 
-import static org.apache.solr.client.solrj.io.sql.InsightEngineDriverUtil.isJDBCProtocol;
 import static org.apache.solr.client.solrj.io.sql.InsightEngineDriverUtil.buildJson;
 
 import java.io.IOException;

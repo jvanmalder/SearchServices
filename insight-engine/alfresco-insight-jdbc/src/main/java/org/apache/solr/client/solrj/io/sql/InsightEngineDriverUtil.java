@@ -52,13 +52,26 @@ public class InsightEngineDriverUtil extends DriverImpl
        }
        StringBuilder body = new StringBuilder();
        body.append("{");
-       body.append("\"stmt\":" + "\"" + sql + "\",");
+       body.append("\"stmt\":" + "\"" + stripIllegalChar(sql) + "\",");
        body.append("\"format\":\"solr\",");
        body.append("\"locales\":" + buildLocales(locales) +",");
        body.append("\"includeMetadata\":\"true\"");
        body.append("}");
        return body.toString();
    }
+   private static String stripIllegalChar(String sql)
+   {
+       if(sql.contains("\n"))
+       {
+          sql = sql.replaceAll("\n", "");
+       }
+       if(sql.contains("\r"))
+       {
+           sql = sql.replaceAll("\r", "");
+       }
+       return sql;
+   }
+   
    private static String buildLocales(String[] locales)
    {
        StringBuilder sb = new StringBuilder("[");
