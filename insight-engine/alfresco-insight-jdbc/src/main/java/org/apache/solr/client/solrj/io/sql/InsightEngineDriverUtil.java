@@ -25,68 +25,68 @@ import org.apache.solr.common.StringUtils;
  */
 public class InsightEngineDriverUtil extends DriverImpl
 {
-   public static boolean isJDBCProtocol(String url)
-   {
-       if(!StringUtils.isEmpty(url)) 
-       {
-           return url.startsWith("jdbc:");
-       }
-       return false;
-   }
-   /**
-    * Build the json body in the format expected by Rest API as shown below.
-    * {
-    *    "stmt" : "Select x from alfresco",
-    *    "format" : "solr",
-    *    "locales": []
-    * }
-    * @param sql
-    * @param locales
-    * @return
-    */
-   public static String buildJson(String sql, String[] locales)
-   {
-       if(StringUtils.isEmpty(sql))
-       {
-           return "{}";
-       }
-       StringBuilder body = new StringBuilder();
-       body.append("{");
-       body.append("\"stmt\":" + "\"" + stripIllegalChar(sql) + "\",");
-       body.append("\"format\":\"solr\",");
-       body.append("\"locales\":" + buildLocales(locales) +",");
-       body.append("\"includeMetadata\":\"true\"");
-       body.append("}");
-       return body.toString();
-   }
-   private static String stripIllegalChar(String sql)
-   {
-       if(sql.contains("\n"))
-       {
-          sql = sql.replaceAll("\n", "");
-       }
-       if(sql.contains("\r"))
-       {
-           sql = sql.replaceAll("\r", "");
-       }
-       return sql;
-   }
-   
-   private static String buildLocales(String[] locales)
-   {
-       StringBuilder sb = new StringBuilder("[");
-       if(locales != null && locales.length > 0 )
-       {
-           for (int i=0; i<locales.length; i++)
-           {
-               sb.append("\""+ locales[i] +"\"");
-               if(locales.length -1 != i)
-               {
-                   sb.append(",");
-               }
-           }
-       }
-       sb.append("]");
-       return sb.toString();
-   }
+    public static boolean isJDBCProtocol(String url)
+    {
+        if(!StringUtils.isEmpty(url)) 
+        {
+            return url.startsWith("jdbc:");
+        }
+        return false;
+    }
+    /**
+     * Build the json body in the format expected by Rest API as shown below.
+     * {
+     *    "stmt" : "Select x from alfresco",
+     *    "format" : "solr",
+     *    "locales": []
+     * }
+     * @param sql
+     * @param locales
+     * @return
+     */
+    public static String buildJson(String sql, String[] locales)
+    {
+        if(StringUtils.isEmpty(sql))
+        {
+            return "{}";
+        }
+        StringBuilder body = new StringBuilder();
+        body.append("{");
+        body.append("\"stmt\":" + "\"" + stripIllegalChar(sql) + "\",");
+        body.append("\"format\":\"solr\",");
+        body.append("\"locales\":" + buildLocales(locales) +",");
+        body.append("\"includeMetadata\":\"true\"");
+        body.append("}");
+        return body.toString();
+    }
+    private static String stripIllegalChar(String sql)
+    {
+        if(sql.contains("\n"))
+        {
+           sql = sql.replaceAll("\n", "");
+        }
+        if(sql.contains("\r"))
+        {
+            sql = sql.replaceAll("\r", "");
+        }
+        return sql;
+    }
+    
+    private static String buildLocales(String[] locales)
+    {
+        StringBuilder sb = new StringBuilder("[");
+        if(locales != null && locales.length > 0 )
+        {
+            for (int i=0; i<locales.length; i++)
+            {
+                sb.append("\""+ locales[i] +"\"");
+                if(locales.length -1 != i)
+                {
+                    sb.append(",");
+                }
+            }
+        }
+        sb.append("]");
+        return sb.toString();
+    }
 }
