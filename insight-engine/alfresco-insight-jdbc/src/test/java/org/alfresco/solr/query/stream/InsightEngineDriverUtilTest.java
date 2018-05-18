@@ -19,6 +19,7 @@
 package org.alfresco.solr.query.stream;
 
 import static org.apache.solr.client.solrj.io.sql.InsightEngineDriverUtil.isJDBCProtocol;
+import static org.apache.solr.client.solrj.io.sql.InsightEngineDriverUtil.formatSQL;
 import static org.apache.solr.client.solrj.io.sql.InsightEngineDriverUtil.buildJson;
 
 import org.junit.Assert;
@@ -54,13 +55,14 @@ public class InsightEngineDriverUtilTest
         String sql = "select SITE, CM_OWNER\n from alfresco group by SITE,CM_OWNER";
         String sql2 = "select SITE, CM_OWNER\n from alfresco group by\n SITE,CM_OWNER";
         String sql3 = "select SITE, CM_OWNER\n from alfresco\r group by\n SITE,CM_OWNER";
-        String expected = "{" + 
-                "\"stmt\":\"select SITE, CM_OWNER from alfresco group by SITE,CM_OWNER\",\"format\":\"solr\",\"locales\":[\"en_UK\",\"en_US\"],\"includeMetadata\":\"true\"}";
+        String sql4 = "select SITE, CM_OWNER\n\n from alfresco\r group by\n SITE,CM_OWNER";
+        String expected = "select SITE, CM_OWNER from alfresco group by SITE,CM_OWNER";
         String[] locales = new String[2];
         locales[0]= "en_UK";
         locales[1]= "en_US";
-        Assert.assertEquals(expected, buildJson(sql, locales));
-        Assert.assertEquals(expected, buildJson(sql2, locales));
-        Assert.assertEquals(expected, buildJson(sql3, locales));
+        Assert.assertEquals(expected, formatSQL(sql));
+        Assert.assertEquals(expected, formatSQL(sql2));
+        Assert.assertEquals(expected, formatSQL(sql3));
+        Assert.assertEquals(expected, formatSQL(sql4));
     }
 }
