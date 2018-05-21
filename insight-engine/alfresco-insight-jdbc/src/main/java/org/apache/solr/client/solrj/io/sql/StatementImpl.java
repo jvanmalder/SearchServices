@@ -35,7 +35,6 @@
  */
 package org.apache.solr.client.solrj.io.sql;
 
-import static org.apache.solr.client.solrj.io.sql.InsightEngineDriverUtil.isJDBCProtocol;
 import static org.apache.solr.client.solrj.io.sql.InsightEngineDriverUtil.buildJson;
 
 import java.io.IOException;
@@ -133,8 +132,9 @@ class StatementImpl implements Statement {
       try 
       {
           ModifiableSolrParams params = new ModifiableSolrParams();
+          String formattedSQL = InsightEngineDriverUtil.formatSQL(sql);
           params.set(CommonParams.QT, "/sql");
-          params.set("stmt", sql);
+          params.set("stmt", formattedSQL);
           for(String propertyName : this.connection.getProperties().stringPropertyNames()) 
           {
               params.set(propertyName, this.connection.getProperties().getProperty(propertyName));
@@ -156,7 +156,7 @@ class StatementImpl implements Statement {
           {
               //Build the Rest API json body.
               url.append("/alfresco/api/-default-/public/search/versions/1");
-              String jsonSql = buildJson(sql,null);
+              String jsonSql = buildJson(formattedSQL,null);
               params.add("json",jsonSql);
               params.add("TZ");
               
