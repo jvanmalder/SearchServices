@@ -218,8 +218,8 @@ class SolrSchema extends AbstractSchema {
       selectStarFields.add("cm:created");
       selectStarFields.add("cm:owner");
       selectStarFields.add("cm:content");
-      selectStarFields.add("cm_initialVersion");
-      selectStarFields.add("cm_versionLabel");
+      selectStarFields.add("cm:initialVersion");
+      selectStarFields.add("cm:versionLabel");
       selectStarFields.add("cm:modified");
       selectStarFields.add("cm:modifier");
       selectStarFields.add("cm:organization");
@@ -227,9 +227,9 @@ class SolrSchema extends AbstractSchema {
       selectStarFields.add("cm:updated");
       selectStarFields.add("cm:content.locale");
       selectStarFields.add("cm:location");
-      selectStarFields.add("cm_content.size");
-      selectStarFields.add("cm_content.locale");
-      selectStarFields.add("cm_content.mimetype");
-      selectStarFields.add("cm_content.encoding");
+      selectStarFields.add("cm:content.size");
+      selectStarFields.add("cm:content.locale");
+      selectStarFields.add("cm:content.mimetype");
+      selectStarFields.add("cm:content.encoding");
   }
 }
