@@ -100,6 +100,8 @@ import org.apache.solr.client.solrj.io.stream.metrics.SumMetric;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.handler.StreamHandler;
+import org.apache.solr.handler.AlfrescoSQLHandler;
+
 
 
 /**
@@ -190,8 +192,10 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
                                    final String havingPredicate,
                                    final String filterData) {
     // SolrParams should be a ModifiableParams instead of a map
+
     boolean mapReduce = "map_reduce".equals(properties.getProperty("aggregationMode"));
     boolean negative = Boolean.parseBoolean(negativeQuery);
+    boolean isSelectStar = Boolean.parseBoolean(properties.getProperty(AlfrescoSQLHandler.IS_SELECT_STAR));
 
     String q = null;
 
@@ -218,7 +222,7 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
 
     try {
       if (metricPairs.isEmpty() && buckets.isEmpty()) {
-        tupleStream = handleSelect(zk, collection, q, fields, orders, limitInt);
+        tupleStream = handleSelect(zk, collection, q, fields, orders, limitInt, isSelectStar);
       } else {
         if(buckets.isEmpty()) {
           tupleStream = handleStats(zk, collection, q, metricPairs, fields);
@@ -397,7 +401,8 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
                                    String query,
                                    List<Map.Entry<String, Class>> fields,
                                    List<Pair<String, String>> orders,
-                                   int limit) throws IOException {
+                                   int limit,
+                                   boolean isSelectStar) throws IOException {
 
     ModifiableSolrParams params = new ModifiableSolrParams();
     params.add(CommonParams.Q, query);
@@ -411,7 +416,13 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
       }
     }
 
-    String fl = getFields(fields);
+    String fl = null;
+
+    if(isSelectStar) {
+        fl = "id,*";
+    } else {
+        fl = getFields(fields);
+    }
 
     if(orders.size() > 0) {
       params.add(SORT, getSort(orders));
@@ -446,9 +457,6 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
   }
 
   private String getFields(List<Map.Entry<String, Class>> fields) {
-      if(fields.size() > 30) {
-          return "id,*";
-      }
     StringBuilder buf = new StringBuilder();
     for(Map.Entry<String, Class> field : fields) {
 

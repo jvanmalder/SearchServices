@@ -240,25 +240,17 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertEquals(tuples.size(), 2);
         Tuple first = tuples.get(0);
 
-        double d1 = first.getDouble("cm_fiveStarRatingSchemeTotal");
         String owner1 = first.getString("cm_owner");
-        long track1 = first.getLong("audio_trackNumber");
         String title1 = first.getString("cm_title");
 
-        assertEquals(d1, 10.0, 0);
         assertEquals(owner1, "michael" );
-        assertEquals(track1, 12);
         assertEquals(title1, "title1");
 
         Tuple second = tuples.get(1);
-        double d2 = second.getDouble("cm_fiveStarRatingSchemeTotal");
         String owner2 = second.getString("cm_owner");
-        long track2 =  second.getLong("audio_trackNumber");
         String title2 = second.getString("cm_title");
 
-        assertEquals(d2, 15.0, 0);
         assertEquals(owner2, "michael" );
-        assertEquals(track2, 8);
         assertEquals(title2, "title2");
     }
 }
