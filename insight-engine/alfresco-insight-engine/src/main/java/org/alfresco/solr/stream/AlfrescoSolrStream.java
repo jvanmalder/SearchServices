@@ -222,7 +222,7 @@ public class AlfrescoSolrStream extends SolrStream {
                 return new Tuple(fields);
             }
         } catch (HandledException e) {
-            throw new IOException("--> "+this.baseUrl+":"+e.getMessage());
+            throw new IOException(e.getMessage());
         } catch (Exception e) {
             //The Stream source did not provide an exception in a format that the SolrStream could propagate.
             throw new IOException("--> "+this.baseUrl+": An exception has occurred on the server, refer to server log for details.", e);
