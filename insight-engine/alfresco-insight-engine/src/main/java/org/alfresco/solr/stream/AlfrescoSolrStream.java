@@ -182,6 +182,10 @@ public class AlfrescoSolrStream extends SolrStream {
      * */
 
     public void close() throws IOException {
+        if (this.tupleStreamParser != null) {
+            this.tupleStreamParser.close();
+        }
+
        // closeableHttpResponse.close();
         if(cache == null) {
             client.close();
