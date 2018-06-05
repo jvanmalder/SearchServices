@@ -64,6 +64,9 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue(tuples.get(0).getLong("barb") == 2);
         assertTrue(tuples.get(1).getLong("barb") == 2);
 
+        assertTrue(tuples.get(0).get("barb") instanceof Long);
+        assertTrue(tuples.get(0).get("ACLID") instanceof Long);
+
         sql = "select SITE, count(*) AS docsPerSite from alfresco where `cm:content` = 'world' group by SITE having count(*) > 1 AND count(*) < 10000";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
@@ -73,8 +76,14 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         sql = "select `cm:fiveStarRatingSchemeTotal` as rating, avg(`audio:trackNumber`) as track from alfresco where `cm:content` = 'world' group by `cm:fiveStarRatingSchemeTotal`";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 3);
+
+
         assertTrue(tuples.get(0).getDouble("rating") == 10);
         assertTrue(tuples.get(0).getLong(("track")) == 9);
+
+        assertTrue(tuples.get(0).get("rating") instanceof Double);
+        assertTrue(tuples.get(0).get("track") instanceof Long);
+
         assertTrue(tuples.get(1).getDouble("rating") == 15);
         assertTrue(tuples.get(1).getLong(("track")) == 8);
         assertTrue(tuples.get(2).getDouble("rating") == 20);
@@ -85,6 +94,8 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 3);
         assertTrue(tuples.get(0).getDouble("cm_fiveStarRatingSchemeTotal") == 10);
         assertTrue(tuples.get(0).getLong(("track")) == 9);
+
+
         assertTrue(tuples.get(1).getDouble("cm_fiveStarRatingSchemeTotal") == 15);
         assertTrue(tuples.get(1).getLong(("track")) == 8);
         assertTrue(tuples.get(2).getDouble("cm_fiveStarRatingSchemeTotal") == 20);
@@ -96,6 +107,11 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue("canon".equals(tuples.get(0).getString(("manu"))));
         assertTrue(tuples.get(0).getLong("tot") == 1);
         assertTrue(tuples.get(0).getDouble("cre") == 10);
+
+        assertTrue(tuples.get(0).get("tot") instanceof Long);
+        assertTrue(tuples.get(0).get("cre") instanceof Double);
+
+
         assertTrue("nikon".equals(tuples.get(1).getString(("manu"))));
         assertTrue(tuples.get(1).getLong("tot") == 3);
         assertTrue(tuples.get(1).getDouble("cre") == 20);
@@ -106,6 +122,11 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue("canon".equals(tuples.get(0).getString(("manu"))));
         assertTrue(tuples.get(0).getDouble("EXPR$1") == 10);
         assertTrue(tuples.get(0).getDouble("EXPR$2") == 10);
+
+        assertTrue(tuples.get(0).get("EXPR$1") instanceof Double);
+        assertTrue(tuples.get(0).get("EXPR$2") instanceof Double);
+
+
         assertTrue("nikon".equals(tuples.get(1).getString(("manu"))));
         assertTrue(tuples.get(1).getDouble("EXPR$1") == 45);
         assertTrue(tuples.get(1).getDouble("EXPR$2") == 10);
