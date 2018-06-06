@@ -242,7 +242,6 @@ public class DistributedSqlTest extends AbstractStreamTest
         //Test upper case
         assertResult(sqlQuery("SELECT * from alfresco", alfrescoJson2));
         assertResult(sqlQuery("select * FROM alfresco", alfrescoJson2));
-        assertResult(sqlQuery("select * from ALFRESCO", alfrescoJson2));
     }
 
     private void assertResult(List<Tuple> tuples)
