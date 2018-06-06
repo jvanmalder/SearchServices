@@ -16,6 +16,8 @@
  */
 package org.alfresco.solr.stream;
 
+import static org.apache.solr.common.params.CommonParams.SORT;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Clob;
@@ -39,9 +41,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.solr.client.solrj.io.Tuple;
-import org.apache.solr.client.solrj.io.stream.*;
 import org.apache.solr.client.solrj.io.comp.FieldComparator;
 import org.apache.solr.client.solrj.io.comp.StreamComparator;
+import org.apache.solr.client.solrj.io.stream.StreamContext;
+import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.client.solrj.io.stream.expr.Explanation;
 import org.apache.solr.client.solrj.io.stream.expr.Explanation.ExpressionType;
 import org.apache.solr.client.solrj.io.stream.expr.Expressible;
@@ -51,8 +54,6 @@ import org.apache.solr.client.solrj.io.stream.expr.StreamExpressionNamedParamete
 import org.apache.solr.client.solrj.io.stream.expr.StreamExpressionParameter;
 import org.apache.solr.client.solrj.io.stream.expr.StreamExpressionValue;
 import org.apache.solr.client.solrj.io.stream.expr.StreamFactory;
-
-import static org.apache.solr.common.params.CommonParams.SORT;
 
 /**
  * Connects to a datasource using a registered JDBC driver and execute a query. The results of
@@ -213,13 +214,14 @@ public class JDBCStream extends TupleStream implements Expressible {
     // We've got all the required items
     init(connectionUrl, sqlQuery, definedSort, connectionProperties, driverClass);
   }
-    
-  private void init(String connectionUrl, String sqlQuery, StreamComparator definedSort, Properties connectionProperties, String driverClassName) {
-    this.connectionUrl = connectionUrl;
-    this.sqlQuery = sqlQuery;
-    this.definedSort = definedSort;
-    this.connectionProperties = connectionProperties;
-    this.driverClassName = driverClassName;
+
+  private void init(String connectionUrl, String sqlQuery, StreamComparator definedSort, Properties connectionProperties, String driverClassName) 
+  {
+      this.connectionUrl = connectionUrl;
+      this.sqlQuery = sqlQuery;
+      this.definedSort = definedSort;
+      this.connectionProperties = connectionProperties;
+      this.driverClassName = driverClassName;
   }
   
   public void setStreamContext(StreamContext context) {
@@ -575,7 +577,7 @@ public class JDBCStream extends TupleStream implements Expressible {
     StreamExplanation child = new StreamExplanation(getStreamNodeId() + "-datastore");
     child.setFunctionName("jdbc-source");
     child.setImplementingClass(driverClassName);
-    child.setExpressionType(ExpressionType.DATASTORE);    
+    child.setExpressionType(ExpressionType.DATASTORE);
     child.setExpression(sqlQuery);
     
     explanation.addChild(child);
