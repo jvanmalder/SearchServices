@@ -79,39 +79,69 @@ class SolrEnumerator implements Enumerator<Object> {
       return null;
     }
 
-    Class clazz = field.getValue();
-    if(clazz.equals(Long.class)) {
-      if(val instanceof Double) {
-        return this.getRealVal(val);
-      }
-
-      if (val instanceof String) {
-        try {
-          return Long.valueOf((String) val);
-        } catch (NumberFormatException e) {
-          //If we can't convert it to a long then just return the val "as-is"
-        }
-      }
-      return val;
-    }
-
+    //We have an array
     if(val instanceof ArrayList) {
       ArrayList arrayList = (ArrayList) val;
       StringBuilder buf = new StringBuilder();
 
       for(Object o : arrayList) {
-        buf.append(sep);
-        buf.append(o.toString());
+          buf.append(sep);
+          buf.append(o.toString());
       }
       val = buf.toString();
     }
 
-    if(val instanceof Float) {
-      return ((Float) val).doubleValue();
+    // Calcite expects a long return a long
+    Class clazz = field.getValue();
+    if(clazz.equals(Long.class)) {
+
+        if(val instanceof Long) {
+            return val;
+        }
+
+        if(val instanceof Double) {
+            return Math.round((Double)val);
+        }
+
+        if(val instanceof Float) {
+            return Math.round(((Float) val).doubleValue());
+        }
+
+        if(val instanceof Integer) {
+            return ((Integer)val).longValue();
+        }
+
+        if (val instanceof String) {
+            try {
+              return Long.valueOf((String) val);
+            } catch (NumberFormatException e) {
+              //If we can't convert it to a long then just return the val "as-is"
+            }
+        }
+
+        return val;
     }
 
+    // Calcite expects a double return a double
     if(clazz.equals(Double.class)) {
-      if (val instanceof String) {
+
+        if(val instanceof Double) {
+            return val;
+        }
+
+        if(val instanceof Float) {
+            return ((Float) val).doubleValue();
+        }
+
+        if(val instanceof Integer) {
+            return ((Integer)val).doubleValue();
+        }
+
+        if(val instanceof Long) {
+            return ((Integer)val).doubleValue();
+        }
+
+        if (val instanceof String) {
         try {
           return Double.valueOf((String) val);
         } catch (NumberFormatException e) {
