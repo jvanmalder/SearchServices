@@ -18,12 +18,14 @@
  */
 package org.alfresco.solr.query.stream;
 
-import java.sql.DriverManager;
 import java.util.List;
 import java.util.Properties;
 import java.sql.Connection;
-import java.sql.Statement;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Statement;
 
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
@@ -67,6 +69,56 @@ public class DistributedJdbcTest extends AbstractStreamTest
         ResultSet rs = null;
         try {
             con = DriverManager.getConnection(connectionString, props);
+            DatabaseMetaData databaseMetaData = con.getMetaData();
+
+            ResultSet resultSet2 = null;
+
+            try {
+                resultSet2 = databaseMetaData.getTables(null, null, null, null);
+                ResultSetMetaData resultSetMetaData = resultSet2.getMetaData();
+                int columnCount = resultSetMetaData.getColumnCount();
+                assertEquals(columnCount, 5);
+                assertEquals(resultSetMetaData.getColumnLabel(1), "TABLE_CAT");
+                assertEquals(resultSetMetaData.getColumnLabel(2), "TABLE_SCHEM");
+                assertEquals(resultSetMetaData.getColumnLabel(3), "TABLE_NAME");
+                assertEquals(resultSetMetaData.getColumnLabel(4), "TABLE_TYPE");
+                assertEquals(resultSetMetaData.getColumnLabel(5), "REMARKS");
+            } finally {
+                if(resultSet2 != null) {
+                    resultSet2.close();
+                }
+            }
+
+            try {
+                resultSet2 = databaseMetaData.getColumns(null, null, null, null);
+                ResultSetMetaData resultSetMetaData = resultSet2.getMetaData();
+                int columnCount = resultSetMetaData.getColumnCount();
+                assertEquals(columnCount, 19);
+                assertEquals(resultSetMetaData.getColumnLabel(1), "TABLE_CAT");
+                assertEquals(resultSetMetaData.getColumnLabel(2), "TABLE_SCHEM");
+                assertEquals(resultSetMetaData.getColumnLabel(3), "TABLE_NAME");
+                assertEquals(resultSetMetaData.getColumnLabel(4), "COLUMN_NAME");
+                assertEquals(resultSetMetaData.getColumnLabel(5), "DATA_TYPE");
+                assertEquals(resultSetMetaData.getColumnLabel(6), "TYPE_NAME");
+                assertEquals(resultSetMetaData.getColumnLabel(7), "COLUMN_SIZE");
+                assertEquals(resultSetMetaData.getColumnLabel(8), "BUFFER_LENGTH");
+                assertEquals(resultSetMetaData.getColumnLabel(9), "DECIMAL_DIGITS");
+                assertEquals(resultSetMetaData.getColumnLabel(10), "NUM_PREC_RADIX");
+                assertEquals(resultSetMetaData.getColumnLabel(11), "NULLABLE");
+                assertEquals(resultSetMetaData.getColumnLabel(12), "REMARKS");
+                assertEquals(resultSetMetaData.getColumnLabel(13), "COLUMN_DEF");
+                assertEquals(resultSetMetaData.getColumnLabel(14), "SQL_DATA_TYPE");
+                assertEquals(resultSetMetaData.getColumnLabel(15), "SQL_DATETIME_SUB");
+                assertEquals(resultSetMetaData.getColumnLabel(16), "CHAR_OCTET_LENGTH");
+                assertEquals(resultSetMetaData.getColumnLabel(17), "ORDINAL_POSITION");
+                assertEquals(resultSetMetaData.getColumnLabel(18), "IS_NULLABLE");
+                assertEquals(resultSetMetaData.getColumnLabel(19), "SCOPE_CATALOG");
+            } finally {
+                if(resultSet2 != null) {
+                    resultSet2.close();
+                }
+            }
+
             stmt = con.createStatement();
             rs = stmt.executeQuery(sql);
             int i=0;
