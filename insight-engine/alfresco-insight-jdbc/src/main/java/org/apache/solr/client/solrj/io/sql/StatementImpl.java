@@ -83,7 +83,14 @@ class StatementImpl implements Statement {
       this.currentResultSet = new ResultSetImpl(this, constructStream(sql));
       return this.currentResultSet;
     } catch(Exception e) {
-      throw new SQLException("Unable to execute the query, please check your settings");
+        if(e.getMessage().contains("password"))
+        {
+            throw new SQLException("Unable to execute the query, please check your settings");
+        }
+        else
+        {
+            throw new SQLException(e);
+        }
     }
   }
 
