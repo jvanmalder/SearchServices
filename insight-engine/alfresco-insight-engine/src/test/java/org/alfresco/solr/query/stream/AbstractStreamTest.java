@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -136,7 +137,9 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData1.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));
         nodeMetaData1.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
         nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("michael"));
-
+        HashSet aspects = new HashSet<QName>();
+        aspects.add(ContentModel.ASPECT_AUDITABLE);
+        nodeMetaData1.setAspects(aspects);
         NodeMetaData nodeMetaData2 = getNodeMetaData(node2, txn, acl, "mike", null, false);
         Date date2 = getDate(2000, 1, 2);
         nodeMetaData2.getProperties().put(ContentModel.PROP_CREATED,

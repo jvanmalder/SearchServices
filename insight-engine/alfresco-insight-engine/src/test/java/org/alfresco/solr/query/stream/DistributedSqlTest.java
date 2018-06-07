@@ -217,26 +217,28 @@ public class DistributedSqlTest extends AbstractStreamTest
             assertEquals("creator1", tuple.get("cm_creator"));
         }
 
-        //Select fields not indexed
-        /*
-        tuples = sqlQuery("select cm_lockOwner from alfresco", alfrescoJson);
-        assertTrue(tuples.size() == 4);
-        
-        try
-        {
-            tuples = sqlQuery("select bob from alfresco", alfrescoJson);
-            assertFalse("Should never get here",true);
-        }
-        catch (Exception e)
-        {
-            assertNotNull(e);
-            assertTrue(e.getLocalizedMessage().contains("Column 'bob' not found in any table"));
-        }
-        */
-
         //Test select *
         sql = "select * from alfresco order by cm_created";
-        tuples = sqlQuery(sql, alfrescoJson2);
+        assertResult(sqlQuery(sql, alfrescoJson2));
+
+        
+        //Test upper case
+        assertResult(sqlQuery("SELECT * from alfresco", alfrescoJson2));
+        assertResult(sqlQuery("select * FROM alfresco", alfrescoJson2));
+        
+        //Test * with fields that are not indexed.
+        tuples = sqlQuery("select * from alfresco where TYPE ='cm:content'", alfrescoJson2);
+        assertNotNull(tuples);
+        
+        tuples = sqlQuery("select * from alfresco where ASPECT ='cm:titled'", alfrescoJson);
+        assertNotNull(tuples);
+        
+        tuples = sqlQuery("select * from alfresco where PROPERTIES ='title'", alfrescoJson);
+        assertNotNull(tuples);
+    }
+
+    private void assertResult(List<Tuple> tuples)
+    {
         assertEquals(tuples.size(), 2);
         Tuple first = tuples.get(0);
 
