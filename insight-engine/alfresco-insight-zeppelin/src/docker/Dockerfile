@@ -19,6 +19,7 @@ FROM ubuntu:16.04
 
 # `Z_VERSION` will be updated by `dev/change_zeppelin_version.sh`
 ENV Z_VERSION="${apache.zeppelin.version}" \
+    Z_VERSION_SUFFIX="alfresco-patched-1" \
     LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     Z_HOME="/zeppelin" \
     Z_PORT="9090" \
@@ -90,10 +91,10 @@ RUN echo "$LOG_TAG Install R related packages" && \
     Rscript -e "library('devtools'); library('Rcpp'); install_github('ramnathv/rCharts')"
 
 RUN echo "$LOG_TAG Download Zeppelin binary" && \
-    wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
-    tar -zxvf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
-    rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
-    mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME}
+    wget -O /tmp/zeppelin-${Z_VERSION}-alfresco-patched-1.tar.gz http://nexus.alfresco.com/nexus/service/local/repositories/releases/content/org/apache/zeppelin/${Z_VERSION}-${Z_VERSION_SUFFIX}/zeppelin-${Z_VERSION}-${Z_VERSION_SUFFIX}.tar.gz && \
+    tar -zxvf /tmp/zeppelin-${Z_VERSION}-${Z_VERSION_SUFFIX}.tar.gz && \
+    rm -rf /tmp/zeppelin-${Z_VERSION}-${Z_VERSION_SUFFIX}.tar.gz && \
+    mv /zeppelin-${Z_VERSION} ${Z_HOME}
 
 RUN echo "$LOG_TAG Cleanup" && \
     apt-get autoclean && \
@@ -106,8 +107,8 @@ RUN echo "$LOG_TAG Backup original Zeppelin WAR file" && \
 RUN echo "$LOG_TAG Create zeppelin-evn file and change port number for Zeppelin" && \
     cd ${Z_HOME}/conf && \
     cp zeppelin-env.sh.template zeppelin-env.sh && \
-    echo "\nexport ZEPPELIN_PORT=${Z_PORT}" >> zeppelin-env.sh && \
-    echo "\nexport ZEPPELIN_NOTEBOOK_PUBLIC="false" >> zeppelin-env.sh"
+    echo "\n# The default values for ZEPPELIN_NOTEBOOK_PUBLIC and ZEPPELIN_CREDENTIALS_PERSIST have been set to false programmatically" >> zeppelin-env.sh && \
+    echo "\nexport ZEPPELIN_PORT=${Z_PORT}" >> zeppelin-env.sh
 
 RUN echo "$LOG_TAG Create shiro.ini file" && \
     cd ${Z_HOME}/conf && \
