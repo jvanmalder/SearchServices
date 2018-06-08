@@ -21,6 +21,7 @@ import java.util.*;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.apache.calcite.jdbc.CalciteSchema.Entry;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeImpl;
@@ -43,7 +44,7 @@ class SolrSchema extends AbstractSchema {
   final Properties properties;
   final SolrCore core;
   final String[] postfixes = {"_day", "_month", "_year"};
-  final Set selectStarFields = new HashSet();
+  final Set<String>  selectStarFields = new HashSet<String>();
   final boolean isSelectStar;
 
   SolrSchema(SolrCore core, Properties properties) {
@@ -58,7 +59,7 @@ class SolrSchema extends AbstractSchema {
 
   @Override
   protected Map<String, Table> getTableMap() {
-    Map<String, Table> map = new HashMap();
+    Map<String, Table> map = new HashMap<String, Table>();
     map.put("alfresco", new SolrTable(this, "alfresco"));
     return map;
   }
@@ -74,10 +75,15 @@ class SolrSchema extends AbstractSchema {
 
 
     Set<Map.Entry<String, String>> set = fields.entrySet();
-
+    boolean hasLockOwner = false;
     for(Map.Entry<String, String> entry : set) {
         String ltype = entry.getValue();
         RelDataType type;
+        if(!hasLockOwner)
+        {
+            //Check to see if the field exists to avoid duplicating the field.
+            hasLockOwner = lockOwnerFieldExists(entry.getKey());
+        }
         switch (ltype)
         {
             case "solr.StrField":
@@ -124,11 +130,31 @@ class SolrSchema extends AbstractSchema {
 
     fieldInfo.add("_query_",typeFactory.createJavaType(String.class));
     fieldInfo.add("score", typeFactory.createJavaType(Double.class));
-
+    
+    if(!hasLockOwner)
+    {
+        //Add fields that might be queried on that does not exist yet.
+        fieldInfo.add("cm:lockOwner",typeFactory.createJavaType(String.class));
+        fieldInfo.add("cm_lockOwner",typeFactory.createJavaType(String.class));
+    }
     return RelDataTypeImpl.proto(fieldInfo.build());
   }
 
-  private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type) {
+  /**
+   * Checks if the field already exists in the virtual schema.
+   * @param entry
+   * @return
+   */
+  private boolean lockOwnerFieldExists(String entry)
+  {
+      if("cm_lockOwner".equalsIgnoreCase(entry) || "cm:lockOwner".equalsIgnoreCase(entry))
+      {
+          return true;
+      }
+    return false;
+  }
+
+private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type) {
     for(String postfix : postfixes) {
       addFieldInfo(fieldInfo, entry, type, postfix);
     }
