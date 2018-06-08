@@ -238,6 +238,9 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
       selectStarFields.add("PARENT");
       selectStarFields.add("PRIMARYPARENT");
       selectStarFields.add("FTSSTATUS");
+      selectStarFields.add("ASPECT");
+      selectStarFields.add("PROPERTIES");
+      selectStarFields.add("cm:lockOwner");
       selectStarFields.add("cm:author");
       selectStarFields.add("cm:name");
       selectStarFields.add("cm:title");
