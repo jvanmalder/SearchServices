@@ -34,7 +34,7 @@ import org.junit.Test;
 public class DistributedGroupBySqlTest extends AbstractStreamTest
 {
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(1, this);
+    public JettyServerRule jetty = new JettyServerRule(2, this);
     
     @Test
     public void testSearch() throws Exception
@@ -167,7 +167,6 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 1);
         assertTrue("creator1".equals(tuples.get(0).getString(("cm_creator"))));
-
         sql = "select cm_name, count(*) from alfresco group by cm_name having (count(*) > 1 AND cm_name = 'bill') order by count(*) asc";
         try {
             sqlQuery(sql, alfrescoJson);

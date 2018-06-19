@@ -365,6 +365,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
                 String shardsParam = StreamUtils.getShardString(shardsMap.get(collection));
                 paramsLoc.add("shards", shardsParam);
                 paramsLoc.add("distrib", "true");
+                paramsLoc.add("shards.qt", "/sqlfts");
             }
         }
 

@@ -237,6 +237,7 @@ public class StatsStream extends TupleStream implements Expressible  {
         String shardsParam = StreamUtils.getShardString(shards);
         paramsLoc.add("shards", shardsParam);
         paramsLoc.add("distrib", "true");
+        paramsLoc.add("shards.qt", "/sqlfts");
       }
 
       RequestFactory requestFactory = (RequestFactory)streamContext.get("request-factory");
