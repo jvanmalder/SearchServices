@@ -19,7 +19,7 @@ FROM ubuntu:16.04
 
 # `Z_VERSION` will be updated by `dev/change_zeppelin_version.sh`
 ENV Z_VERSION="${apache.zeppelin.version}" \
-    Z_VERSION_SUFFIX="alfresco-patched-1" \
+    Z_VERSION_SUFFIX="alfresco-patched-2" \
     LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     Z_HOME="/zeppelin" \
     Z_PORT="9090" \
@@ -91,7 +91,7 @@ RUN echo "$LOG_TAG Install R related packages" && \
     Rscript -e "library('devtools'); library('Rcpp'); install_github('ramnathv/rCharts')"
 
 RUN echo "$LOG_TAG Download Zeppelin binary" && \
-    wget -O /tmp/zeppelin-${Z_VERSION}-alfresco-patched-1.tar.gz http://nexus.alfresco.com/nexus/service/local/repositories/releases/content/org/apache/zeppelin/${Z_VERSION}-${Z_VERSION_SUFFIX}/zeppelin-${Z_VERSION}-${Z_VERSION_SUFFIX}.tar.gz && \
+    wget -O /tmp/zeppelin-${Z_VERSION}-${Z_VERSION_SUFFIX}.tar.gz http://nexus.alfresco.com/nexus/service/local/repositories/releases/content/org/apache/zeppelin/${Z_VERSION}-${Z_VERSION_SUFFIX}/zeppelin-${Z_VERSION}-${Z_VERSION_SUFFIX}.tar.gz && \
     tar -zxvf /tmp/zeppelin-${Z_VERSION}-${Z_VERSION_SUFFIX}.tar.gz && \
     rm -rf /tmp/zeppelin-${Z_VERSION}-${Z_VERSION_SUFFIX}.tar.gz && \
     mv /zeppelin-${Z_VERSION} ${Z_HOME}
@@ -110,17 +110,6 @@ RUN echo "$LOG_TAG Create zeppelin-evn file and change port number for Zeppelin"
     echo "\n# The default values for ZEPPELIN_NOTEBOOK_PUBLIC and ZEPPELIN_CREDENTIALS_PERSIST have been set to false programmatically" >> zeppelin-env.sh && \
     echo "\nexport ZEPPELIN_PORT=${Z_PORT}" >> zeppelin-env.sh
 
-RUN echo "$LOG_TAG Create shiro.ini file" && \
-    cd ${Z_HOME}/conf && \
-    cp shiro.ini.template shiro.ini && \
-    sed -i -e 's/admin = password1, admin/admin = admin, admin/g' \
-    -e 's/#\/api\/interpreter\/\*\* = authc, roles\[admin\]/\/api\/interpreter\/\*\* = authc, roles\[admin\]/g' \
-    -e 's/#\/api\/configurations\/\*\* = authc, roles\[admin\]/\/api\/configurations\/\*\* = authc, roles\[admin\]/g' \
-    -e 's/#\/api\/credential\/\*\* = authc, roles\[admin\]/\/api\/credential\/\*\* = authc, roles\[admin\]/g' \
-    -e 's/user1 = password2, role1, role2/user1 = user1/g' \
-    -e 's/user2 = password3, role3/user2 = user2/g' \
-    -e 's/user3 = password4, role2/user3 = user3/g' shiro.ini
-
 RUN echo "$LOG_TAG Create folders for InsightJDBC driver and sample notebook" && \
     cd ${Z_HOME} && \
     mkdir alfresco && \
@@ -136,6 +125,7 @@ COPY note.json ${Z_HOME}/notebook/${Z_SAMPLE_NOTEBOOK}
 COPY ${alfresco-insight-jdbc.name}-${alfresco-insight-jdbc.version}.jar ${Z_HOME}/alfresco
 COPY interpreter.json ${Z_HOME}/conf
 COPY notebook-authorization.json ${Z_HOME}/conf
+COPY shiro.ini ${Z_HOME}/conf
 
 EXPOSE ${Z_PORT}
 
