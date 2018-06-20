@@ -107,8 +107,6 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
 
     public void open() throws IOException
     {
-        ModifiableSolrParams solrParams = (ModifiableSolrParams)timeSeriesStream.getParams();
-        solrParams.add("defType", "afts");
         Metric[] metrics = timeSeriesStream.getMetrics();
         for(int i=0; i<metrics.length; i++) {
             Metric metric = metrics[i];

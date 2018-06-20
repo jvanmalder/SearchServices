@@ -51,6 +51,25 @@ public class DistributedNonGroupedSqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 1);
         assertTrue(tuples.get(0).getLong("EXPR$0") == 2);
 
+
+        //Test phrases are working properly
+        sql = "select count(*) from alfresco where `cm:content` = 'hello world'";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
+        assertTrue(tuples.get(0).getLong("EXPR$0") == 4);
+
+        sql = "select count(*) from alfresco where `cm:content` = '(world hello)'";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
+        assertTrue(tuples.get(0).getLong("EXPR$0") == 4);
+
+
+        sql = "select count(*) from alfresco where `cm:content` = 'world hello'";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 1);
+        assertTrue(tuples.get(0).getLong("EXPR$0") == 0);
+
+
         // Test max
         sql = "select max(`cm:fiveStarRatingSchemeTotal`) as maxResult from alfresco where `cm:content` = 'world'";
         tuples = sqlQuery(sql, alfrescoJson);

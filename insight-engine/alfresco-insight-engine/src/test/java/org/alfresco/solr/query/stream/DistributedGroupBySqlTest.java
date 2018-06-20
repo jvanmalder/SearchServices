@@ -56,7 +56,7 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
             throw new Exception("Incorrect Acl ID, found "+tuples.get(0).getLong("ACLID")+" expected "+node3.getAclId());
         }
 
-        sql = "select ACLID, count(*) AS barb from alfresco where `cm:content` = 'world' group by ACLID";
+        sql = "select ACLID, count(*) AS barb from alfresco where `cm:content` = 'hello world' group by ACLID";
         tuples = sqlQuery(sql, alfrescoJson);
 
         //Now uses an alias
@@ -66,6 +66,14 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
 
         assertTrue(tuples.get(0).get("barb") instanceof Long);
         assertTrue(tuples.get(0).get("ACLID") instanceof Long);
+
+        //Test that phrases are working
+        sql = "select ACLID, count(*) AS barb from alfresco where `cm:content` = 'world hello' group by ACLID";
+        tuples = sqlQuery(sql, alfrescoJson);
+
+        //Now uses an alias
+        assertTrue(tuples.size() == 0);
+
 
         sql = "select SITE, count(*) AS docsPerSite from alfresco where `cm:content` = 'world' group by SITE having count(*) > 1 AND count(*) < 10000";
         tuples = sqlQuery(sql, alfrescoJson);

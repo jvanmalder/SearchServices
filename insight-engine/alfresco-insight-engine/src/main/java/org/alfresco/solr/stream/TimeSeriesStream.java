@@ -474,7 +474,6 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
                            String field,
                            Metric[] metrics) {
         Tuple tuple = new Tuple(new HashMap());
-        System.out.println("######### response:"+response);
         NamedList facets = (NamedList)response.get("facets");
         fillTuples(tuples, tuple, facets, field, metrics);
     }

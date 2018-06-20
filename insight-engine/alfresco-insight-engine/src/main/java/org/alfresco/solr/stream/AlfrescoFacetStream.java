@@ -94,8 +94,6 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
 
     public void open() throws IOException
     {
-        ModifiableSolrParams solrParams = (ModifiableSolrParams)facetStream.getParams();
-        solrParams.add("defType", "afts");
         Metric[] metrics = facetStream.getMetrics();
         Map<String, String> reverseLookup = facetStream.getReverseLookup();
 
