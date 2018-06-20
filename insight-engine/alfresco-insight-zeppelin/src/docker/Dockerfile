@@ -108,7 +108,8 @@ RUN echo "$LOG_TAG Create zeppelin-evn file and change port number for Zeppelin"
     cd ${Z_HOME}/conf && \
     cp zeppelin-env.sh.template zeppelin-env.sh && \
     echo "\n# The default values for ZEPPELIN_NOTEBOOK_PUBLIC and ZEPPELIN_CREDENTIALS_PERSIST have been set to false programmatically" >> zeppelin-env.sh && \
-    echo "\nexport ZEPPELIN_PORT=${Z_PORT}" >> zeppelin-env.sh
+    echo "\nexport ZEPPELIN_PORT=${Z_PORT}" >> zeppelin-env.sh && \
+    echo "\nexport ZEPPELIN_SERVER_CONTEXT_PATH=/zeppelin" >> zeppelin-env.sh
 
 RUN echo "$LOG_TAG Create folders for InsightJDBC driver and sample notebook" && \
     cd ${Z_HOME} && \

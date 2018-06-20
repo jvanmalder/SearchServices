@@ -4,11 +4,7 @@ This projects takes the Apache Zeppelin project and customizes it for our own pu
 
 #####*Login credentials:*
 
-User name: admin
-
-Password: admin
-
-Apart from the admin user there are there more users defined, i.e. user1/user1, user2/user2 and user3/user3. If you want to add more users or change the configuration (e.g. add the users to roles) the you can edit the shiro.ini file under the "conf" folder. To be able to do that a text editor called "nano" is installed on the docker image.
+Any Alfresco user can login to Alfresco Insight Zeppelin.
 
 ### Get the code
 Git:
@@ -32,13 +28,19 @@ To build the docker image:
 <code>
 cd target
 
-docker build -t insightzeppelin:develop .
+docker build -t insightzeppelin:master .
 </code>
 
 To run the docker image:
 
 <code>
-docker run -p 9090:9090 insightzeppelin:develop
+docker run -p 9090:9090 insightzeppelin:master
+</code>
+
+Access Alfresco Insight Zeppelin:
+
+<code>
+http://localhost:9090/zeppelin
 </code>
 
 ### License
