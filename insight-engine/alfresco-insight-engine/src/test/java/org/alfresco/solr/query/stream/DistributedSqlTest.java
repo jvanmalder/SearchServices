@@ -56,10 +56,6 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertNodes(tuples, node1, node2);
         assertFieldNotNull(tuples, "LID");
         
-        sql = "select cm_owner from alfresco where cm_owner IS NOT NULL";
-        tuples = sqlQuery(sql, alfrescoJson2);
-        assertNotNull(tuples);
-        
         //SEARCH-679
         sql = "SELECT DBID,cm_created FROM alfresco order by `cm:created`";
         tuples = sqlQuery(sql, alfrescoJson2);

@@ -84,21 +84,7 @@ public class SolrSchema extends AbstractSchema {
     final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
     //Add fields from schema.
     Map<String, String> fields = getIndexedFieldsInfo();
-    /**
-     * Add additional fields that may have not been defined in the schema.
-     * These apply to custom models that have been created in the application.
-     */
-    Collection<QName> models = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getAllModels();
-    models.forEach(model->
-    {
-        ModelDefinition md = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getModel(model);
-        if(md != null) 
-        {
-            fields.put(md.getName().toString(), md.getClass().getTypeName());
-        }
-    });
     boolean isDate = false;
-
 
     Set<Map.Entry<String, String>> set = fields.entrySet();
     boolean hasLockOwner = false;
