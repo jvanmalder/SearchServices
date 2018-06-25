@@ -16,12 +16,19 @@
  */
 package org.alfresco.solr.sql;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
+import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
+import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.apache.calcite.jdbc.CalciteSchema.Entry;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeImpl;
@@ -33,14 +40,14 @@ import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.LeafReader;
 import org.apache.solr.core.SolrCore;
+import org.apache.solr.handler.AlfrescoSQLHandler;
 import org.apache.solr.schema.FieldType;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.RefCounted;
-import org.apache.solr.handler.AlfrescoSQLHandler;
 
-class SolrSchema extends AbstractSchema {
+public class SolrSchema extends AbstractSchema {
   final Properties properties;
   final SolrCore core;
   final String[] postfixes = {"_day", "_month", "_year"};
@@ -54,6 +61,12 @@ class SolrSchema extends AbstractSchema {
     this.isSelectStar = Boolean.parseBoolean(properties.getProperty(AlfrescoSQLHandler.IS_SELECT_STAR));
     if(isSelectStar) {
         addSelectStarFields();
+        String sql = properties.getProperty("stmt", "");
+        //Add dynamic fields not part of the schema such as custom models and aspects.
+        if(predicateExists(sql))
+        {
+            SolrSchemaUtil.extractPredicates(sql).forEach(action -> selectStarFields.add(action));
+        }
     }
   }
 
@@ -71,6 +84,19 @@ class SolrSchema extends AbstractSchema {
     final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
     //Add fields from schema.
     Map<String, String> fields = getIndexedFieldsInfo();
+    /**
+     * Add additional fields that may have not been defined in the schema.
+     * These apply to custom models that have been created in the application.
+     */
+    Collection<QName> models = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getAllModels();
+    models.forEach(model->
+    {
+        ModelDefinition md = AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT).getModel(model);
+        if(md != null) 
+        {
+            fields.put(md.getName().toString(), md.getClass().getTypeName());
+        }
+    });
     boolean isDate = false;
 
 
@@ -260,5 +286,15 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
       selectStarFields.add("cm:content.locale");
       selectStarFields.add("cm:content.mimetype");
       selectStarFields.add("cm:content.encoding");
+
+  }
+  public boolean predicateExists(String sql)
+  {
+      
+      if(sql != null && sql.toLowerCase().contains("where"))
+      {
+          return true;
+      }
+      return false;
   }
 }

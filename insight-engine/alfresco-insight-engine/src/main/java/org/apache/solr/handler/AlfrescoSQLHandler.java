@@ -157,6 +157,10 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
             return false;
         }
     }
+    public List<String> extractPredicates(String sql) 
+    {
+        return null;
+    }
 
   public String getDescription() {
     return "SQLHandler";
