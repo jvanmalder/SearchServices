@@ -127,10 +127,12 @@ COPY ${alfresco-insight-jdbc.name}-${alfresco-insight-jdbc.version}.jar ${Z_HOME
 COPY interpreter.json ${Z_HOME}/conf
 COPY notebook-authorization.json ${Z_HOME}/conf
 COPY shiro.ini ${Z_HOME}/conf
+COPY substituter.sh ${Z_HOME}/alfresco
+RUN chmod +x ${Z_HOME}/alfresco/substituter.sh
 
 EXPOSE ${Z_PORT}
 
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
 WORKDIR ${Z_HOME}
 
-CMD ["bin/zeppelin.sh"]
+CMD ${Z_HOME}/alfresco/substituter.sh bin/zeppelin.sh
