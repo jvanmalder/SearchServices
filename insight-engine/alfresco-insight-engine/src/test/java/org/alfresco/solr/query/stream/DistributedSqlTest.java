@@ -55,7 +55,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 2);
         assertNodes(tuples, node1, node2);
         assertFieldNotNull(tuples, "LID");
-
+        
         //SEARCH-679
         sql = "SELECT DBID,cm_created FROM alfresco order by `cm:created`";
         tuples = sqlQuery(sql, alfrescoJson2);
