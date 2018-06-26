@@ -37,7 +37,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     private String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
     
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(1, this);
+    public JettyServerRule jetty = new JettyServerRule(2, this);
     
     @Test
     public void testSearch() throws Exception
@@ -79,6 +79,25 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 1);
         assertFieldNotNull(tuples, "DBID");
         assertFieldNotNull(tuples, "LID");
+
+        //This phrase search should find results
+        sql = "select DBID, LID from alfresco where `cm:content` = 'hello world' order by DBID limit 1";
+        tuples = sqlQuery(sql, alfrescoJson2);
+        assertTrue(tuples.size() == 1);
+        assertFieldNotNull(tuples, "DBID");
+        assertFieldNotNull(tuples, "LID");
+
+        //This query will be treated as a conjunction
+        sql = "select DBID, LID from alfresco where `cm:content` = '(world hello)' order by DBID limit 1";
+        tuples = sqlQuery(sql, alfrescoJson2);
+        assertTrue(tuples.size() == 1);
+        assertFieldNotNull(tuples, "DBID");
+        assertFieldNotNull(tuples, "LID");
+
+        //This phrase search should not find results
+        sql = "select DBID, LID from alfresco where `cm:content` = 'world hello' order by DBID limit 1";
+        tuples = sqlQuery(sql, alfrescoJson2);
+        assertTrue(tuples.size() == 0);
 
         sql = "select DBID, LID from alfresco where `cm:content` = 'world' order by DBID";
         tuples = sqlQuery(sql, alfrescoJson2);

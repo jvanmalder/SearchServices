@@ -54,6 +54,12 @@ public class DistributedSqlDistinctTest extends AbstractStreamTest
         tuples = sqlQuery("select distinct cm_name from alfresco where cm_content = 'world'", alfrescoJson);
         assertTrue(tuples.size() == 3);
 
+        tuples = sqlQuery("select distinct cm_name from alfresco where cm_content = 'hello world'", alfrescoJson);
+        assertTrue(tuples.size() == 3);
+
+        tuples = sqlQuery("select distinct cm_name from alfresco where cm_content = 'world hello'", alfrescoJson);
+        assertTrue(tuples.size() == 0);
+
         tuples = sqlQuery("select distinct `cm:name` from alfresco where `cm:content` = 'world' limit 1", alfrescoJson);
         assertTrue(tuples.size() == 1);
         assertTrue("name1".equals(tuples.get(0).getString(("cm:name"))));

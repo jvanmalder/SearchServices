@@ -96,8 +96,6 @@ public class AlfrescoStatsStream extends TupleStream implements Expressible  {
 
     public void open() throws IOException
     {
-        ModifiableSolrParams solrParams = (ModifiableSolrParams)statsStream.getParams();
-        solrParams.add("defType", "afts");
         Metric[] metrics = statsStream.getMetrics();
         Map<String, String> reverseLookup = statsStream.getReverseLookup();
 

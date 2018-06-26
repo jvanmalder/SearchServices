@@ -365,6 +365,7 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
                 String shardsParam = StreamUtils.getShardString(shardsMap.get(collection));
                 paramsLoc.add("shards", shardsParam);
                 paramsLoc.add("distrib", "true");
+                paramsLoc.add("shards.qt", "/sqlfts");
             }
         }
 
@@ -473,7 +474,6 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
                            String field,
                            Metric[] metrics) {
         Tuple tuple = new Tuple(new HashMap());
-        System.out.println("######### response:"+response);
         NamedList facets = (NamedList)response.get("facets");
         fillTuples(tuples, tuple, facets, field, metrics);
     }

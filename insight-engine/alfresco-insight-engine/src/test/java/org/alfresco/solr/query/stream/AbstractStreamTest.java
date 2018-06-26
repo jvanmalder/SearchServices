@@ -236,6 +236,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         System.out.println(sql);
         List<SolrClient> clusterClients = getClusterClients();
         String shards = getShardsString(clusterClients);
+        System.out.println("###########:"+shards);
 
         SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards, "timeZone", timezone);
 

@@ -426,11 +426,6 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
 
     if(orders.size() > 0) {
       params.add(SORT, getSort(orders));
-    } else {
-      params.add(SORT, "score desc");
-      if(fl.indexOf("score") == -1) {
-        fl = fl + ",score";
-      }
     }
 
     params.add(CommonParams.FL, fl);

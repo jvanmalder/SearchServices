@@ -81,7 +81,7 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
 
         //Time period 2010
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
-        sql = "select cm_created_day, count(*), sum(cm_fiveStarRatingSchemeTotal), avg(cm_fiveStarRatingSchemeTotal), min(cm_fiveStarRatingSchemeTotal), max(cm_fiveStarRatingSchemeTotal) from alfresco where cm_owner='jim' and cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day";
+        sql = "select cm_created_day, count(*), sum(cm_fiveStarRatingSchemeTotal), avg(cm_fiveStarRatingSchemeTotal), min(cm_fiveStarRatingSchemeTotal), max(cm_fiveStarRatingSchemeTotal) from alfresco where cm_owner='jim' and cm_content='hello world' and cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
 
         assertTrue(tuples.size() == 14);
@@ -102,6 +102,13 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             assertEquals(max, 10, 0);
         }
 
+
+        //Test that phrases are working
+        sql = "select cm_created_day, count(*), sum(cm_fiveStarRatingSchemeTotal), avg(cm_fiveStarRatingSchemeTotal), min(cm_fiveStarRatingSchemeTotal), max(cm_fiveStarRatingSchemeTotal) from alfresco where cm_owner='jim' and cm_content='world hello' and cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day";
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 0);
+
+        
         sql = "select cm_created_day, count(*) as ct, sum(cm_fiveStarRatingSchemeTotal) as sm, avg(cm_fiveStarRatingSchemeTotal) as av, min(cm_fiveStarRatingSchemeTotal) as mn, max(cm_fiveStarRatingSchemeTotal) as mx from alfresco where cm_owner='jim' and cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day";
         tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 14);

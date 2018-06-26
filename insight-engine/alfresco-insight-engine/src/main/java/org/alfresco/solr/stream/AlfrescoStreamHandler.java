@@ -134,7 +134,7 @@ public class AlfrescoStreamHandler extends StreamHandler
         public QueryRequest getRequest(SolrParams solrParams)
         {
             ModifiableSolrParams modifiableSolrParams = (ModifiableSolrParams)solrParams;
-            modifiableSolrParams.set(CommonParams.QT, "/afts");
+            modifiableSolrParams.set(CommonParams.QT, "/sqlfts");
             modifiableSolrParams.set(FacetParams.FACET, "true");
             modifiableSolrParams.set(CommonParams.FQ, "{!afts}AUTHORITY_FILTER_FROM_JSON");
             AlfrescoQueryRequest alfrescoQueryRequest = new AlfrescoQueryRequest(alfrescoJson, solrParams);
