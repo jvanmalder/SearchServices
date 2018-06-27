@@ -3,21 +3,28 @@ set -e
 
 [ "$DEBUG" ] && set -x
 
-# set current working directory to the directory of the script
-cd "$bamboo_working_directory"
-
 nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
-dockerImage="quay.io/alfresco/insight-zeppelin:$bamboo_maven_version"
-echo "Building $dockerImage from $nicebranch using version $bamboo_maven_version"
 
-docker build -t $dockerImage target/docker-resources
-
-if [ "${nicebranch}" = "local" ]
+if [ "${nicebranch}" = "master" ] || [ "${nicebranch#release}" != "${nicebranch}" ]
 then
-    echo "Skipping docker publish for local build"
-else
-    echo "Publishing $dockerImage..."
-    docker push "$dockerImage"
-fi
+   # set current working directory to the directory of the script
+   cd "$bamboo_working_directory"
 
-echo "Docker SUCCESS"
+   tag_version=`echo "$bamboo_maven_version"`
+   if [ "${bamboo_shortJobName}" = "Release" ]
+   then
+      tag_version=`echo "$bamboo_release_version"`
+   fi
+
+   dockerImage="quay.io/alfresco/insight-zeppelin:$tag_version"
+   echo "Building $dockerImage from $nicebranch using version $tag_version"
+
+   docker build -t $dockerImage target/docker-resources
+
+   echo "Publishing $dockerImage..."
+   docker push "$dockerImage"
+   
+   echo "Docker SUCCESS"
+else
+    echo "Only building and publishing docker images from master. Skipping for ${nicebranch}"
+fi
