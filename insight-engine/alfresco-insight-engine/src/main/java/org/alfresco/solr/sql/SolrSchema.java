@@ -174,30 +174,33 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
 
   private void addFieldInfo(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type, String postfix) {
 
+      String formatted = entry.getKey();
+      try
+      {
+          String[] withPrefix = QName.splitPrefixedQName(entry.getKey());
+          String prefix = withPrefix[0];
+          if (prefix != null && !prefix.isEmpty())
+          {
+              formatted = withPrefix[0]+"_"+withPrefix[1]+getPostfix(postfix);
+          }
+          
+          //Potentially remove prefix, just shortname if unique
+          //QueryParserUtils.matchPropertyDefinition will throw an error if duplicate
+          
+      } catch (NamespaceException e) {
+          //ignore invalid qnames
+      }
       if(isSelectStar) {
-        if(!selectStarFields.contains(entry.getKey())) {
+        if(selectStarFields.contains(entry.getKey())) 
+        {
+            fieldInfo.add(entry.getKey()+getPostfix(postfix), type).nullable(true);
             return;
         }
+        if(selectStarFields.contains(formatted)) 
+        {
+            fieldInfo.add(formatted, type).nullable(true);
+        }
       }
-
-    fieldInfo.add(entry.getKey()+getPostfix(postfix), type).nullable(true);
-
-    try
-    {
-      String[] withPrefix = QName.splitPrefixedQName(entry.getKey());
-      String prefix = withPrefix[0];
-      if (prefix != null && !prefix.isEmpty())
-      {
-        fieldInfo.add(withPrefix[0]+"_"+withPrefix[1]+getPostfix(postfix), type).nullable(true);
-      }
-
-      //Potentially remove prefix, just shortname if unique
-      //QueryParserUtils.matchPropertyDefinition will throw an error if duplicate
-
-    } catch (NamespaceException e) {
-      //ignore invalid qnames
-    }
-
   }
 
   private String getPostfix(String postfix) {
