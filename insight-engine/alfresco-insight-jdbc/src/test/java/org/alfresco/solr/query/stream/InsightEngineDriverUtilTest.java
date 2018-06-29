@@ -64,5 +64,14 @@ public class InsightEngineDriverUtilTest
         Assert.assertEquals(expected, formatSQL(sql2));
         Assert.assertEquals(expected, formatSQL(sql3));
         Assert.assertEquals(expected, formatSQL(sql4));
+        
+        String sql5 = "select  *  from alfresco\r order by \n  SITE , CM_OWNER ";
+        String sql6 = " select   \r\n *       \n\r        from alfresco\r      order by SITE   \n, CM_OWNER \n\r ";
+        String sql7 = "select  *  from alfresco\rorder by \nSITE , CM_OWNER ";
+        String noDoubleSpaceExpected = "select * from alfresco order by SITE , CM_OWNER";
+
+        Assert.assertEquals(noDoubleSpaceExpected, formatSQL(sql5));
+        Assert.assertEquals(noDoubleSpaceExpected, formatSQL(sql6));
+        Assert.assertEquals(noDoubleSpaceExpected, formatSQL(sql7));
     }
 }
