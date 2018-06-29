@@ -66,7 +66,10 @@ public class InsightEngineDriverUtil extends DriverImpl
      */
     public static String formatSQL(String sql)
     {
-        return sql.replaceAll("\\r\\n|\\r|\\n", "").trim();
+        return sql.replaceAll("\\r\\n|\\r|\\n", " ").trim()
+                .replaceAll("   |  ", " ")
+                .replaceAll("   ", " ")
+                .replaceAll("  ", " ");
     }
     
     private static String buildLocales(String[] locales)
