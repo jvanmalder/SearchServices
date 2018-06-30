@@ -16,7 +16,6 @@
  */
 package org.alfresco.solr.sql;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,8 +23,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
-import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
@@ -157,13 +154,13 @@ public class SolrSchema extends AbstractSchema {
    * @param entry
    * @return
    */
-  private boolean lockOwnerFieldExists(String entry)
+  public static boolean lockOwnerFieldExists(String entry)
   {
-      if("cm_lockOwner".equalsIgnoreCase(entry) || "cm:lockOwner".equalsIgnoreCase(entry))
+      if(null != entry)
       {
-          return true;
+          return "cm_lockOwner".contentEquals(entry)|| "cm:lockOwner".contentEquals(entry);
       }
-    return false;
+      return false;
   }
 
 private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type) {
@@ -190,16 +187,17 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
       } catch (NamespaceException e) {
           //ignore invalid qnames
       }
-      if(isSelectStar) {
-        if(selectStarFields.contains(entry.getKey())) 
-        {
-            fieldInfo.add(entry.getKey()+getPostfix(postfix), type).nullable(true);
-            return;
-        }
-        if(selectStarFields.contains(formatted)) 
-        {
-            fieldInfo.add(formatted, type).nullable(true);
-        }
+      
+      if(isSelectStar) 
+      {
+          if(!selectStarFields.contains(entry.getKey()) && !selectStarFields.contains(formatted)) {
+              return;
+          }
+      }
+      fieldInfo.add(entry.getKey()+getPostfix(postfix), type).nullable(true);
+      if(!formatted.contentEquals(entry.getKey() + getPostfix(postfix)))
+      {
+          fieldInfo.add(formatted, type).nullable(true);
       }
   }
 
