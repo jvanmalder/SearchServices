@@ -278,6 +278,11 @@ public class DistributedSqlTest extends AbstractStreamTest
         
         tuples = sqlQuery("select * from alfresco where PROPERTIES ='title'", alfrescoJson);
         assertNotNull(tuples);
+        
+        tuples = sqlQuery("select * from alfresco where audio_trackNumber = '12'", alfrescoJson);
+        assertNotNull(tuples);
+        tuples = sqlQuery("select * from alfresco where `audio:trackNumber` = '12'", alfrescoJson);
+        assertNotNull(tuples);
     }
 
     private void assertResult(List<Tuple> tuples)

@@ -16,7 +16,6 @@
  */
 package org.alfresco.solr.sql;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,8 +23,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
-import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
@@ -157,13 +154,13 @@ public class SolrSchema extends AbstractSchema {
    * @param entry
    * @return
    */
-  private boolean lockOwnerFieldExists(String entry)
+  public static boolean lockOwnerFieldExists(String entry)
   {
-      if("cm_lockOwner".equalsIgnoreCase(entry) || "cm:lockOwner".equalsIgnoreCase(entry))
+      if(null != entry)
       {
-          return true;
+          return "cm_lockOwner".contentEquals(entry)|| "cm:lockOwner".contentEquals(entry);
       }
-    return false;
+      return false;
   }
 
 private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type) {
@@ -174,30 +171,34 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
 
   private void addFieldInfo(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type, String postfix) {
 
-      if(isSelectStar) {
-        if(!selectStarFields.contains(entry.getKey())) {
-            return;
-        }
-      }
-
-    fieldInfo.add(entry.getKey()+getPostfix(postfix), type).nullable(true);
-
-    try
-    {
-      String[] withPrefix = QName.splitPrefixedQName(entry.getKey());
-      String prefix = withPrefix[0];
-      if (prefix != null && !prefix.isEmpty())
+      String formatted = entry.getKey();
+      try
       {
-        fieldInfo.add(withPrefix[0]+"_"+withPrefix[1]+getPostfix(postfix), type).nullable(true);
+          String[] withPrefix = QName.splitPrefixedQName(entry.getKey());
+          String prefix = withPrefix[0];
+          if (prefix != null && !prefix.isEmpty())
+          {
+              formatted = withPrefix[0]+"_"+withPrefix[1]+getPostfix(postfix);
+          }
+          
+          //Potentially remove prefix, just shortname if unique
+          //QueryParserUtils.matchPropertyDefinition will throw an error if duplicate
+          
+      } catch (NamespaceException e) {
+          //ignore invalid qnames
       }
-
-      //Potentially remove prefix, just shortname if unique
-      //QueryParserUtils.matchPropertyDefinition will throw an error if duplicate
-
-    } catch (NamespaceException e) {
-      //ignore invalid qnames
-    }
-
+      
+      if(isSelectStar) 
+      {
+          if(!selectStarFields.contains(entry.getKey()) && !selectStarFields.contains(formatted)) {
+              return;
+          }
+      }
+      fieldInfo.add(entry.getKey()+getPostfix(postfix), type).nullable(true);
+      if(!formatted.contentEquals(entry.getKey() + getPostfix(postfix)))
+      {
+          fieldInfo.add(formatted, type).nullable(true);
+      }
   }
 
   private String getPostfix(String postfix) {
