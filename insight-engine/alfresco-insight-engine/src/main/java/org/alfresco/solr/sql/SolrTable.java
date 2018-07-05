@@ -720,7 +720,7 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
       sorts = getComps(orders);
     }
 
-    int overfetch = (int)(limit * 1.25);
+    int overfetch = Math.max((int)(limit * 1.25), limit+150); // Minimum overfetch is 150.
 
     TupleStream tupleStream = new FacetStream(zkHost,
                                               collection,
