@@ -134,6 +134,8 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
 
       properties.setProperty(IS_SELECT_STAR, Boolean.toString(isSelectStar(sql)));
 
+      sql = adjustSQL(sql);
+
       tupleStream = new SqlHandlerStream(url, sql, null, properties, driverClass, includeMetadata);
 
       tupleStream = new StreamHandler.TimerStream(new AlfrescoExceptionStream(tupleStream));
@@ -147,6 +149,10 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
       SolrException.log(logger, e);
       rsp.add("result-set", new StreamHandler.DummyErrorStream(e));
     }
+  }
+
+  private String adjustSQL(String sql) {
+      return sql.replace("!=", "<>");
   }
 
     private boolean isSelectStar(String sql) {
