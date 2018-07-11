@@ -508,14 +508,14 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
                 {
                     Object o = bucket.get("facet_"+m);
                     if(o != null) {
-                        double d = (double) o;
+                        Number d = (Number) o;
                         if (metric.outputLong) {
-                            t.put(identifier, Math.round(d));
+                            t.put(identifier, Math.round(d.doubleValue()));
                         } else {
-                            t.put(identifier, d);
+                            t.put(identifier, d.doubleValue());
                         }
                     } else {
-                        t.put(identifier, null);
+                        t.put(identifier, 0);
                     }
                     ++m;
                 }
