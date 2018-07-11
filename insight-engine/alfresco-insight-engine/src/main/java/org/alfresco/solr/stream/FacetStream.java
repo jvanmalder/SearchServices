@@ -525,11 +525,11 @@ public class FacetStream extends TupleStream implements Expressible  {
             identifier = reverseLookup.get(identifier);
           }
           if(!identifier.startsWith("count(")) {
-            double d = (double)bucket.get("facet_"+m);
+            Number n = (Number)bucket.get("facet_"+m);
             if(metric.outputLong) {
-              t.put(identifier, Math.round(d));
+              t.put(identifier, Math.round(n.doubleValue()));
             } else {
-              t.put(identifier, d);
+              t.put(identifier, n.doubleValue());
             }
             ++m;
           } else {
