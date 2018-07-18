@@ -16,6 +16,8 @@
  */
 package org.alfresco.solr.sql;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -222,13 +224,30 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
       for (FieldInfo fieldInfo : reader.getFieldInfos()) {
         fieldNames.add(fieldInfo.name);
       }
-      Map fieldMap = new HashMap();
+      Map<String, String> fieldMap = new HashMap<>();
       for (String fieldName : fieldNames) {
         SchemaField sfield = schema.getFieldOrNull(fieldName);
         FieldType ftype = (sfield == null) ? null : sfield.getType();
 
-        // Add the field
-        fieldMap.put(AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName), ftype.getClassArg());
+        String alfrescoPropertyFromSchemaField = null;
+        try
+        {
+            alfrescoPropertyFromSchemaField = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
+        }
+        catch (NamespaceException ne)
+        {
+            // Ignore 
+        }
+
+        if (isNotBlank(alfrescoPropertyFromSchemaField) && ftype != null)
+        {
+            String className = ftype.getClassArg();
+            if (isNotBlank(className))
+            {
+                // Add the field
+                fieldMap.put(alfrescoPropertyFromSchemaField, className);
+            }
+        }
       }
 
       return fieldMap;
