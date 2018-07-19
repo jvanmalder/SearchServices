@@ -92,8 +92,11 @@ class ConnectionImpl implements Connection {
         String key = (String)k;
         if(key.startsWith("javax.")) {
             System.setProperty(key, properties.getProperty(key));
+        } else if(key.equals("alfresco.ssl.checkPeerName")) {
+            //Add the property for disabling peer name check
+            System.setProperty("solr.ssl.checkPeerName", properties.getProperty(key));
         }
-    }
+     }
   }
 
   String getUrl() {
