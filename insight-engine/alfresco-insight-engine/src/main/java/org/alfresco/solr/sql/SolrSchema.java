@@ -256,44 +256,33 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
     }
   }
 
-  private void addSelectStarFields() {
-      selectStarFields.add("id");
-      selectStarFields.add("DBID");
-      selectStarFields.add("OWNER");
-      selectStarFields.add("DOC_TYPE");
-      selectStarFields.add("TYPE");
-      selectStarFields.add("ANCESTOR");
-      selectStarFields.add("QNAME");
-      selectStarFields.add("SITE");
-      selectStarFields.add("LID");
-      selectStarFields.add("PATH");
-      selectStarFields.add("PARENT");
-      selectStarFields.add("PRIMARYPARENT");
-      selectStarFields.add("FTSSTATUS");
-      selectStarFields.add("ASPECT");
-      selectStarFields.add("PROPERTIES");
-      selectStarFields.add("cm:lockOwner");
-      selectStarFields.add("cm:author");
-      selectStarFields.add("cm:name");
-      selectStarFields.add("cm:title");
-      selectStarFields.add("cm:created");
-      selectStarFields.add("cm:owner");
-      selectStarFields.add("cm:content");
-      selectStarFields.add("cm:initialVersion");
-      selectStarFields.add("cm:versionLabel");
-      selectStarFields.add("cm:modified");
-      selectStarFields.add("cm:modifier");
-      selectStarFields.add("cm:organization");
-      selectStarFields.add("cm:thumbnailName");
-      selectStarFields.add("cm:updated");
-      selectStarFields.add("cm:content.locale");
-      selectStarFields.add("cm:location");
-      selectStarFields.add("cm:content.size");
-      selectStarFields.add("cm:content.locale");
-      selectStarFields.add("cm:content.mimetype");
-      selectStarFields.add("cm:content.encoding");
+    private void addSelectStarFields()
+    {
+        selectStarFields.add("cm_name");
+        selectStarFields.add("cm_created");
+        selectStarFields.add("cm_creator");
+        selectStarFields.add("cm_modified");
+        selectStarFields.add("cm_modifier");
+        selectStarFields.add("cm_owner");
+        selectStarFields.add("OWNER");
+        selectStarFields.add("TYPE");
+        selectStarFields.add("LID");
+        selectStarFields.add("DBID");
+        selectStarFields.add("cm_title");
+        selectStarFields.add("cm_description");
+        selectStarFields.add("cm_content.size");
+        selectStarFields.add("cm_content.mimetype");
+        selectStarFields.add("cm_content.encoding");
+        selectStarFields.add("cm_content.locale");
+        selectStarFields.add("cm_lockOwner");
+        selectStarFields.add("SITE");
+        selectStarFields.add("PRIMARYPARENT");
+        selectStarFields.add("PARENT");
+        selectStarFields.add("PATH");
+        selectStarFields.add("ASPECT");
+        selectStarFields.add("QNAME");
+    }
 
-  }
   public boolean predicateExists(String sql)
   {
       
