@@ -195,8 +195,9 @@ class StatementImpl implements Statement {
       }
       return false;
   }
+
   public String getScheme() {
-    if(System.getProperty("javax.net.ssl.keyStore") != null) {
+    if(Boolean.parseBoolean(System.getProperty("alfresco.enable.ssl", "false"))) {
       return "https://";
     } else {
       return "http://";

@@ -95,6 +95,9 @@ class ConnectionImpl implements Connection {
         } else if(key.equals("alfresco.ssl.checkPeerName")) {
             //Add the property for disabling peer name check
             System.setProperty("solr.ssl.checkPeerName", properties.getProperty(key));
+        } else if(key.equals("alfresco.enable.ssl")) {
+            //Turn on SSL
+            System.setProperty(key, properties.getProperty(key));
         }
      }
   }
