@@ -51,6 +51,16 @@ class SolrToEnumerableConverter extends ConverterImpl implements EnumerableRel {
     return super.computeSelfCost(planner, mq).multiplyBy(.1);
   }
 
+
+  /*
+  * This method does a number of things:
+  *
+  *  1) SolrRel.Implementor visits the SQL parse tree and gathers information needed by Solr to fullfill the query.
+  *  2) Marshals the data collected from the parse tree into a format that can be passed to SolrTable.query
+  *  3) Calls the SolrTable.query method passing the proper arguments. See the SolrMethod class to understand
+  *     how the query method is defined.
+  */
+
   public Result implement(EnumerableRelImplementor implementor, Prefer pref) {
     // Generates a call to "query" with the appropriate fields
     final BlockBuilder list = new BlockBuilder();

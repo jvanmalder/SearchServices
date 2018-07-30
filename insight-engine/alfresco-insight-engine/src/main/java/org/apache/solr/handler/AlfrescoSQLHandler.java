@@ -136,6 +136,15 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
 
       sql = adjustSQL(sql);
 
+
+      /*
+      *  The SqlHandlerStream sets up the Apache Calcite JDBC Connection.
+      *  This will trigger the code in AlfrescoCalciteSolrDriver which sets up the
+      *  Schema. The SqlHandlerStream inherits from JDBCStreams that use the Calcite JDBC driver
+      *  to make the SQL request.The Calcite JDBC Driver then kicks of the Apache Calcite
+      *  query processing.
+      */
+
       tupleStream = new SqlHandlerStream(url, sql, null, properties, driverClass, includeMetadata);
 
       tupleStream = new StreamHandler.TimerStream(new AlfrescoExceptionStream(tupleStream));

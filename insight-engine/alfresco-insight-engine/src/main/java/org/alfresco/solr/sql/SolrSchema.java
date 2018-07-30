@@ -46,6 +46,11 @@ import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.RefCounted;
 
+/*
+* The SolrSchema class creates the "alfresco" table and populates the fields from the index.
+*/
+
+
 public class SolrSchema extends AbstractSchema {
   final Properties properties;
   final SolrCore core;
