@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.query.stream;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.sql.Connection;
@@ -25,6 +26,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.lucene.util.LuceneTestCase;
@@ -32,6 +34,7 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -157,6 +160,98 @@ public class DistributedJdbcTest extends AbstractStreamTest
                 assertTrue(e.getMessage().contains("HAVING clause can only be applied to aggregate functions."));
             }
         } finally {
+            rs.close();
+            stmt.close();
+            con.close();
+        }
+    }
+    
+    @Test
+    public void testSelectStartFieldList() throws Exception
+    {
+        String sql = "select * from alfresco where cm_content = 'world' order by DBID limit 5 ";
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+
+        Properties props = getConnectionProperties(alfrescoJson);
+        String connectionString = getConnectionString();
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        
+        List<String> fieldList = new ArrayList<String>();
+        
+        // Expected Field List in the select star response
+        fieldList.add("cm_name");
+        fieldList.add("cm_created");
+        fieldList.add("cm_creator");
+        fieldList.add("cm_modified");
+        fieldList.add("cm_modifier");
+        fieldList.add("cm_owner");        
+        fieldList.add("OWNER");
+        fieldList.add("TYPE");
+        fieldList.add("LID");
+        fieldList.add("DBID");
+        fieldList.add("cm_title");
+        fieldList.add("cm_description");
+        fieldList.add("cm_content.size");
+        fieldList.add("cm_content.mimetype");
+        fieldList.add("cm_content.encoding");
+        fieldList.add("cm_content.locale");
+        fieldList.add("cm_lockOwner");
+        fieldList.add("SITE");
+        fieldList.add("PARENT");
+        fieldList.add("path");
+        fieldList.add("PRIMARYPARENT");
+        fieldList.add("ASPECT");
+        fieldList.add("QNAME");
+        
+        // Fields not expected in the select star response
+        fieldList.add("RandomNonExistentField");
+        fieldList.add("cm_content");
+
+        try
+        {
+            con = DriverManager.getConnection(connectionString, props);
+            stmt = con.createStatement();
+            rs = stmt.executeQuery(sql);
+
+            while (rs.next())
+            {
+                for (int i = 0; i < fieldList.size(); i++)
+                {
+                    System.out.println(" *********Field:***** " + i + " : " + rs.getString(fieldList.get(i)));
+                    if (i != fieldList.size()-1)
+                    {
+                       try
+                       {
+                           rs.getString(fieldList.get(i));
+                       }
+                       catch (SQLException e)
+                       {
+                           Assert.fail("Expected Field not returned in the select Star query response: " + fieldList.get(i));
+                       }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            rs.getString(fieldList.get(i));
+                            Assert.fail("Unexpected Field returned in the select Star query response: " + fieldList.get(i));
+                        }
+                        catch (SQLException e)
+                        {
+                            // Ignore the SQLException as its expected
+                        }
+                    }
+                }
+            }
+        }
+        catch (Throwable e)
+        {
+           throw e;
+        }
+        finally
+        {
             rs.close();
             stmt.close();
             con.close();
