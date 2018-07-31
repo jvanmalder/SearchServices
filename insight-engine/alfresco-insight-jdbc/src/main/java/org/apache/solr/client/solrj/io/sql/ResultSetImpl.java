@@ -229,12 +229,20 @@ class ResultSetImpl implements ResultSet {
         this.wasLastValueNull = false;
         checkClosed();
 
+        // Throw SQLException if the column is not found
+        if (tuple.fields.containsKey(columnLabel))
+        {
         String value = tuple.getString(columnLabel);
         if(value.equals(String.valueOf((Object)null))) {
             this.wasLastValueNull = true;
             return null;
         }
         return value;
+        }
+        else
+        {
+            throw new SQLException("Column not found: " + columnLabel + " List of columns returned are: " + tuple.fields.toString()); 
+        }
     }
 
     @Override
