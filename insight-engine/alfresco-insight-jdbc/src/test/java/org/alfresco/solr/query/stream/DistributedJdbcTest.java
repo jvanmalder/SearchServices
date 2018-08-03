@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.query.stream;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.sql.Connection;
@@ -25,6 +26,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.lucene.util.LuceneTestCase;
@@ -32,6 +34,7 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -163,6 +166,104 @@ public class DistributedJdbcTest extends AbstractStreamTest
         }
     }
     
+    @Test
+    public void testSelectStartFieldList() throws Exception
+    {
+        String sql = "select * from alfresco where cm_content = 'world' order by DBID limit 1 ";
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+
+        Properties props = getConnectionProperties(alfrescoJson);
+        String connectionString = getConnectionString();
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        
+        List<String> fieldList = new ArrayList<String>();
+        
+        // Expected Field List in the select star response
+        fieldList.add("cm_name");
+        fieldList.add("cm_created");
+        fieldList.add("cm_creator");
+        fieldList.add("cm_modified");
+        fieldList.add("cm_modifier");
+        fieldList.add("cm_owner");        
+        fieldList.add("OWNER");
+        fieldList.add("TYPE");
+        fieldList.add("LID");
+        fieldList.add("DBID");
+        fieldList.add("cm_title");
+        fieldList.add("cm_description");
+        fieldList.add("cm_content.size");
+        fieldList.add("cm_content.mimetype");
+        fieldList.add("cm_content.encoding");
+        fieldList.add("cm_content.locale");
+        fieldList.add("cm_lockOwner");
+        fieldList.add("SITE");
+        fieldList.add("PARENT");
+        fieldList.add("path");
+        fieldList.add("PRIMARYPARENT");
+        fieldList.add("ASPECT");
+        fieldList.add("QNAME");
+        
+        // TODO: Remove comments: The following list includes the fields that are not found in the ResultSet
+//        fieldList.add("cm_modified");
+//        fieldList.add("cm_modifier");
+//        fieldList.add("cm_description");
+//        fieldList.add("PARENT");
+//        fieldList.add("path");
+//        fieldList.add("PRIMARYPARENT");
+//        fieldList.add("QNAME");
+
+        try
+        {
+            con = DriverManager.getConnection(connectionString, props);
+            stmt = con.createStatement();
+            rs = stmt.executeQuery(sql);
+
+            while (rs.next())
+            {
+                // Fields not expected in the select star response
+                try
+                {                    
+                    String response = rs.getString("RandomNonExistentField");
+                    Assert.fail("Unexpected Column in the ResultSet: RandomNonExistentField. Value is: " + response);
+                    
+                    response = rs.getString("cm_content");
+                    Assert.fail("Unexpected Column in the ResultSet: cm_content. Value is: " + response);
+                }
+                catch(SQLException e)
+                {
+                    // SQLException is expected for columns not included in select star
+                    Assert.assertTrue(e.getMessage().contains("Column not found: "));
+                }
+                
+                // Fields expected in the select star response
+                for (int i = 0; i < fieldList.size(); i++)
+                {
+                    try
+                    {
+                        rs.getString(fieldList.get(i));
+                    }
+                    catch(SQLException e)
+                    {
+                        // SQLException is not expected for columns included in select star   
+                        Assert.fail("Expected Column not in the ResultSet: " + fieldList.get(i) + " ResultSet includes: " + e);
+                    }
+                }
+            }
+        }
+        catch (Throwable e)
+        {
+           throw e;
+        }
+        finally
+        {
+            rs.close();
+            stmt.close();
+            con.close();
+        }
+    }
+
     private String getConnectionString() {
         List<SolrClient> clusterClients = getClusterClients();
         String baseUrl = ((HttpSolrClient) clusterClients.get(0)).getBaseURL();
