@@ -205,14 +205,8 @@ public class DistributedJdbcTest extends AbstractStreamTest
         fieldList.add("ASPECT");
         fieldList.add("QNAME");
         
-        // TODO: Remove comments: The following list includes the fields that are not found in the ResultSet
-//        fieldList.add("cm_modified");
-//        fieldList.add("cm_modifier");
-//        fieldList.add("cm_description");
-//        fieldList.add("PARENT");
-//        fieldList.add("path");
-//        fieldList.add("PRIMARYPARENT");
-//        fieldList.add("QNAME");
+        // TODO: Remove comment: The following list includes the fields that are not found in the ResultSet
+        // cm_modified, cm_modifier, cm_description, PARENT, path, PRIMARYPARENT, QNAME
 
         try
         {
