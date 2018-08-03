@@ -169,7 +169,7 @@ public class DistributedJdbcTest extends AbstractStreamTest
     @Test
     public void testSelectStartFieldList() throws Exception
     {
-        String sql = "select * from alfresco where cm_content = 'world' order by DBID limit 5 ";
+        String sql = "select * from alfresco where cm_content = 'world' order by DBID limit 1 ";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
         Properties props = getConnectionProperties(alfrescoJson);
@@ -205,9 +205,8 @@ public class DistributedJdbcTest extends AbstractStreamTest
         fieldList.add("ASPECT");
         fieldList.add("QNAME");
         
-        // Fields not expected in the select star response
-        fieldList.add("RandomNonExistentField");
-        fieldList.add("cm_content");
+        // TODO: Remove comment: The following list includes the fields that are not found in the ResultSet
+        // cm_modified, cm_modifier, cm_description, PARENT, path, PRIMARYPARENT, QNAME
 
         try
         {
@@ -217,31 +216,32 @@ public class DistributedJdbcTest extends AbstractStreamTest
 
             while (rs.next())
             {
+                // Fields not expected in the select star response
+                try
+                {                    
+                    String response = rs.getString("RandomNonExistentField");
+                    Assert.fail("Unexpected Column in the ResultSet: RandomNonExistentField. Value is: " + response);
+                    
+                    response = rs.getString("cm_content");
+                    Assert.fail("Unexpected Column in the ResultSet: cm_content. Value is: " + response);
+                }
+                catch(SQLException e)
+                {
+                    // SQLException is expected for columns not included in select star
+                    Assert.assertTrue(e.getMessage().contains("Column not found: "));
+                }
+                
+                // Fields expected in the select star response
                 for (int i = 0; i < fieldList.size(); i++)
                 {
-                    System.out.println(" *********Field:***** " + i + " : " + rs.getString(fieldList.get(i)));
-                    if (i != fieldList.size()-1)
+                    try
                     {
-                       try
-                       {
-                           rs.getString(fieldList.get(i));
-                       }
-                       catch (SQLException e)
-                       {
-                           Assert.fail("Expected Field not returned in the select Star query response: " + fieldList.get(i));
-                       }
+                        rs.getString(fieldList.get(i));
                     }
-                    else
+                    catch(SQLException e)
                     {
-                        try
-                        {
-                            rs.getString(fieldList.get(i));
-                            Assert.fail("Unexpected Field returned in the select Star query response: " + fieldList.get(i));
-                        }
-                        catch (SQLException e)
-                        {
-                            // Ignore the SQLException as its expected
-                        }
+                        // SQLException is not expected for columns included in select star   
+                        Assert.fail("Expected Column not in the ResultSet: " + fieldList.get(i) + " ResultSet includes: " + e);
                     }
                 }
             }
