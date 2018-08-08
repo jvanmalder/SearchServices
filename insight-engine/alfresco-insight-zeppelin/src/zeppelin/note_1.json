@@ -1124,7 +1124,7 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Insight Engine EA - Example Dashboard",
+  "name": "Alfresco Insight Engine - Example Dashboard",
   "id": "2CVRR91J2",
   "angularObjects": {
     "2CVAY6EYZ:shared_process": [],
