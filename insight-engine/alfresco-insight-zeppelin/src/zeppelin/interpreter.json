@@ -77,8 +77,12 @@
   },
   "interpreterBindings": {
     "2CVRR91J2": [
-    "2CUZK9W4Z",
-    "2CVAY6EYZ"
+      "2CUZK9W4Z",
+      "2CVAY6EYZ"
+    ],
+    "2DMP8WY2G": [
+      "2CUZK9W4Z",
+      "2CVAY6EYZ"
     ]
   },
   "interpreterRepositories": [

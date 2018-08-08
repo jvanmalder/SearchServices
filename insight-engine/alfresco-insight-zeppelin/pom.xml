@@ -11,7 +11,11 @@
    <version>1.0.0-SNAPSHOT</version>
    <name>Alfresco Insight Zeppelin</name>
    <properties>
+      <alfresco.zeppelin.version.suffix>alfresco-patched-2</alfresco.zeppelin.version.suffix>
       <apache.zeppelin.version>0.7.3</apache.zeppelin.version>
+      <apache.zeppelin.artifact.name>zeppelin</apache.zeppelin.artifact.name>
+      <zeppelin.artifact>${apache.zeppelin.artifact.name}-${apache.zeppelin.version}</zeppelin.artifact>
+      <zeppelin.interpreter.folder>${zeppelin.artifact}/interpreter</zeppelin.interpreter.folder>
       <alfresco-insight-jdbc.name>alfresco-insight-jdbc</alfresco-insight-jdbc.name>
       <alfresco-insight-jdbc.version>1.0.0-SNAPSHOT</alfresco-insight-jdbc.version>
    </properties>
@@ -47,6 +51,102 @@
             </configuration>
          </plugin>
          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>fetch-jdbc-driver</id>
+                  <phase>validate</phase>
+                  <goals>
+                     <goal>copy</goal>
+                  </goals>
+                  <configuration>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>org.alfresco</groupId>
+                           <artifactId>${alfresco-insight-jdbc.name}</artifactId>
+                           <version>${alfresco-insight-jdbc.version}</version>
+                        </artifactItem>
+                     </artifactItems>
+                     <outputDirectory>${project.build.directory}/docker-resources</outputDirectory>
+                     <useBaseVersion>true</useBaseVersion>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>extract-zeppelin-tar</id>
+                  <phase>generate-resources</phase>
+                  <goals>
+                     <goal>unpack</goal>
+                  </goals>
+                  <configuration>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>org.apache</groupId>
+                           <artifactId>zeppelin</artifactId>
+                           <version>${apache.zeppelin.version}-${alfresco.zeppelin.version.suffix}</version>
+                           <type>tar.gz</type>
+                           <excludes>
+                              ${zeppelin.interpreter.folder}/alluxio/,
+                              ${zeppelin.interpreter.folder}/angular/,
+                              ${zeppelin.interpreter.folder}/bqsql/,
+                              ${zeppelin.interpreter.folder}/cassandra/,
+                              ${zeppelin.interpreter.folder}/elasticsearch/,
+                              ${zeppelin.interpreter.folder}/file/,
+                              ${zeppelin.interpreter.folder}/flink/,
+                              ${zeppelin.interpreter.folder}/hbase/,
+                              ${zeppelin.interpreter.folder}/ignite/,
+                              ${zeppelin.interpreter.folder}/kylin/,
+                              ${zeppelin.interpreter.folder}/lens/,
+                              ${zeppelin.interpreter.folder}/lib/,
+                              ${zeppelin.interpreter.folder}/livy/,
+                              ${zeppelin.interpreter.folder}/pig/,
+                              ${zeppelin.interpreter.folder}/psql/,
+                              ${zeppelin.interpreter.folder}/python/,
+                              ${zeppelin.interpreter.folder}/scio/,
+                              ${zeppelin.interpreter.folder}/sh/,
+                              ${zeppelin.interpreter.folder}/spark/
+                           </excludes>
+                        </artifactItem>
+                     </artifactItems>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+                  <configuration>
+                     <target>
+                        <move file="${project.build.directory}/${project.artifactId}-${project.version}.war" tofile="${project.build.directory}/dependency/${zeppelin.artifact}/zeppelin-web-${apache.zeppelin.version}.war" />
+                     </target>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>make-assembly</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>single</goal>
+                  </goals>
+               </execution>
+            </executions>
+            <configuration>
+               <appendAssemblyId>false</appendAssemblyId>
+               <descriptors>
+                  <descriptor>src/assembly/zeppelin-distribution.xml</descriptor>
+               </descriptors>
+            </configuration>
+         </plugin>
+         <plugin>
             <artifactId>maven-resources-plugin</artifactId>
             <executions>
                <execution>
@@ -69,34 +169,10 @@
                         <resource>
                            <directory>${project.build.directory}</directory>
                            <includes>
-                              <include>${project.build.finalName}.war</include>
+                              <include>${project.build.finalName}.zip</include>
                            </includes>
                         </resource>
                      </resources>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>fetch-jdbc-driver</id>
-                  <phase>validate</phase>
-                  <goals>
-                     <goal>copy</goal>
-                  </goals>
-                  <configuration>
-                     <artifactItems>
-                        <artifactItem>
-                           <groupId>org.alfresco</groupId>
-                           <artifactId>${alfresco-insight-jdbc.name}</artifactId>
-                           <version>${alfresco-insight-jdbc.version}</version>
-                        </artifactItem>
-                     </artifactItems>
-                     <outputDirectory>${project.build.directory}/docker-resources</outputDirectory>
-                     <useBaseVersion>true</useBaseVersion>
                   </configuration>
                </execution>
             </executions>
