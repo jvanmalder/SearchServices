@@ -22,7 +22,7 @@ RUN echo "$LOG Update substituter.sh to start zeppelin.sh" && \
     echo " " >> ${ZEPPELIN_HOME}/bin/substituter.sh && \
     echo "bash -c \"\$@\"" >> ${ZEPPELIN_HOME}/bin/substituter.sh
 
-EXPOSE ${ZEPPELIN_PORT}
+EXPOSE ${zeppelin.port}
 
 ENTRYPOINT [ "/tini", "--" ]
 WORKDIR ${ZEPPELIN_HOME}
