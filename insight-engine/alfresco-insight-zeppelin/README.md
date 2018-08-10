@@ -20,11 +20,13 @@ Build project:
 mvn clean install
 </code>
 
-This will create a zip file in the 'target' folder. Apart from that it will make files available for a Docker image (see 'target/docker-resources').
+This will generate the following artifacts in the 'target' folder. 
+1. alfresco-insight-zeppelin zip file:  see /target
+2. docker-resources: A folder containing the files necessary for a Docker image: see 'target/docker-resources'
 
 ### Start Alfresco Insight Zeppelin from a zip file
-* Run 'mvn clean install'
-* Get the zip file from the 'target' folder and unzip it
+
+* Get the zip file and unzip it
 * Run the substituter.sh script (or substituter.cmd for Windows) which is located in ZEPPELIN\_HOME/bin/. This script reads the 'zeppelin.properties' file in ZEPPELIN\_HOME/.
   You can change the Alfresco Repository connection details in there (or pass REPO\_PROTOCOL, REPO\_HOST and REPO\_PORT to the script from the command line). For example, 'REPO\_PROTOCOL=https REPO\_HOST=myhost REPO\_PORT=8443 ./substituter.sh'.
   You don't have to pass all the variables only pass the ones you want to override. Default values are: 'REPO\_PROTOCOL=http REPO\_HOST=localhost REPO\_PORT=8080'
@@ -75,7 +77,7 @@ zeppelin:
 ```
 
 ### License
-Copyright (C) 2005 - 2017 Alfresco Software Limited
+Copyright (C) 2005 - 2018 Alfresco Software Limited
 
 This file is part of the Alfresco software.
 If the software was purchased under a paid Alfresco license, the terms of
