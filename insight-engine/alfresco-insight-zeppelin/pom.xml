@@ -16,6 +16,10 @@
       <apache.zeppelin.artifact.name>zeppelin</apache.zeppelin.artifact.name>
       <zeppelin.artifact>${apache.zeppelin.artifact.name}-${apache.zeppelin.version}</zeppelin.artifact>
       <zeppelin.interpreter.folder>${zeppelin.artifact}/interpreter</zeppelin.interpreter.folder>
+      <zeppelin.sample.notebook.1>2CVRR91J2</zeppelin.sample.notebook.1>
+      <zeppelin.sample.notebook.2>2DMP8WY2G</zeppelin.sample.notebook.2>
+      <zeppelin.port>9090</zeppelin.port>
+      <zeppelin.server.context.path>/zeppelin</zeppelin.server.context.path>
       <alfresco-insight-jdbc.name>alfresco-insight-jdbc</alfresco-insight-jdbc.name>
       <alfresco-insight-jdbc.version>1.0.0-SNAPSHOT</alfresco-insight-jdbc.version>
    </properties>
@@ -68,7 +72,6 @@
                            <version>${alfresco-insight-jdbc.version}</version>
                         </artifactItem>
                      </artifactItems>
-                     <outputDirectory>${project.build.directory}/docker-resources</outputDirectory>
                      <useBaseVersion>true</useBaseVersion>
                   </configuration>
                </execution>
@@ -123,6 +126,18 @@
                   <configuration>
                      <target>
                         <move file="${project.build.directory}/${project.artifactId}-${project.version}.war" tofile="${project.build.directory}/dependency/${zeppelin.artifact}/zeppelin-web-${apache.zeppelin.version}.war" />
+                        <delete dir="${project.build.directory}/dependency/${zeppelin.artifact}/notebook" />
+                        <copy file="${project.build.directory}/dependency/${alfresco-insight-jdbc.name}-${alfresco-insight-jdbc.version}.jar" todir="${project.build.directory}/dependency/${zeppelin.artifact}/alfresco" />
+                        <copy file="${basedir}/src/zeppelin/substituter.sh" todir="${project.build.directory}/dependency/${zeppelin.artifact}/bin" />
+                        <chmod file="${project.build.directory}/dependency/${zeppelin.artifact}/bin/substituter.sh" perm="755" />
+                        <copy file="${basedir}/src/zeppelin/zeppelin.properties" todir="${project.build.directory}/dependency/${zeppelin.artifact}" />
+                        <copy file="${basedir}/src/zeppelin/note_1.json" tofile="${project.build.directory}/dependency/${zeppelin.artifact}/notebook/${zeppelin.sample.notebook.1}/note.json" />
+                        <copy file="${basedir}/src/zeppelin/note_2.json" tofile="${project.build.directory}/dependency/${zeppelin.artifact}/notebook/${zeppelin.sample.notebook.2}/note.json" />
+                        <copy file="${basedir}/src/zeppelin/interpreter.json" todir="${project.build.directory}/dependency/${zeppelin.artifact}/conf" />
+                        <copy file="${basedir}/src/zeppelin/notebook-authorization.json" todir="${project.build.directory}/dependency/${zeppelin.artifact}/conf" />
+                        <copy file="${basedir}/src/zeppelin/shiro.ini" todir="${project.build.directory}/dependency/${zeppelin.artifact}/conf" />
+                        <copy file="${basedir}/src/zeppelin/zeppelin-env.cmd" todir="${project.build.directory}/dependency/${zeppelin.artifact}/conf" />
+                        <copy file="${basedir}/src/zeppelin/zeppelin-env.sh" todir="${project.build.directory}/dependency/${zeppelin.artifact}/conf" />
                      </target>
                   </configuration>
                </execution>
@@ -164,7 +179,10 @@
                         </resource>
                         <resource>
                            <directory>src/zeppelin</directory>
-                           <filtering>true</filtering>
+                           <includes>
+                              <include>substituter.sh</include>
+                           </includes>
+                           <filtering>false</filtering>
                         </resource>
                         <resource>
                            <directory>${project.build.directory}</directory>

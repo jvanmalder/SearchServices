@@ -1,10 +1,10 @@
 ## Alfresco Insight Zeppelin Implementation
 
-This projects takes the Apache Zeppelin project and customizes it for our own purposes.
+This projects customizes Apache Zeppelin and uses it as a client for Alfresco Insight Engine.
 
-#####*Login credentials:*
+### Login credentials
 
-Any Alfresco user can login to Alfresco Insight Zeppelin.
+Alfresco Insight Zeppelin uses Alfresco Repository for authentication so any existing user in Alfresco can access Alfresco Insight Zeppelin as well
 
 ### Get the code
 Git:
@@ -20,13 +20,29 @@ Build project:
 mvn clean install
 </code>
 
-This will create a modified Zeppelin WAR file. Apart from that it will make files available in the target folder for the Docker image.
+This will create a zip file in the 'target' folder. Apart from that it will make files available for a Docker image (see 'target/docker-resources').
+
+### Start Alfresco Insight Zeppelin from a zip file
+* Run 'mvn clean install'
+* Get the zip file from the 'target' folder and unzip it
+* Run the substituter.sh script (or substituter.cmd for Windows) which is located in ZEPPELIN\_HOME/bin/. This script reads the 'zeppelin.properties' file in ZEPPELIN\_HOME/.
+  You can change the Alfresco Repository connection details in there (or pass REPO\_PROTOCOL, REPO\_HOST and REPO\_PORT to the script from the command line). For example, 'REPO\_PROTOCOL=https REPO\_HOST=myhost REPO\_PORT=8443 ./substituter.sh'.
+  You don't have to pass all the variables only pass the ones you want to override. Default values are: 'REPO\_PROTOCOL=http REPO\_HOST=localhost REPO\_PORT=8080'
+* Start your Zeppelin Server
+    * On all Unix like platforms: ZEPPELIN\_HOME/bin/zeppelin-daemon.sh start
+    * On Windows: ZEPPELIN\_HOME\bin\zeppelin.cmd
+* After Zeppelin has started successfully, go to http://localhost:9090/zeppelin
+* Login with your Alfresco admin user credentials (e.g. admin/admin)
+* Create a new notebook or use the notebooks provided
+* Stopping Zeppelin
+    * On all Unix like platforms: ZEPPELIN\_HOME/bin/zeppelin-daemon.sh stop
+    * On Windows: Ctrl + C
 
 ### Docker
 To build the docker image:
 
 <code>
-cd target
+cd target/docker-resources
 
 docker build -t insightzeppelin:master .
 </code>
@@ -34,7 +50,7 @@ docker build -t insightzeppelin:master .
 To run the docker image:
 
 <code>
-docker run -p 9090:9090 insightzeppelin:master
+docker run -e REPO_PROTOCOL=https -e REPO_HOST=myhost -e REPO_PORT=8082 -p 9090:9090 insightzeppelin:master
 </code>
 
 Access Alfresco Insight Zeppelin:
@@ -42,6 +58,21 @@ Access Alfresco Insight Zeppelin:
 <code>
 http://localhost:9090/zeppelin
 </code>
+
+When building the docker image the environment variables have to be set in the command line like above when the default values should be overridden. 
+Default values are: 'REPO\_PROTOCOL=http REPO\_HOST=localhost REPO\_PORT=8080'
+When using docker-compose the following configuration can be used:
+
+```
+zeppelin:
+  image: insightzeppelin:master
+  environment:
+    - REPO_PROTOCOL=https
+    - REPO_HOST=myhost
+    - REPO_PORT=8082
+  ports:
+    - "9090:9090"
+```
 
 ### License
 Copyright (C) 2005 - 2017 Alfresco Software Limited
