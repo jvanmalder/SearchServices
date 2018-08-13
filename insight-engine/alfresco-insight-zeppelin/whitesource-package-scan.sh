@@ -35,7 +35,7 @@ then
         ssh tomcat@pbam01.alfresco.com unzip ${DISTRIBUTION_ZIP_PATH} -d ${DISTRIBUTION_ZIP_SCAN_PATH}
 
         #whitesource scanning using file agent: https://goo.gl/ohg4Rv
-        ssh tomcat@pbam01.alfresco.com sh /etc/bamboo/whitesource-agent.sh -d ${DISTRIBUTION_ZIP_SCAN_PATH} -project distribution-zip -product InsightEngine-${bamboo_release_version}
+        ssh tomcat@pbam01.alfresco.com sh /etc/bamboo/whitesource-agent.sh -d ${DISTRIBUTION_ZIP_SCAN_PATH} -project distribution-zip -product InsightZeppelin-${bamboo_release_version}
     fi
 
 else
