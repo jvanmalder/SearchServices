@@ -15,7 +15,7 @@ nicebranch=`echo "$bamboo_planRepository_1_branch" | sed 's/\//_/'`
 if [ "${nicebranch}" = "master" ] || [ "${nicebranch#release}" != "${nicebranch}" ]
 then  
     POM_VERSION=$(grep \<version pom.xml |awk '{ if(NR==2) print $0 }' | awk -F '[><]' '{print $3}')
-    RELEASE_FOLDER=/data/releases/InsightZeppelin/${bamboo_release_version}
+    RELEASE_FOLDER=/data/releases/InsightZeppelin/${POM_VERSION}
     DISTRIBUTION_NAME=alfresco-insight-zeppelin-${POM_VERSION}.zip
     DISTRIBUTION_ZIP_PATH=${RELEASE_FOLDER}/${DISTRIBUTION_NAME}
     DISTRIBUTION_ZIP_SCAN_PATH=${RELEASE_FOLDER}/scan
