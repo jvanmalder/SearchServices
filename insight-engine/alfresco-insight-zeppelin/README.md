@@ -28,8 +28,7 @@ This will generate the following artifacts in the 'target' folder.
 
 * Get the zip file and unzip it
 * Run the substituter.sh script (or substituter.cmd for Windows) which is located in ZEPPELIN\_HOME/bin/. This script reads the 'zeppelin.properties' file in ZEPPELIN\_HOME/.
-  You can change the Alfresco Repository connection details in there (or pass REPO\_PROTOCOL, REPO\_HOST and REPO\_PORT to the script from the command line). For example, 'REPO\_PROTOCOL=https REPO\_HOST=myhost REPO\_PORT=8443 ./substituter.sh'.
-  You don't have to pass all the variables only pass the ones you want to override. Default values are: 'REPO\_PROTOCOL=http REPO\_HOST=localhost REPO\_PORT=8080'
+  You can change the Alfresco Repository connection details in this properties file if needed.
 * Start your Zeppelin Server
     * On all Unix like platforms: ZEPPELIN\_HOME/bin/zeppelin-daemon.sh start
     * On Windows: ZEPPELIN\_HOME\bin\zeppelin.cmd
