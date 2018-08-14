@@ -18,8 +18,8 @@ IF EXIST %propertiesFile% (
       )
    )
 
-   powershell -Command "(gc ..\conf\shiro.ini) -replace 'REPO_PROTOCOL://REPO_HOST:REPO_PORT', '!alfresco_repository_protocol!://!alfresco_repository_host!:!alfresco_repository_port!' | Out-File ..\conf\shiro.ini"
-   powershell -Command "(gc ..\conf\interpreter.json) -replace 'REPO_HOST:REPO_PORT', '!alfresco_repository_host!:!alfresco_repository_port!' | Out-File ..\conf\interpreter.json"
+   powershell -Command "(gc ..\conf\shiro.ini) -replace 'REPO_PROTOCOL://REPO_HOST:REPO_PORT', '!alfresco_repository_protocol!://!alfresco_repository_host!:!alfresco_repository_port!' | Out-File ..\conf\shiro.ini -Encoding ASCII"
+   powershell -Command "(gc ..\conf\interpreter.json) -replace 'REPO_HOST:REPO_PORT', '!alfresco_repository_host!:!alfresco_repository_port!' | Out-File ..\conf\interpreter.json -Encoding ASCII"
 
    ECHO "Replaced 'REPO_PROTOCOL' with '!alfresco_repository_protocol!', 'REPO_HOST' with '!alfresco_repository_host!' and 'REPO_PORT' with '!alfresco_repository_port!'"
 ) ELSE (
