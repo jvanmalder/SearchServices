@@ -23,9 +23,7 @@ then
 
     if [ ${CLEANUP} = "clean" ]; then
         echo "Cleaning up scan folder..."
-        if [ -d "${RELEASE_FOLDER}" ]; then
-            ssh tomcat@pbam01.alfresco.com rm -rf ${RELEASE_FOLDER}
-        fi        
+        ssh -q tomcat@pbam01.alfresco.com [[ -d ${RELEASE_FOLDER} ]] && ssh tomcat@pbam01.alfresco.com rm -rf ${RELEASE_FOLDER} || echo "Nothing to cleanup"        
     else
         echo "Copy distribution to release area..."
         ssh tomcat@pbam01.alfresco.com mkdir -p ${RELEASE_FOLDER}
