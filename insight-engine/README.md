@@ -34,7 +34,7 @@ To run the docker image:
 docker run -p 8983:8983 insightengine:develop
 </code>
 
-docker-compose files can be used to start up Insight Engine with Alfresco and Share. There are two docker-composes files available. Depending on the version you want to start either change to 5.x or 6.x. E.g.
+docker-compose files can be used to start up Insight Engine with Alfresco and Share E.g.
 
 <code>
 cd packaging/target/docker-resources/6.x
