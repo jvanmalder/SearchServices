@@ -129,6 +129,7 @@
                         <delete dir="${project.build.directory}/dependency/${zeppelin.artifact}/notebook" />
                         <copy file="${project.build.directory}/dependency/${alfresco-insight-jdbc.name}-${alfresco-insight-jdbc.version}.jar" todir="${project.build.directory}/dependency/${zeppelin.artifact}/alfresco" />
                         <copy file="${basedir}/src/zeppelin/substituter.sh" todir="${project.build.directory}/dependency/${zeppelin.artifact}/bin" />
+                        <copy file="${basedir}/src/zeppelin/substituter.cmd" todir="${project.build.directory}/dependency/${zeppelin.artifact}/bin" />
                         <chmod file="${project.build.directory}/dependency/${zeppelin.artifact}/bin/substituter.sh" perm="755" />
                         <copy file="${basedir}/src/zeppelin/zeppelin.properties" todir="${project.build.directory}/dependency/${zeppelin.artifact}" />
                         <copy file="${basedir}/src/zeppelin/note_1.json" tofile="${project.build.directory}/dependency/${zeppelin.artifact}/notebook/${zeppelin.sample.notebook.1}/note.json" />
