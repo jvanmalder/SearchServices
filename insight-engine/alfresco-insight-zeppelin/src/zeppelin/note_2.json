@@ -799,8 +799,8 @@
     },
     {
       "title": "Not Supported",
-      "text": "\nJOINS, SUB-QUERIES, UNION, IS NULL, IS NOT NULL, LIKE",
-      "dateUpdated": "Aug 8, 2018 10:32:01 AM",
+      "text": "\nCount (Field), COUNT (DISTINCT\u003cFIELD\u003e),  IS NULL, IS NOT NULL, LIKE,\nJOINS, SUB-QUERIES, UNION, \nCMIS QL functions IN_TREE, IN_FOLDER, SCORE, CONTAINS",
+      "dateUpdated": "Aug 15, 2018 9:02:03 AM",
       "config": {
         "tableHide": false,
         "editorSetting": {

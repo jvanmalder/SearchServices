@@ -4,8 +4,16 @@
       "owners": [
         "admin"
       ],
-      "readers": [
+      "readers": [],
+      "writers": [
+        "admin"
+      ]
+    },
+    "2DMP8WY2G": {
+      "owners": [
+        "admin"
       ],
+      "readers": [],
       "writers": [
         "admin"
       ]
