@@ -21,7 +21,7 @@
       <zeppelin.port>9090</zeppelin.port>
       <zeppelin.server.context.path>/zeppelin</zeppelin.server.context.path>
       <alfresco-insight-jdbc.name>alfresco-insight-jdbc</alfresco-insight-jdbc.name>
-      <alfresco-insight-jdbc.version>1.0.0-SNAPSHOT</alfresco-insight-jdbc.version>
+      <alfresco-insight-jdbc.version>1.0.0</alfresco-insight-jdbc.version>
    </properties>
    <distributionManagement>
       <repository>
