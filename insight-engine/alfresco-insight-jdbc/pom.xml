@@ -11,8 +11,8 @@
    <name>Alfresco Insight Engine JDBC Driver</name>
    <properties>
       <solr.version>6.6.0</solr.version>
-      <alfresco.search.dependency.version>1.2.0-SNAPSHOT</alfresco.search.dependency.version>
-      <alfresco.insight.engine.version>1.0.0-SNAPSHOT</alfresco.insight.engine.version>
+      <alfresco.search.dependency.version>1.2.0</alfresco.search.dependency.version>
+      <alfresco.insight.engine.version>1.0.0</alfresco.insight.engine.version>
    </properties>
    <distributionManagement>
       <repository>
