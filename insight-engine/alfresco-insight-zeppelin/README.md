@@ -27,17 +27,19 @@ This will generate the following artifacts in the 'target' folder.
 ### Start Alfresco Insight Zeppelin from a zip file
 
 * Get the zip file and unzip it
-* Run the substituter.sh script (or substituter.cmd for Windows) which is located in ZEPPELIN\_HOME/bin/. This script reads the 'zeppelin.properties' file in ZEPPELIN\_HOME/.
-  You can change the Alfresco Repository connection details in this properties file if needed.
+* A file called 'zeppelin.properties' in ZEPPELIN\_HOME/ contains the connection details to Alfresco Repository. Please change the values to match your Alfresco host and port.
+* Run the substituter.sh script (or substituter.cmd for Windows) from ZEPPELIN\_HOME/bin/
 * Start your Zeppelin Server
     * On all Unix like platforms: ZEPPELIN\_HOME/bin/zeppelin-daemon.sh start
     * On Windows: ZEPPELIN\_HOME\bin\zeppelin.cmd
 * After Zeppelin has started successfully, go to http://localhost:9090/zeppelin
-* Login with your Alfresco admin user credentials (e.g. admin/admin)
+* Login with your Alfresco admin user credentials (e.g. admin/admin). Any user in Alfresco can access Zeppelin with the same credentials
 * Create a new notebook or use the notebooks provided
 * Stopping Zeppelin
     * On all Unix like platforms: ZEPPELIN\_HOME/bin/zeppelin-daemon.sh stop
     * On Windows: Ctrl + C
+
+**NOTE:** The port number, context path or other properties can be changed in ZEPPELIN\_HOME/conf/zeppelin-env.sh (ZEPPELIN_HOME\conf\zeppelin-env.cmd for Windows). A full list of properties can be found here: https://zeppelin.apache.org/docs/0.7.3/install/configuration.html
 
 ### Docker
 To build the docker image:
