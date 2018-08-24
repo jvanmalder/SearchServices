@@ -41,6 +41,27 @@ This will generate the following artifacts in the 'target' folder.
 
 **NOTE:** The port number, context path or other properties can be changed in ZEPPELIN\_HOME/conf/zeppelin-env.sh (ZEPPELIN_HOME\conf\zeppelin-env.cmd for Windows). A full list of properties can be found here: https://zeppelin.apache.org/docs/0.7.3/install/configuration.html
 
+By default Zeppelin will use Alfresco to authenticate users. That means every user in Alfresco will be able to access Zeppelin. You can limit the number of user by changing the security manager configuration for authentication in ZEPPELIN\_HOME/conf/shiro.ini. To do that simply comment out all the "alfrescoRealm" related configuration. You can either configure your LDAP or AD to have a group of people which can access Zeppelin. Below there is a configuration sample for AD. With that configuration only user in "ZeppelinUsers" group will have access to the application:
+
+```
+ldapRealm = org.apache.zeppelin.realm.LdapRealm
+ldapRealm.contextFactory.systemUsername = <principal>
+ldapRealm.contextFactory.systemPassword = <password>
+ldapRealm.searchBase = OU=Users,DC=test,DC=com
+ldapRealm.userSearchFilter = (&(objectclass=person)(sAMAccountName={0})(memberOf:=CN=ZeppelinUsers,OU=Users,DC=test,DC=com))
+ldapRealm.userSearchScope = subtree
+ldapRealm.authorizationEnabled = true
+ldapRealm.contextFactory.url = <ldap-url>
+ldapRealm.userSearchAttributeName = sAMAccountName
+ldapRealm.contextFactory.authenticationMechanism = simple
+ldapRealm.userObjectClass = person
+ldapRealm.groupObjectClass = group
+ldapRealm.memberAttribute = member
+securityManager.realms=$ldapRealm
+```
+
+Ideally Zepplin should be deployed on a separate server on its own. If SSL has been configured on Alfresco Repository an extra property has to be added in Zeppelin. This can be done by the "admin" user either in the UI (to do this please go the Interpreter page) or directly in the ZEPPELIN\_HOME/conf/interpreter.json file (please open the file and add a new line after "default.url"). The property which needs to be added is called "alfresco.enable.ssl" and should have the value "true".
+
 ### Docker
 To build the docker image:
 
