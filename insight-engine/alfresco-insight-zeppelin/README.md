@@ -35,6 +35,9 @@ This will generate the following artifacts in the 'target' folder.
 * After Zeppelin has started successfully, go to http://localhost:9090/zeppelin
 * Login with your Alfresco admin user credentials (e.g. admin/admin). Any user in Alfresco can access Zeppelin with the same credentials
 * Create a new notebook or use the notebooks provided
+* New sql queries can be added to the notebook. Just remember to start the query with %alfresco when using alfresco interpreter.
+    * For example,
+    * %alfresco select distinct(site) from alfresco
 * Stopping Zeppelin
     * On all Unix like platforms: ZEPPELIN\_HOME/bin/zeppelin-daemon.sh stop
     * On Windows: Ctrl + C
