@@ -45,6 +45,8 @@ import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.RefCounted;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
 * The SolrSchema class creates the "alfresco" table and populates the fields from the index.
@@ -52,6 +54,7 @@ import org.apache.solr.util.RefCounted;
 
 
 public class SolrSchema extends AbstractSchema {
+  private static Logger logger = LoggerFactory.getLogger(SolrSchema.class);
   final Properties properties;
   final SolrCore core;
   final String[] postfixes = {"_day", "_month", "_year"};
@@ -241,7 +244,8 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
         }
         catch (NamespaceException ne)
         {
-            // Ignore 
+              //Field name may have been created but now deactivated, e.g custom model.
+              logger.warn("Unable to resolve field: " + fieldName);
         }
 
         if (isNotBlank(alfrescoPropertyFromSchemaField) && ftype != null)
