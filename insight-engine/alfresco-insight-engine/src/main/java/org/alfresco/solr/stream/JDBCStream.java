@@ -465,7 +465,7 @@ public class JDBCStream extends TupleStream implements Expressible {
             int lengthInt = (int) length;
             if (length != lengthInt) {
               throw new SQLException(String.format(Locale.ROOT,
-                  "Encountered a clob of length #%l in column '%s' (col #%d).  Max supported length is #%i.",
+                  "Encountered a clob of length #%d in column '%s' (col #%d).  Max supported length is #%d.",
                   length, columnName, columnNumber, Integer.MAX_VALUE));
             }
             return c.getSubString(1, lengthInt);

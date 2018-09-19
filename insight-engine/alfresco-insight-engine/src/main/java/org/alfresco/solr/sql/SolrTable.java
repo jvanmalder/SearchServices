@@ -99,8 +99,8 @@ import org.apache.solr.client.solrj.io.stream.metrics.MinMetric;
 import org.apache.solr.client.solrj.io.stream.metrics.SumMetric;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.handler.StreamHandler;
 import org.apache.solr.handler.AlfrescoSQLHandler;
+import org.apache.solr.handler.StreamHandler;
 
 
 
@@ -216,7 +216,7 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
         }
     }
 
-    TupleStream tupleStream;
+    TupleStream tupleStream = null;
     String zk = properties.getProperty("zk");
     int limitInt = limit != null ? Integer.parseInt(limit) : DEFAULT_LIMIT;
 
@@ -301,11 +301,16 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
       //so we are "double wrapping" the AlfrescoExpressionStream in this way so the first arg is "alfrescoExpr()"
       tupleStream = new AlfrescoExpressionStream(streamExpression, streamFactory);
       tupleStream.setStreamContext(streamContext);
+      // This will currently return something backed by a SearchStream, StatsStream, TimeSeriesStream or FacetStream,
+      // all of which have no-op close methods. The actual connections to shards are managed by a cache in the
+      // StreamContext. We explicitly call close here (even though the stream hasn't been consumed yet) to try to avoid
+      // unclosed resource issues if we add more streams in future.
+      // For more discussion see https://git.alfresco.com/search_discovery/InsightEngine/merge_requests/51
+      tupleStream.close();
 
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-
 
     final TupleStream finalStream = tupleStream;
 
@@ -430,7 +435,14 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
 
     params.add(CommonParams.FL, fl);
     params.add(CommonParams.ROWS, String.valueOf(limit));
-    return new AlfrescoExpressionStream(new LimitStream(new SearchStream(zk, collection, params), limit));
+    SearchStream searchStream = new SearchStream(zk, collection, params);
+    searchStream.close();
+    LimitStream limitStream = new LimitStream(searchStream, limit);
+    limitStream.close();
+    AlfrescoExpressionStream alfrescoExpressionStream = new AlfrescoExpressionStream(limitStream);
+    alfrescoExpressionStream.close();
+
+    return alfrescoExpressionStream;
   }
 
   private String getSort(List<Pair<String, String>> orders) {
@@ -442,12 +454,6 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
       buf.append(pair.getKey()).append(" ").append(pair.getValue());
     }
 
-    return buf.toString();
-  }
-
-  private String getSingleSort(Pair<String, String> order) {
-    StringBuilder buf = new StringBuilder();
-    buf.append(order.getKey()).append(" ").append(order.getValue());
     return buf.toString();
   }
 
@@ -615,11 +621,14 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
     TupleStream tupleStream = null;
 
     SearchStream cstream = new SearchStream(zk, collection, params);
+    cstream.close();
     tupleStream = new RollupStream(cstream, buckets, metrics);
+    tupleStream.close();
 
     if(havingPredicate != null) {
       BooleanEvaluator booleanOperation = (BooleanEvaluator)streamFactory.constructEvaluator(StreamExpressionParser.parse(havingPredicate));
       tupleStream = new HavingStream(tupleStream, booleanOperation);
+      tupleStream.close();
     }
 
     if(numWorkers > 1) {
@@ -627,10 +636,9 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
       // Maintain the sort of the Tuples coming from the workers.
       StreamComparator comp = bucketSortComp(buckets, sortDirection);
       ParallelStream parallelStream = new ParallelStream(zk, collection, tupleStream, numWorkers, comp);
-
-
       parallelStream.setStreamFactory(streamFactory);
       tupleStream = parallelStream;
+      tupleStream.close();
     }
 
     //TODO: Currently we are not pushing down the having clause.
@@ -644,17 +652,20 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
         //If parallel stream is used ALL the Rolled up tuples from the workers will be ranked
         //Providing a true Top or Bottom.
         tupleStream = new RankStream(tupleStream, lim, comp);
+        tupleStream.close();
       } else {
         // Sort is the same as the same as the underlying stream
         // Only need to limit the result, not Rank the result
         if(limit != null) {
           tupleStream = new LimitStream(tupleStream, Integer.parseInt(limit));
+          tupleStream.close();
         }
       }
     } else {
       //No order by, check for limit
       if(limit != null) {
         tupleStream = new LimitStream(tupleStream, Integer.parseInt(limit));
+        tupleStream.close();
       }
     }
 
@@ -729,19 +740,25 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
                                               metrics,
                                               sorts,
                                               overfetch);
+    tupleStream.close();
 
 
     if(havingPredicate != null) {
       BooleanEvaluator booleanOperation = (BooleanEvaluator)streamFactory.constructEvaluator(StreamExpressionParser.parse(havingPredicate));
       tupleStream = new HavingStream(tupleStream, booleanOperation);
+      tupleStream.close();
     }
 
     if(limit > 0)
     {
       tupleStream = new LimitStream(tupleStream, limit);
+      tupleStream.close();
     }
 
-    return new AlfrescoExpressionStream(tupleStream);
+    AlfrescoExpressionStream alfrescoExpressionStream = new AlfrescoExpressionStream(tupleStream);
+    alfrescoExpressionStream.close();
+
+    return alfrescoExpressionStream;
   }
 
   private TupleStream handleTimeSeries(String zkHost,
@@ -862,33 +879,30 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
     }
 
     TupleStream tupleStream = new TimeSeriesStream(zkHost, collection, solrParams, metrics, bucket, start, end, gap, format, tz, now);
+    tupleStream.close();
 
     if(havingPredicate != null) {
       BooleanEvaluator booleanOperation = (BooleanEvaluator)streamFactory.constructEvaluator(StreamExpressionParser.parse(havingPredicate));
       tupleStream = new HavingStream(tupleStream, booleanOperation);
+      tupleStream.close();
     }
 
     if(orders != null && orders.size() > 0) {
       StreamComparator comp = getComp(orders);
       tupleStream = new RankStream(tupleStream, 1000, comp);
+      tupleStream.close();
     }
 
     if(limit > 0)
     {
       tupleStream = new LimitStream(tupleStream, limit);
+      tupleStream.close();
     }
 
-    return new AlfrescoExpressionStream(tupleStream);
-  }
+    AlfrescoExpressionStream alfrescoExpressionStream = new AlfrescoExpressionStream(tupleStream);
+    alfrescoExpressionStream.close();
 
-
-  private String pad(int i) {
-    String s = Integer.toString(i);
-    if(s.length() == 1) {
-      return "0"+s;
-    } else {
-      return s;
-    }
+    return alfrescoExpressionStream;
   }
 
   private TupleStream handleSelectDistinctMapReduce(final String zkHost,
@@ -973,7 +987,9 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
     TupleStream tupleStream = null;
 
     CloudSolrStream cstream = new CloudSolrStream(zkHost, collection, params);
+    cstream.close();
     tupleStream = new UniqueStream(cstream, ecomp);
+    tupleStream.close();
 
     if(numWorkers > 1) {
       // Do the unique in parallel
@@ -987,10 +1003,12 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
 
       parallelStream.setStreamFactory(factory);
       tupleStream = parallelStream;
+      tupleStream.close();
     }
 
     if(limit != null) {
       tupleStream = new LimitStream(tupleStream, Integer.parseInt(limit));
+      tupleStream.close();
     }
 
     return tupleStream;
@@ -1055,7 +1073,13 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
       }
     }
 
-    return new AlfrescoExpressionStream(new StatsStream(zk, collection, solrParams, metrics));
+    StatsStream statsStream = new StatsStream(zk, collection, solrParams, metrics);
+    statsStream.close();
+
+    AlfrescoExpressionStream alfrescoExpressionStream = new AlfrescoExpressionStream(statsStream);
+    alfrescoExpressionStream.close();
+
+    return alfrescoExpressionStream;
   }
 
   public <T> Queryable<T> asQueryable(QueryProvider queryProvider, SchemaPlus schema, String tableName) {
