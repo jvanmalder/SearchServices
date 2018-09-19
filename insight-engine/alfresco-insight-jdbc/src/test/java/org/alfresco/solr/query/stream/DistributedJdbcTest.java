@@ -184,29 +184,29 @@ public class DistributedJdbcTest extends AbstractStreamTest
         fieldList.add("cm_name");
         fieldList.add("cm_created");
         fieldList.add("cm_creator");
-        fieldList.add("cm_modified");
-        fieldList.add("cm_modifier");
         fieldList.add("cm_owner");        
         fieldList.add("OWNER");
         fieldList.add("TYPE");
         fieldList.add("LID");
         fieldList.add("DBID");
         fieldList.add("cm_title");
-        fieldList.add("cm_description");
         fieldList.add("cm_content.size");
         fieldList.add("cm_content.mimetype");
         fieldList.add("cm_content.encoding");
         fieldList.add("cm_content.locale");
         fieldList.add("cm_lockOwner");
         fieldList.add("SITE");
-        fieldList.add("PARENT");
-        fieldList.add("path");
-        fieldList.add("PRIMARYPARENT");
         fieldList.add("ASPECT");
-        fieldList.add("QNAME");
         
-        // TODO: Remove comment: The following list includes the fields that are not found in the ResultSet
+        // The following list includes the fields that are not found in the ResultSet due to different test data model being used
         // cm_modified, cm_modifier, cm_description, PARENT, path, PRIMARYPARENT, QNAME
+        // fieldList.add("cm_modified");
+        // fieldList.add("cm_modifier");
+        // fieldList.add("cm_description");
+        // fieldList.add("PARENT");
+        // fieldList.add("path");
+        // fieldList.add("PRIMARYPARENT");
+        // fieldList.add("QNAME");
 
         try
         {
@@ -219,7 +219,7 @@ public class DistributedJdbcTest extends AbstractStreamTest
                 // Fields not expected in the select star response
                 try
                 {                    
-                    String response = rs.getString("RandomNonExistentField");
+                    String response = rs.getString("RandomNonExistentField" + System.currentTimeMillis());
                     Assert.fail("Unexpected Column in the ResultSet: RandomNonExistentField. Value is: " + response);
                     
                     response = rs.getString("cm_content");
