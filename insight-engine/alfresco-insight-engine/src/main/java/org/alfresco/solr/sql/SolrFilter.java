@@ -16,7 +16,15 @@
  */
 package org.alfresco.solr.sql;
 
-import org.apache.calcite.plan.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptCost;
+import org.apache.calcite.plan.RelOptPlanner;
+import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -26,11 +34,6 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Implementation of a {@link org.apache.calcite.rel.core.Filter} relational expression in Solr.
@@ -131,14 +134,15 @@ class SolrFilter extends Filter implements SolrRel {
     }
 
     private String translateComparison(RexNode node, FilterData filterData) {
-      Pair<String, RexLiteral> binaryTranslated = null;
-      if (((RexCall) node).getOperands().size() == 2) {
-        binaryTranslated = translateBinary((RexCall) node);
+      // Handle non-binary operations.
+      if (node.getKind() == SqlKind.NOT) {
+        return "-" + translateComparison(((RexCall) node).getOperands().get(0), filterData);
       }
 
+      // Handle binary operations.
+      Pair<String, RexLiteral> binaryTranslated = translateBinary((RexCall) node);
+
       switch (node.getKind()) {
-        case NOT:
-          return "-" + translateComparison(((RexCall) node).getOperands().get(0), filterData);
         case EQUALS:
           String terms = binaryTranslated.getValue().toString().trim();
           terms = terms.replace("'","");
@@ -312,10 +316,7 @@ class SolrFilter extends Filter implements SolrRel {
     }
 
     private String translateComparison(RexNode node) {
-      Pair<String, RexLiteral> binaryTranslated = null;
-      if (((RexCall) node).getOperands().size() == 2) {
-        binaryTranslated = translateBinary((RexCall) node);
-      }
+      Pair<String, RexLiteral> binaryTranslated = translateBinary((RexCall) node);
 
       switch (node.getKind()) {
         case EQUALS:
