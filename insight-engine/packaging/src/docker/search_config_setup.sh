@@ -33,8 +33,8 @@ if [[ $REPLICATION_TYPE == "slave" ]]; then
       REPLICATION_MASTER_PROTOCOL=http
    fi
 
-   if [[ $MASTER_HOST == "" ]]; then
-      MASTER_HOST=localhost
+   if [[ $REPLICATION_MASTER_HOST == "" ]]; then
+      REPLICATION_MASTER_HOST=localhost
    fi
 
    if [[ $REPLICATION_MASTER_PORT == "" ]]; then
