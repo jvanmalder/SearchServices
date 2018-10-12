@@ -16,14 +16,6 @@
  */
 package org.alfresco.solr.stream;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.search.impl.QueryParserUtils;
@@ -32,7 +24,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.util.Pair;
 import org.apache.solr.client.solrj.SolrRequest;
-import org.apache.solr.client.solrj.io.stream.*;
+import org.apache.solr.client.solrj.io.stream.StreamContext;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.FacetParams;
@@ -45,6 +37,14 @@ import org.apache.solr.schema.IndexSchema;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class AlfrescoStreamHandler extends StreamHandler
 {
@@ -105,7 +105,11 @@ public class AlfrescoStreamHandler extends StreamHandler
             return field;
         } else {
             AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
-            Pair<String, String> fieldNameAndEnding = QueryParserUtils.extractFieldNameAndEnding(field.replace('_', ':'));
+            String fieldNameSanitised = field;
+            if (!field.contains(":")) {
+                fieldNameSanitised = field.replaceFirst("_", ":");
+            }
+            Pair<String, String> fieldNameAndEnding = QueryParserUtils.extractFieldNameAndEnding(fieldNameSanitised);
             PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, dataModel.getNamespaceDAO(), dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT), fieldNameAndEnding.getFirst());
 
             if(propertyDef != null)
@@ -116,7 +120,7 @@ public class AlfrescoStreamHandler extends StreamHandler
                     return fields.getFields().get(0).getField();
                 }
             }
-            return dataModel.mapNonPropertyFields(field);
+            return dataModel.mapNonPropertyFields(fieldNameSanitised);
         }
     }
 
