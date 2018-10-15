@@ -32,7 +32,14 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.client.*;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.ContentPropertyValue;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.StringPropertyValue;
+import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.stream.AlfrescoSolrStream;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
@@ -44,21 +51,25 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
-import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.junit.Before;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 /**
  * @author Michael Suzuki
@@ -78,6 +89,9 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     protected static final QName PROP_RATING = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "fiveStarRatingSchemeTotal");
     protected static final QName PROP_TRACK  = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "trackNumber");
     protected static final QName PROP_MANUFACTURER  = QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "manufacturer");
+    protected static final QName PROP_WITH_UNDERSCORE  = QName.createQName("mf", "freetext_underscore");
+    
+    
     @Before
     public void load() throws Exception
     {
@@ -147,6 +161,8 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData2.getProperties().put(PROP_RATING, new StringPropertyValue("15"));
         nodeMetaData2.getProperties().put(PROP_TRACK, new StringPropertyValue("8"));
         nodeMetaData2.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
+        nodeMetaData2.getProperties().put(PROP_WITH_UNDERSCORE, new StringPropertyValue("camera"));
+        
         nodeMetaData2.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name2"));
         nodeMetaData2.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title2"));
         nodeMetaData2.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
@@ -158,6 +174,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData3.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
         nodeMetaData3.getProperties().put(PROP_TRACK, new StringPropertyValue("6"));
         nodeMetaData3.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Canon"));
+        nodeMetaData3.getProperties().put(PROP_WITH_UNDERSCORE, new StringPropertyValue("portable"));
         nodeMetaData3.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name3"));
         nodeMetaData3.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator2"));
         NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl2, "mike", null, false);
@@ -167,6 +184,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData4.getProperties().put(PROP_RATING, new StringPropertyValue("20"));
         nodeMetaData4.getProperties().put(PROP_TRACK, new StringPropertyValue("4"));
         nodeMetaData4.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
+        nodeMetaData4.getProperties().put(PROP_WITH_UNDERSCORE, new StringPropertyValue("camera"));
         nodeMetaData4.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator3"));
         nodeMetaData4.getProperties().put(ContentModel.PROP_CONTENT, new ContentPropertyValue(Locale.FRENCH, 5l, "UTF-8", "text/javascript", null));
 

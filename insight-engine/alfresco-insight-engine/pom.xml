@@ -40,16 +40,31 @@
                   <goals>
                      <goal>copy-resources</goal>
                   </goals>
+                  <configuration>
+                     <resources>
+                        <resource>
+                           <directory>${basedir}/src/main/resources/solr/</directory>
+                        </resource>
+                     </resources>
+                     <outputDirectory>${project.build.testOutputDirectory}/test-files/collection1/conf/</outputDirectory>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>copy-test-models</id>
+                  <phase>process-test-resources</phase>
+                  <goals>
+                     <goal>copy-resources</goal>
+                  </goals>
+                  <configuration>
+                     <resources>
+                        <resource>
+                           <directory>${basedir}/src/test/resources/alfrescoModels/</directory>
+                        </resource>
+                     </resources>
+                     <outputDirectory>${project.build.testOutputDirectory}/test-files/alfrescoModels/</outputDirectory>
+                  </configuration>
                </execution>
             </executions>
-            <configuration>
-               <resources>
-                  <resource>
-                     <directory>${basedir}/src/main/resources/solr/</directory>
-                  </resource>
-               </resources>
-               <outputDirectory>${project.build.testOutputDirectory}/test-files/collection1/conf/</outputDirectory>
-            </configuration>
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
