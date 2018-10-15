@@ -194,25 +194,36 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         //Primary syntax replacing first ':' with _
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         String sql = "select mf_freetext_underscore as underscoreField, count(*) as numFound from alfresco where cm_content = 'world' group by mf_freetext_underscore order by numFound asc";
+
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+
         assertTrue(tuples.size() == 2);
         assertTrue("portable".equals(tuples.get(0).getString(("underscoreField"))));
         assertTrue(tuples.get(0).getLong("numFound") == 1);
-
         assertTrue(tuples.get(0).get("numFound") instanceof Long);
-
         assertTrue("camera".equals(tuples.get(1).getString(("underscoreField"))));
         assertTrue(tuples.get(1).getLong("numFound") == 2);
 
         //Alternative syntax escaping ':'
         sql = "select `mf:freetext_underscore` as underscoreField, count(*) as numFound from alfresco where `cm:content` = 'world' group by `mf:freetext_underscore` order by numFound asc";
+
         tuples = sqlQuery(sql, alfrescoJson);
+
         assertTrue(tuples.size() == 2);
         assertTrue("portable".equals(tuples.get(0).getString(("underscoreField"))));
         assertTrue(tuples.get(0).getLong("numFound") == 1);
-
         assertTrue(tuples.get(0).get("numFound") instanceof Long);
+        assertTrue("camera".equals(tuples.get(1).getString(("underscoreField"))));
+        assertTrue(tuples.get(1).getLong("numFound") == 2);
 
+        sql = "select mf_freetext_underscore as underscoreField, count(*) as numFound from alfresco where `cm:content` = 'world' group by mf_freetext_underscore order by numFound asc";
+
+        tuples = sqlQuery(sql, alfrescoJson);
+
+        assertTrue(tuples.size() == 2);
+        assertTrue("portable".equals(tuples.get(0).getString(("underscoreField"))));
+        assertTrue(tuples.get(0).getLong("numFound") == 1);
+        assertTrue(tuples.get(0).get("numFound") instanceof Long);
         assertTrue("camera".equals(tuples.get(1).getString(("underscoreField"))));
         assertTrue(tuples.get(1).getLong("numFound") == 2);
     }

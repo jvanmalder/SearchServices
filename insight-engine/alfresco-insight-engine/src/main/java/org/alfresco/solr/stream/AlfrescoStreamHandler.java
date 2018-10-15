@@ -100,22 +100,31 @@ public class AlfrescoStreamHandler extends StreamHandler
      * @return a field in the index
      */
 
-    public static String getIndexedField(String field, IndexSchema schema) {
-        if (schema.getFieldOrNull(field) != null) {
+    public static String getIndexedField(String field, IndexSchema schema)
+    {
+        if (schema.getFieldOrNull(field) != null)
+        {
             return field;
-        } else {
+        }
+        else
+        {
             AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
             String fieldNameSanitised = field;
-            if (!field.contains(":")) {
+            if (!field.contains(":"))
+            {
                 fieldNameSanitised = field.replaceFirst("_", ":");
             }
             Pair<String, String> fieldNameAndEnding = QueryParserUtils.extractFieldNameAndEnding(fieldNameSanitised);
-            PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, dataModel.getNamespaceDAO(), dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT), fieldNameAndEnding.getFirst());
+            PropertyDefinition propertyDef = QueryParserUtils
+                    .matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, dataModel.getNamespaceDAO(),
+                            dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT),
+                            fieldNameAndEnding.getFirst());
 
-            if(propertyDef != null)
+            if (propertyDef != null)
             {
-                AlfrescoSolrDataModel.IndexedField fields = dataModel.getQueryableFields(propertyDef.getName(), dataModel.getTextField(fieldNameAndEnding.getSecond()), AlfrescoSolrDataModel.FieldUse.SORT);
-                if(fields.getFields().size() > 0)
+                AlfrescoSolrDataModel.IndexedField fields = dataModel.getQueryableFields(propertyDef.getName(),
+                        dataModel.getTextField(fieldNameAndEnding.getSecond()), AlfrescoSolrDataModel.FieldUse.SORT);
+                if (fields.getFields().size() > 0)
                 {
                     return fields.getFields().get(0).getField();
                 }
