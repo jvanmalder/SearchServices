@@ -102,35 +102,44 @@ public class AlfrescoStreamHandler extends StreamHandler
 
     public static String getIndexedField(String field, IndexSchema schema)
     {
-        if (schema.getFieldOrNull(field) != null)
-        {
-            return field;
-        }
-        else
-        {
-            AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
-            String fieldNameSanitised = field;
-            if (!field.contains(":"))
+            if (schema.getFieldOrNull(field) != null)
             {
-                fieldNameSanitised = field.replaceFirst("_", ":");
+                    return field;
             }
-            Pair<String, String> fieldNameAndEnding = QueryParserUtils.extractFieldNameAndEnding(fieldNameSanitised);
-            PropertyDefinition propertyDef = QueryParserUtils
-                    .matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, dataModel.getNamespaceDAO(),
-                            dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT),
-                            fieldNameAndEnding.getFirst());
+            else if (field != null)
+            {
+                    AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+                    String fieldNameSanitised = field;
+                    if (!field.contains(":"))
+                    {
+                            fieldNameSanitised = field.replaceFirst("_", ":");
+                    }
+                    Pair<String, String> fieldNameAndEnding = QueryParserUtils
+                            .extractFieldNameAndEnding(fieldNameSanitised);
+                    PropertyDefinition propertyDef = QueryParserUtils
+                            .matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI,
+                                    dataModel.getNamespaceDAO(),
+                                    dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT),
+                                    fieldNameAndEnding.getFirst());
 
-            if (propertyDef != null)
-            {
-                AlfrescoSolrDataModel.IndexedField fields = dataModel.getQueryableFields(propertyDef.getName(),
-                        dataModel.getTextField(fieldNameAndEnding.getSecond()), AlfrescoSolrDataModel.FieldUse.SORT);
-                if (fields.getFields().size() > 0)
-                {
-                    return fields.getFields().get(0).getField();
-                }
+                    if (propertyDef != null)
+                    {
+                            AlfrescoSolrDataModel.IndexedField fields = dataModel
+                                    .getQueryableFields(propertyDef.getName(),
+                                            dataModel.getTextField(fieldNameAndEnding.getSecond()),
+                                            AlfrescoSolrDataModel.FieldUse.SORT);
+                            if (fields.getFields().size() > 0)
+                            {
+                                    return fields.getFields().get(0).getField();
+                            }
+                    }
+                    return dataModel.mapNonPropertyFields(fieldNameSanitised);
             }
-            return dataModel.mapNonPropertyFields(fieldNameSanitised);
-        }
+            else
+            {
+                    throw new RuntimeException(
+                            "Found null field name when attempting the conversion to Solr field naming");
+            }
     }
 
 
