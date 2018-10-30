@@ -5,7 +5,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-super-pom</artifactId>
-      <version>8</version>
+      <version>10-RC2</version>
    </parent>
    <artifactId>alfresco-insight-zeppelin</artifactId>
    <version>1.1.0-SNAPSHOT</version>
@@ -21,7 +21,7 @@
       <zeppelin.port>9090</zeppelin.port>
       <zeppelin.server.context.path>/zeppelin</zeppelin.server.context.path>
       <alfresco-insight-jdbc.name>alfresco-insight-jdbc</alfresco-insight-jdbc.name>
-      <alfresco-insight-jdbc.version>1.0.0</alfresco-insight-jdbc.version>
+      <alfresco-insight-jdbc.version>1.1.0-SNAPSHOT</alfresco-insight-jdbc.version>
    </properties>
    <distributionManagement>
       <repository>

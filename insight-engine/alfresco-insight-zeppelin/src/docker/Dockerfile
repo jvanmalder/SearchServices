@@ -1,4 +1,4 @@
-FROM quay.io/alfresco/alfresco-base-java:8u161-oracle-centos-7-ce1a67232405
+FROM alfresco/alfresco-base-java:11-openjdk-centos-7
 
 ENV ZEPPELIN_DISTRIBUTION=${project.build.finalName}.zip \
     ZEPPELIN_HOME="/zeppelin" \
