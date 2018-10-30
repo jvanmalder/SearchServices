@@ -401,45 +401,48 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
     }
   }
 
-  private TupleStream handleSelect(String zk,
-                                   String collection,
-                                   String query,
-                                   List<Map.Entry<String, Class>> fields,
-                                   List<Pair<String, String>> orders,
-                                   int limit,
-                                   boolean isSelectStar) throws IOException {
-
-    ModifiableSolrParams params = new ModifiableSolrParams();
-    params.add(CommonParams.Q, query);
+  private TupleStream handleSelect(final String zk,
+                                   final String collection,
+                                   final String query,
+                                   final List<Map.Entry<String, Class>> fields,
+                                   final List<Pair<String, String>> orders,
+                                   final int limit,
+                                   final boolean isSelectStar) throws IOException
+  {
+    final ModifiableSolrParams params = new ModifiableSolrParams().set(CommonParams.Q, query);
 
     //Validate the fields
-    for(Map.Entry<String, Class> entry : fields) {
-      String fname = entry.getKey();
+    for(final Map.Entry<String, Class> entry : fields)
+    {
+      final String fname = entry.getKey();
+      if(fname == null)
+      {
+        throw new IOException("You have an error in your SQL syntax: one or more column names in the SELECT statement is not valid.");
+      }
 
-      if(fname.contains("*")) {
+      if(fname.contains("*"))
+      {
         throw new IOException("* is not supported for column selection.");
       }
     }
 
-    String fl = null;
+    final String fl = isSelectStar ? "id,*" : getFields(fields);
 
-    if(isSelectStar) {
-        fl = "id,*";
-    } else {
-        fl = getFields(fields);
-    }
-
-    if(orders.size() > 0) {
+    if(orders.size() > 0)
+    {
       params.add(SORT, getSort(orders));
     }
 
     params.add(CommonParams.FL, fl);
     params.add(CommonParams.ROWS, String.valueOf(limit));
-    SearchStream searchStream = new SearchStream(zk, collection, params);
+
+    final SearchStream searchStream = new SearchStream(zk, collection, params);
     searchStream.close();
-    LimitStream limitStream = new LimitStream(searchStream, limit);
+
+    final LimitStream limitStream = new LimitStream(searchStream, limit);
     limitStream.close();
-    AlfrescoExpressionStream alfrescoExpressionStream = new AlfrescoExpressionStream(limitStream);
+
+    final AlfrescoExpressionStream alfrescoExpressionStream = new AlfrescoExpressionStream(limitStream);
     alfrescoExpressionStream.close();
 
     return alfrescoExpressionStream;
