@@ -401,20 +401,20 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
     }
   }
 
-  private TupleStream handleSelect(final String zk,
-                                   final String collection,
-                                   final String query,
-                                   final List<Map.Entry<String, Class>> fields,
-                                   final List<Pair<String, String>> orders,
-                                   final int limit,
-                                   final boolean isSelectStar) throws IOException
+  private TupleStream handleSelect(String zk,
+                                   String collection,
+                                   String query,
+                                   List<Map.Entry<String, Class>> fields,
+                                   List<Pair<String, String>> orders,
+                                   int limit,
+                                   boolean isSelectStar) throws IOException
   {
     final ModifiableSolrParams params = new ModifiableSolrParams().set(CommonParams.Q, query);
 
     //Validate the fields
-    for(final Map.Entry<String, Class> entry : fields)
+    for(Map.Entry<String, Class> entry : fields)
     {
-      final String fname = entry.getKey();
+      String fname = entry.getKey();
       if(fname == null)
       {
         throw new IOException("You have an error in your SQL syntax: one or more column names in the SELECT statement is not valid.");
@@ -436,13 +436,13 @@ public class SolrTable extends AbstractQueryableTable implements TranslatableTab
     params.add(CommonParams.FL, fl);
     params.add(CommonParams.ROWS, String.valueOf(limit));
 
-    final SearchStream searchStream = new SearchStream(zk, collection, params);
+    SearchStream searchStream = new SearchStream(zk, collection, params);
     searchStream.close();
 
-    final LimitStream limitStream = new LimitStream(searchStream, limit);
+    LimitStream limitStream = new LimitStream(searchStream, limit);
     limitStream.close();
 
-    final AlfrescoExpressionStream alfrescoExpressionStream = new AlfrescoExpressionStream(limitStream);
+    AlfrescoExpressionStream alfrescoExpressionStream = new AlfrescoExpressionStream(limitStream);
     alfrescoExpressionStream.close();
 
     return alfrescoExpressionStream;

@@ -25,6 +25,8 @@
  */
 package org.alfresco.solr.stream;
 
+import static java.util.Arrays.stream;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -54,9 +56,6 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
-
-import static java.util.Arrays.stream;
-import static java.util.Optional.ofNullable;
 
 public class SearchStream extends TupleStream implements Expressible  {
 
@@ -211,26 +210,26 @@ public class SearchStream extends TupleStream implements Expressible  {
     public void open() throws IOException
     {
         SolrClient solrClient;
-        final ModifiableSolrParams paramsLoc = new ModifiableSolrParams(params);
-        final Map<String, List<String>> shardsMap = (Map<String, List<String>>)streamContext.get("shards");
-        final SolrClientCache cache = streamContext.getSolrClientCache();
+        ModifiableSolrParams paramsLoc = new ModifiableSolrParams(params);
+        Map<String, List<String>> shardsMap = (Map<String, List<String>>)streamContext.get("shards");
+        SolrClientCache cache = streamContext.getSolrClientCache();
         if(shardsMap == null)
         {
             solrClient = cache.getCloudSolrClient(zkHost);
         }
         else
         {
-            final List<String> shards = shardsMap.get(collection);
+            List<String> shards = shardsMap.get(collection);
             solrClient = cache.getHttpSolrClient(shards.get(0));
             if(shards.size() > 1)
             {
-                final String shardsParam = StreamUtils.getShardString(shardsMap.get(collection));
+                String shardsParam = StreamUtils.getShardString(shardsMap.get(collection));
                 paramsLoc.add("shards", shardsParam);
                 paramsLoc.add("distrib", "true");
                 paramsLoc.add("shards.qt", "/sqlfts");
             }
 
-            final String fieldsListParam = paramsLoc.get(CommonParams.FL);
+            String fieldsListParam = paramsLoc.get(CommonParams.FL);
             if (fieldsListParam != null)
             {
                 this.fieldList = fieldsListParam.split(",");
@@ -238,8 +237,8 @@ public class SearchStream extends TupleStream implements Expressible  {
             }
         }
 
-        final RequestFactory requestFactory = (RequestFactory)streamContext.get("request-factory");
-        final QueryRequest request = requestFactory.getRequest(paramsLoc);
+        RequestFactory requestFactory = (RequestFactory)streamContext.get("request-factory");
+        QueryRequest request = requestFactory.getRequest(paramsLoc);
 
         try
         {
@@ -251,12 +250,12 @@ public class SearchStream extends TupleStream implements Expressible  {
             }
             else
             {
-                final QueryResponse response = request.process(solrClient);
-                final List<Tuple> tupleList = getTuples(response.getResults());
+                QueryResponse response = request.process(solrClient);
+                List<Tuple> tupleList = getTuples(response.getResults());
                 this.tuples = tupleList.iterator();
             }
         }
-        catch (final Exception e)
+        catch (Exception e)
         {
             throw new IOException(e);
         }
@@ -273,7 +272,7 @@ public class SearchStream extends TupleStream implements Expressible  {
      * @param fl the input fields list parameter.
      * @return the rewritten fl parameter according with the description above.
      */
-    String withRewrite(final String fl) {
+    String withRewrite(String fl) {
         return stream(fl.split(","))
                 .map(String::trim)
                 .filter(field -> !field.isEmpty())
