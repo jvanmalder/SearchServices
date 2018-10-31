@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.io.SolrClientCache;
@@ -53,6 +54,9 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
+
+import static java.util.Arrays.stream;
+import static java.util.Optional.ofNullable;
 
 public class SearchStream extends TupleStream implements Expressible  {
 
@@ -206,54 +210,82 @@ public class SearchStream extends TupleStream implements Expressible  {
 
     public void open() throws IOException
     {
-        SolrClient solrClient = null;
-        ModifiableSolrParams paramsLoc = new ModifiableSolrParams(params);
-        Map<String, List<String>> shardsMap = (Map<String, List<String>>)streamContext.get("shards");
-        SolrClientCache cache = streamContext.getSolrClientCache();
-        if(shardsMap == null) {
+        SolrClient solrClient;
+        final ModifiableSolrParams paramsLoc = new ModifiableSolrParams(params);
+        final Map<String, List<String>> shardsMap = (Map<String, List<String>>)streamContext.get("shards");
+        final SolrClientCache cache = streamContext.getSolrClientCache();
+        if(shardsMap == null)
+        {
             solrClient = cache.getCloudSolrClient(zkHost);
-        } else {
-            List<String> shards = shardsMap.get(collection);
+        }
+        else
+        {
+            final List<String> shards = shardsMap.get(collection);
             solrClient = cache.getHttpSolrClient(shards.get(0));
-            if(shards.size() > 1) {
-                String shardsParam = StreamUtils.getShardString(shardsMap.get(collection));
+            if(shards.size() > 1)
+            {
+                final String shardsParam = StreamUtils.getShardString(shardsMap.get(collection));
                 paramsLoc.add("shards", shardsParam);
                 paramsLoc.add("distrib", "true");
                 paramsLoc.add("shards.qt", "/sqlfts");
             }
 
-            String fieldsListParam = paramsLoc.get(CommonParams.FL);
-            if (fieldsListParam != null) {
-
+            final String fieldsListParam = paramsLoc.get(CommonParams.FL);
+            if (fieldsListParam != null)
+            {
                 this.fieldList = fieldsListParam.split(",");
-                fieldsListParam = fieldsListParam.replace(':','_');
-
-                if (!fieldsListParam.contains("[cached]"))
-                {
-                    paramsLoc.set(CommonParams.FL, fieldsListParam+",[cached]");
-                }
+                paramsLoc.set(CommonParams.FL, withRewrite(fieldsListParam));
             }
         }
 
-        RequestFactory requestFactory = (RequestFactory)streamContext.get("request-factory");
-        QueryRequest request = requestFactory.getRequest(paramsLoc);
+        final RequestFactory requestFactory = (RequestFactory)streamContext.get("request-factory");
+        final QueryRequest request = requestFactory.getRequest(paramsLoc);
 
         try
         {
-            if(shardsMap == null) {
+            if(shardsMap == null)
+            {
                 //Cloud request
-                QueryResponse response = request.process(solrClient, collection);
+                final QueryResponse response = request.process(solrClient, collection);
                 getTuples(response.getResults());
-            } else {
-                QueryResponse response = request.process(solrClient);
-                List<Tuple> tupleList = getTuples(response.getResults());
+            }
+            else
+            {
+                final QueryResponse response = request.process(solrClient);
+                final List<Tuple> tupleList = getTuples(response.getResults());
                 this.tuples = tupleList.iterator();
             }
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             throw new IOException(e);
         }
+    }
+
+    /**
+     * Replaces the (eventual) numeric prefixes frmom fields with glob expressions and adds the cached doc transformer.
+     * The replacement is needed for overcoming a wrong parsing in SolrReturnFields: if a field starts with a number,
+     * the prefix is (wrongly) removed and interpreted as a constant score that will be added in the matching document.
+     *
+     * e.g. fl=1_genre => will translated in "[1],_genre". The resulting doc won't have any 1_genre field and it will
+     * have a field named "1" with 1 as value (the constant score).
+     *
+     * @param fl the input fields list parameter.
+     * @return the rewritten fl parameter according with the description above.
+     */
+    String withRewrite(final String fl) {
+        return stream(fl.split(","))
+                .map(String::trim)
+                .filter(field -> !field.isEmpty())
+                .filter(field -> !field.equals("[cached]"))
+                .map(field ->
+                    NumberUtils.isDigits(field)
+                            ? field
+                            : Character.isDigit(field.charAt(0)) && !field.contains(")") && !field.contains("(")
+                                ? "*" + field.substring(1)
+                                : field)
+                .map(field -> field.concat(","))
+                .collect(Collectors.joining("","", "[cached]"));
     }
 
     public List<Tuple> getTuples(SolrDocumentList docs) {
