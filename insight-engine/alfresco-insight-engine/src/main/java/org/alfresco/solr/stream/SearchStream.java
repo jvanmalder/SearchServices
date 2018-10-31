@@ -275,16 +275,24 @@ public class SearchStream extends TupleStream implements Expressible  {
     String withRewrite(String fl) {
         return stream(fl.split(","))
                 .map(String::trim)
-                .filter(field -> !field.isEmpty())
-                .filter(field -> !field.equals("[cached]"))
-                .map(field ->
-                    NumberUtils.isDigits(field)
-                            ? field
-                            : Character.isDigit(field.charAt(0)) && !field.contains(")") && !field.contains("(")
-                                ? "*" + field.substring(1)
-                                : field)
-                .map(field -> field.concat(","))
-                .collect(Collectors.joining("","", "[cached]"));
+                .filter(token -> !token.isEmpty())
+                .map(token ->
+                    NumberUtils.isDigits(token)
+                            ? token
+                            : startsWithDigitOrIsPartOfFunction(token)
+                                ? "*" + token.substring(1)
+                                : token)
+                .collect(Collectors.joining(",","", fl.contains("[cached]") ? "" : ",[cached]"));
+    }
+
+    /**
+     * Checks if the input token starts with a digit or it is part of a function declaration.
+     *
+     * @param value the input string.
+     * @return true if the input token starts with a digit or it is part of a function declaration.
+     */
+    private boolean startsWithDigitOrIsPartOfFunction(String value) {
+        return Character.isDigit(value.charAt(0)) && !value.contains(")") && !value.contains("(");
     }
 
     public List<Tuple> getTuples(SolrDocumentList docs) {
