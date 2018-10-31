@@ -1,4 +1,4 @@
-FROM alfresco/alfresco-base-java:11-openjdk-centos-7
+FROM alfresco/alfresco-base-java:8u181-oracle-centos-7
 
 ENV ZEPPELIN_DISTRIBUTION=${project.build.finalName}.zip \
     ZEPPELIN_HOME="/zeppelin" \
