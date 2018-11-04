@@ -272,16 +272,17 @@ public class SearchStream extends TupleStream implements Expressible  {
      * @param fl the input fields list parameter.
      * @return the rewritten fl parameter according with the description above.
      */
-    String withRewrite(String fl) {
+    String withRewrite(String fl)
+    {
         return stream(fl.split(","))
                 .map(String::trim)
                 .filter(token -> !token.isEmpty())
                 .map(token ->
-                    NumberUtils.isDigits(token)
+                    NumberUtils.isNumber(token)
                             ? token
-                            : startsWithDigitOrIsPartOfFunction(token)
-                                ? "?" + token.substring(1)
-                                : token)
+                            : startsWithDigitAndIsNotPartOfFunction(token)
+                                ? "?" + escapeChars(token.substring(1))
+                                : escapeChars(token))
                 .collect(Collectors.joining(",","", fl.contains("[cached]") ? "" : ",[cached]"));
     }
 
@@ -291,8 +292,22 @@ public class SearchStream extends TupleStream implements Expressible  {
      * @param value the input string.
      * @return true if the input token starts with a digit or it is part of a function declaration.
      */
-    private boolean startsWithDigitOrIsPartOfFunction(String value) {
+    private boolean startsWithDigitAndIsNotPartOfFunction(String value)
+    {
         return Character.isDigit(value.charAt(0)) && !value.contains(")") && !value.contains("(");
+    }
+
+    /**
+     * Replaces plus or minus chars with a question mark.
+     * The reason is that those chars can be part of a field name but the Solr fields list parser fails
+     * in parsing values that contain those chars.
+     *
+     * @param value the input string.
+     * @return a new string where each plus or minus char has been replaced with a question mark.
+     */
+    private String escapeChars(final String value)
+    {
+        return value.replaceAll("[\\+\\-]","?");
     }
 
     public List<Tuple> getTuples(SolrDocumentList docs) {
