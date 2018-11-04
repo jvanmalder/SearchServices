@@ -280,7 +280,7 @@ public class SearchStream extends TupleStream implements Expressible  {
                     NumberUtils.isDigits(token)
                             ? token
                             : startsWithDigitOrIsPartOfFunction(token)
-                                ? "*" + token.substring(1)
+                                ? "?" + token.substring(1)
                                 : token)
                 .collect(Collectors.joining(",","", fl.contains("[cached]") ? "" : ",[cached]"));
     }

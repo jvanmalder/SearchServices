@@ -54,8 +54,8 @@ public class SearchStreamTest {
     public void rewriteFlWithNumericPrefixedFields() throws IOException {
         cut = new SearchStream("","", new ModifiableSolrParams());
 
-        String fl = "aField,1_genre,b123,2_somethingelse,*_aGlob,c,alias:(sum(1,prod(popularity,1)))[explain]";
-        String expected = "aField,*_genre,b123,*_somethingelse,*_aGlob,c,alias:(sum(1,prod(popularity,1)))[explain],[cached]";
+        String fl = "aField,1_genre,b123,2_somethingelse,?_aGlob,c,alias:(sum(1,prod(popularity,1)))[explain]";
+        String expected = "aField,?_genre,b123,?_somethingelse,?_aGlob,c,alias:(sum(1,prod(popularity,1)))[explain],[cached]";
 
         assertEquals(expected, cut.withRewrite(fl));
     }
@@ -65,12 +65,12 @@ public class SearchStreamTest {
         cut = new SearchStream("","", new ModifiableSolrParams());
 
         String fl1 = "aField,1_genre,b123,2_somethingelse,*_aGlob,c,alias:(sum(1,prod(popularity,1)))[explain],[cached]";
-        String expected1 = "aField,*_genre,b123,*_somethingelse,*_aGlob,c,alias:(sum(1,prod(popularity,1)))[explain],[cached]";
+        String expected1 = "aField,?_genre,b123,?_somethingelse,*_aGlob,c,alias:(sum(1,prod(popularity,1)))[explain],[cached]";
 
         assertEquals(expected1, cut.withRewrite(fl1));
 
-        String fl2 = "aField,1_genre,b123,[cached],2_somethingelse,*_aGlob,c,alias:(sum(1,prod(popularity,1)))[explain]";
-        String expected2 = "aField,*_genre,b123,[cached],*_somethingelse,*_aGlob,c,alias:(sum(1,prod(popularity,1)))[explain]";
+        String fl2 = "-1,aField,1_genre,b123,[cached],2_somethingelse,*_aGlob,c,alias:(sum(1,prod(popularity,1)))[explain]";
+        String expected2 = "-1,aField,?_genre,b123,[cached],?_somethingelse,*_aGlob,c,alias:(sum(1,prod(popularity,1)))[explain]";
 
         assertEquals(expected2, cut.withRewrite(fl2));
     }
