@@ -18,13 +18,13 @@
  */
 package org.alfresco.solr.query.stream;
 
-import java.util.List;
-
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  * @author Joel
@@ -186,6 +186,46 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
                 assertTrue(e.getMessage().contains("HAVING clause can only be applied to aggregate functions."));
             }
         }
+    }
+
+    @Test 
+    public void sqlSearchWithGrouping_propertyWithUnderscore_shouldReturnGroupedAggregation() throws Exception
+    {
+        //Primary syntax replacing first ':' with _
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+        String sql = "select mf_freetext_underscore as underscoreField, count(*) as numFound from alfresco where cm_content = 'world' group by mf_freetext_underscore order by numFound asc";
+
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+
+        assertTrue(tuples.size() == 2);
+        assertTrue("portable".equals(tuples.get(0).getString(("underscoreField"))));
+        assertTrue(tuples.get(0).getLong("numFound") == 1);
+        assertTrue(tuples.get(0).get("numFound") instanceof Long);
+        assertTrue("camera".equals(tuples.get(1).getString(("underscoreField"))));
+        assertTrue(tuples.get(1).getLong("numFound") == 2);
+
+        //Alternative syntax escaping ':'
+        sql = "select `mf:freetext_underscore` as underscoreField, count(*) as numFound from alfresco where `cm:content` = 'world' group by `mf:freetext_underscore` order by numFound asc";
+
+        tuples = sqlQuery(sql, alfrescoJson);
+
+        assertTrue(tuples.size() == 2);
+        assertTrue("portable".equals(tuples.get(0).getString(("underscoreField"))));
+        assertTrue(tuples.get(0).getLong("numFound") == 1);
+        assertTrue(tuples.get(0).get("numFound") instanceof Long);
+        assertTrue("camera".equals(tuples.get(1).getString(("underscoreField"))));
+        assertTrue(tuples.get(1).getLong("numFound") == 2);
+
+        sql = "select mf_freetext_underscore as underscoreField, count(*) as numFound from alfresco where `cm:content` = 'world' group by mf_freetext_underscore order by numFound asc";
+
+        tuples = sqlQuery(sql, alfrescoJson);
+
+        assertTrue(tuples.size() == 2);
+        assertTrue("portable".equals(tuples.get(0).getString(("underscoreField"))));
+        assertTrue(tuples.get(0).getLong("numFound") == 1);
+        assertTrue(tuples.get(0).get("numFound") instanceof Long);
+        assertTrue("camera".equals(tuples.get(1).getString(("underscoreField"))));
+        assertTrue(tuples.get(1).getLong("numFound") == 2);
     }
 }
 
