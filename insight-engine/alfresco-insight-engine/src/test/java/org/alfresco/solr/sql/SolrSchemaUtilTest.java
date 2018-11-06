@@ -1,12 +1,12 @@
 package org.alfresco.solr.sql;
 
-import static org.alfresco.solr.sql.SolrSchemaUtil.extractPredicates;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.util.Collections;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.alfresco.solr.sql.SolrSchemaUtil.extractPredicates;
 
 public class SolrSchemaUtilTest
 {
@@ -74,6 +74,68 @@ public class SolrSchemaUtilTest
         Assert.assertTrue("DBID", predicates.contains("DBID"));
         Assert.assertEquals(2, predicates.size());
     }
+
+    @Test 
+    public void predicateExtraction_singlePredicateStrictInequalityOperand_shouldExtractCorrectFieldName()
+    {
+        Set<String> predicates = extractPredicates("select * from alfresco where customField1 != 3");
+        Assert.assertTrue("customField1", predicates.contains("customField1"));
+        Assert.assertEquals(1, predicates.size());
+
+        predicates = extractPredicates("select * from alfresco where customField1 <> 3");
+        Assert.assertTrue("customField1", predicates.contains("customField1"));
+        Assert.assertEquals(1, predicates.size());
+
+        predicates = extractPredicates("select * from alfresco where customField1 ~= 3");
+        Assert.assertTrue("customField1", predicates.contains("customField1"));
+        Assert.assertEquals(1, predicates.size());
+
+        predicates = extractPredicates("select * from alfresco where customField1 < 3");
+        Assert.assertTrue("customField1", predicates.contains("customField1"));
+        Assert.assertEquals(1, predicates.size());
+
+        predicates = extractPredicates("select * from alfresco where customField1 > 3");
+        Assert.assertTrue("customField1", predicates.contains("customField1"));
+        Assert.assertEquals(1, predicates.size());
+    }
+
+    @Test 
+    public void predicateExtraction_multiPredicateStrictInequalityOperand_shouldExtractCorrectFieldNames()
+    {
+        Set<String> predicates = extractPredicates(
+            "select * from alfresco where customField1 != 3 AND customField2 <> 3 AND customField3 ~= 3 AND customField4 > 3 AND customField5 < 3");
+        Assert.assertTrue("customField1", predicates.contains("customField1"));
+        Assert.assertTrue("customField2", predicates.contains("customField2"));
+        Assert.assertTrue("customField3", predicates.contains("customField3"));
+        Assert.assertTrue("customField4", predicates.contains("customField4"));
+        Assert.assertTrue("customField5", predicates.contains("customField5"));
+
+        Assert.assertEquals(5, predicates.size());
+    }
+
+    @Test 
+    public void predicateExtraction_singlePredicateInequalityOperand_shouldExtractCorrectFieldName()
+    {
+        Set<String> predicates = extractPredicates("select * from alfresco where customField1 >= 3");
+        Assert.assertTrue("customField1", predicates.contains("customField1"));
+        Assert.assertEquals(1, predicates.size());
+
+        predicates = extractPredicates("select * from alfresco where customField1 <= 3");
+        Assert.assertTrue("customField1", predicates.contains("customField1"));
+        Assert.assertEquals(1, predicates.size());
+    }
+
+    @Test 
+    public void predicateExtraction_multiPredicateInequalityOperand_shouldExtractCorrectFieldNames()
+    {
+        Set<String> predicates = extractPredicates(
+            "select * from alfresco where customField1 >= 3 AND customField2 <= 3");
+        Assert.assertTrue("customField1", predicates.contains("customField1"));
+        Assert.assertTrue("customField2", predicates.contains("customField2"));
+
+        Assert.assertEquals(2, predicates.size());
+    }
+    
     @Test
     public void lockOwnerFieldExists()
     {
