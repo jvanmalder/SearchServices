@@ -25,11 +25,14 @@
  */
 package org.alfresco.solr.stream;
 
+import static java.util.Arrays.stream;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.io.SolrClientCache;
@@ -206,16 +209,20 @@ public class SearchStream extends TupleStream implements Expressible  {
 
     public void open() throws IOException
     {
-        SolrClient solrClient = null;
+        SolrClient solrClient;
         ModifiableSolrParams paramsLoc = new ModifiableSolrParams(params);
         Map<String, List<String>> shardsMap = (Map<String, List<String>>)streamContext.get("shards");
         SolrClientCache cache = streamContext.getSolrClientCache();
-        if(shardsMap == null) {
+        if(shardsMap == null)
+        {
             solrClient = cache.getCloudSolrClient(zkHost);
-        } else {
+        }
+        else
+        {
             List<String> shards = shardsMap.get(collection);
             solrClient = cache.getHttpSolrClient(shards.get(0));
-            if(shards.size() > 1) {
+            if(shards.size() > 1)
+            {
                 String shardsParam = StreamUtils.getShardString(shardsMap.get(collection));
                 paramsLoc.add("shards", shardsParam);
                 paramsLoc.add("distrib", "true");
@@ -223,15 +230,10 @@ public class SearchStream extends TupleStream implements Expressible  {
             }
 
             String fieldsListParam = paramsLoc.get(CommonParams.FL);
-            if (fieldsListParam != null) {
-
+            if (fieldsListParam != null)
+            {
                 this.fieldList = fieldsListParam.split(",");
-                fieldsListParam = fieldsListParam.replace(':','_');
-
-                if (!fieldsListParam.contains("[cached]"))
-                {
-                    paramsLoc.set(CommonParams.FL, fieldsListParam+",[cached]");
-                }
+                paramsLoc.set(CommonParams.FL, withRewrite(fieldsListParam));
             }
         }
 
@@ -240,11 +242,14 @@ public class SearchStream extends TupleStream implements Expressible  {
 
         try
         {
-            if(shardsMap == null) {
+            if(shardsMap == null)
+            {
                 //Cloud request
-                QueryResponse response = request.process(solrClient, collection);
+                final QueryResponse response = request.process(solrClient, collection);
                 getTuples(response.getResults());
-            } else {
+            }
+            else
+            {
                 QueryResponse response = request.process(solrClient);
                 List<Tuple> tupleList = getTuples(response.getResults());
                 this.tuples = tupleList.iterator();
@@ -254,6 +259,55 @@ public class SearchStream extends TupleStream implements Expressible  {
         {
             throw new IOException(e);
         }
+    }
+
+    /**
+     * Replaces the (eventual) numeric prefixes frmom fields with glob expressions and adds the cached doc transformer.
+     * The replacement is needed for overcoming a wrong parsing in SolrReturnFields: if a field starts with a number,
+     * the prefix is (wrongly) removed and interpreted as a constant score that will be added in the matching document.
+     *
+     * e.g. fl=1_genre => will translated in "[1],_genre". The resulting doc won't have any 1_genre field and it will
+     * have a field named "1" with 1 as value (the constant score).
+     *
+     * @param fl the input fields list parameter.
+     * @return the rewritten fl parameter according with the description above.
+     */
+    String withRewrite(String fl)
+    {
+        return stream(fl.replace(':','_').split(","))
+                .map(String::trim)
+                .filter(token -> !token.isEmpty())
+                .map(token ->
+                    NumberUtils.isNumber(token)
+                            ? token
+                            : startsWithDigitAndIsNotPartOfFunction(token)
+                                ? "?" + escapeChars(token.substring(1))
+                                : escapeChars(token))
+                .collect(Collectors.joining(",","", fl.contains("[cached]") ? "" : ",[cached]"));
+    }
+
+    /**
+     * Checks if the input token starts with a digit or it is part of a function declaration.
+     *
+     * @param value the input string.
+     * @return true if the input token starts with a digit or it is part of a function declaration.
+     */
+    private boolean startsWithDigitAndIsNotPartOfFunction(String value)
+    {
+        return Character.isDigit(value.charAt(0)) && !value.contains(")") && !value.contains("(");
+    }
+
+    /**
+     * Replaces plus or minus chars with a question mark.
+     * The reason is that those chars can be part of a field name but the Solr fields list parser fails
+     * in parsing values that contain those chars.
+     *
+     * @param value the input string.
+     * @return a new string where each plus or minus char has been replaced with a question mark.
+     */
+    private String escapeChars(final String value)
+    {
+        return value.replaceAll("[\\+\\-]","?");
     }
 
     public List<Tuple> getTuples(SolrDocumentList docs) {
