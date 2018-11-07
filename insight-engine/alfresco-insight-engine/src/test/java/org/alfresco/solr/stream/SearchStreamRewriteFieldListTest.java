@@ -45,11 +45,12 @@ import java.util.Map;
  *     <li>field names (aField, name, genre)</li>
  *     <li>glob expressions (n?me,*nre). See org.apache.commons.io.FilenameUtils#wildcardMatch(String, String) for the matching algorithm.</li>
  *     <li>functions (sum(1,1))</li>
- *     <li>aliases (alias:fieldname,alias:sum(1,popularity)</li>
+ *     <li>namespaces (namespace:fieldname,namespace:sum(1,popularity)</li>
  * </ul>
  *
  * Note: the current {@link SearchStream} implementation doesn't make use of functions, aliases and glob expressions.
- * However, the test checks the rewriting correctness even in those contexts.
+ * Specifically for aliases:since the code is using a "namespaced" field syntax (e.g. cm:name) the Solr built-in alias capability
+ * cannot be used (colons are replaced with underscores before sending the final request to Solr).
  *
  * Known limitations in case of fields starting with numbers and / or containing hyphen(-) or plus(+) chars:
  *
@@ -57,6 +58,7 @@ import java.util.Map;
  *     <li>They cannot be used within a function, e.g. sum(1_genre, 1)</li>
  *     <li>Aliases cannot have a numeric prefix and cannot contain hyphen / plus chars, e.g 1a-l-i-a-s:aFieldName</li>
  * </ul>
+ *
  *
  * @see org.apache.commons.io.FilenameUtils#wildcardMatch(String, String)
  */
@@ -146,8 +148,8 @@ public class SearchStreamRewriteFieldListTest
 
         // 2. one field to rewrite, two aliased functions, one field ok, another function (not aliased)
         inputAndExpectedPairs.put(
-                "a-F-i-e-l-d,functionAlias1:(sum(1,1)),functionAlias2:sum(rating,1),aField,sum(popularity,1)",
-                "a?F?i?e?l?d,functionAlias1_(sum(1,1)),functionAlias2_sum(rating,1),aField,sum(popularity,1)");
+                "a-F-i-e-l-d,ns1:(sum(1,1)),ns2:sum(rating,1),aField,sum(popularity,1)",
+                "a?F?i?e?l?d,ns1_(sum(1,1)),ns2_sum(rating,1),aField,sum(popularity,1)");
 
         // 3. nothing to rewrite
         inputAndExpectedPairs.put(
@@ -176,8 +178,8 @@ public class SearchStreamRewriteFieldListTest
     {
         // 1. fields mixed with aliased and non aliased functions
         inputAndExpectedPairs.put(
-                "1aField,functionAlias1:(sum(1,1)),functionAlias2:sum(popularity,1),23_aField,sum(rating,1)",
-                "?aField,functionAlias1_(sum(1,1)),functionAlias2_sum(popularity,1),?3_aField,sum(rating,1)");
+                "1aField,ns1:(sum(1,1)),ns2:sum(popularity,1),23_aField,sum(rating,1)",
+                "?aField,ns1_(sum(1,1)),ns2_sum(popularity,1),?3_aField,sum(rating,1)");
 
         // 2. fields mixed with transformers and glob expressions
         inputAndExpectedPairs.put(
