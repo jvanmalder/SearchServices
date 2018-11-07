@@ -274,7 +274,7 @@ public class SearchStream extends TupleStream implements Expressible  {
      */
     String withRewrite(String fl)
     {
-        return stream(fl.split(","))
+        return stream(fl.replace(':','_').split(","))
                 .map(String::trim)
                 .filter(token -> !token.isEmpty())
                 .map(token ->
