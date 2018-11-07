@@ -147,7 +147,7 @@ public class SearchStreamRewriteFieldListTest
         // 2. one field to rewrite, two aliased functions, one field ok, another function (not aliased)
         inputAndExpectedPairs.put(
                 "a-F-i-e-l-d,functionAlias1:(sum(1,1)),functionAlias2:sum(rating,1),aField,sum(popularity,1)",
-                "a?F?i?e?l?d,functionAlias1:(sum(1,1)),functionAlias2:sum(rating,1),aField,sum(popularity,1)");
+                "a?F?i?e?l?d,functionAlias1_(sum(1,1)),functionAlias2_sum(rating,1),aField,sum(popularity,1)");
 
         // 3. nothing to rewrite
         inputAndExpectedPairs.put(
@@ -177,7 +177,7 @@ public class SearchStreamRewriteFieldListTest
         // 1. fields mixed with aliased and non aliased functions
         inputAndExpectedPairs.put(
                 "1aField,functionAlias1:(sum(1,1)),functionAlias2:sum(popularity,1),23_aField,sum(rating,1)",
-                "?aField,functionAlias1:(sum(1,1)),functionAlias2:sum(popularity,1),?3_aField,sum(rating,1)");
+                "?aField,functionAlias1_(sum(1,1)),functionAlias2_sum(popularity,1),?3_aField,sum(rating,1)");
 
         // 2. fields mixed with transformers and glob expressions
         inputAndExpectedPairs.put(
