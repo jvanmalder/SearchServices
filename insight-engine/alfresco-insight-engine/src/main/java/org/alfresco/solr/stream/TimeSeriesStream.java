@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.TimeZone;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.solr.client.solrj.SolrClient;
@@ -495,12 +496,17 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
                         .map(timeseries -> (List<NamedList>)timeseries.get("buckets"))
                         .orElse(Collections.emptyList());
 
+        final TimeZone tz =
+                timeZone != null
+                        ? TimeZone.getTimeZone(timeZone)
+                        : TimeZone.getTimeZone("UTC");
+
         for (NamedList bucket : allBuckets)
         {
             Tuple t = currentTuple.clone();
             t.put(field,
                   ofNullable(bucket.get("val"))
-                            .map(value -> format != null ? DateFormatUtils.format((Date) value, format) : value)
+                            .map(value -> format != null ? DateFormatUtils.format((Date) value, format, tz) : value)
                             .orElse(null));
             int m = 0;
             for (Metric metric : _metrics)
