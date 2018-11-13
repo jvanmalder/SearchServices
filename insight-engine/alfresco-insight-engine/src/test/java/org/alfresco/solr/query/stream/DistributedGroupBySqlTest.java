@@ -188,6 +188,34 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         }
     }
 
+    @Test
+    public void sqlSearchNestedGroupByTokenizedField() throws Exception
+    {
+
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+        String sql = "select ft_authorft as Author, cm_name as Name from alfresco group by ft_authorft, cm_name";
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+
+        assertTrue(tuples.size() == 3);
+        assertTrue(tuples.get(0).fields.size() == 2);
+        assertTrue(tuples.get(1).fields.size() == 2);
+        assertTrue(tuples.get(2).fields.size() == 2);
+        assertTrue("gavin snow".equals(tuples.get(0).getString("Author")));
+        assertTrue("john snow".equals(tuples.get(1).getString("Author")));
+        assertTrue("john snow".equals(tuples.get(2).getString("Author")));
+        assertTrue("name3".equals(tuples.get(0).getString("Name")));
+        assertTrue("name1".equals(tuples.get(1).getString("Name")));
+        assertTrue("name2".equals(tuples.get(2).getString("Name")));
+
+
+        String sql2 = "select cm_name as Name, ft_authorft as Author from alfresco group by cm_name, ft_authorft";
+        List<Tuple> tuples2 = sqlQuery(sql2, alfrescoJson);
+        assertTrue(tuples2.size() == 3);
+        assertTrue("gavin snow".equals(tuples2.get(2).getString("Author")));
+        assertTrue("name3".equals(tuples2.get(2).getString("Name")));
+
+    }
+
     @Test 
     public void sqlSearchWithGrouping_propertyWithUnderscore_shouldReturnGroupedAggregation() throws Exception
     {
