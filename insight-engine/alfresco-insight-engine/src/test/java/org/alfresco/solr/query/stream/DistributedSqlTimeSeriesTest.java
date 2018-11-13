@@ -178,7 +178,7 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             String dayString = tuple.getString("cm_created_day");
             assertTrue(tuple.fields.containsKey("sm"));
             if(dayString.equals("2010-02-21")) {
-                assertTrue(tuple.get("sm") == null);
+                assertEquals(0L, tuple.get("sm"));
             }
         }
 
