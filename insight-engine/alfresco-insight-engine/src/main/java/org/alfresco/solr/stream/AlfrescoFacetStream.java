@@ -161,11 +161,11 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
            {
                String newField = theField.substring(bracketIndex+1, endIndex);
                return theField.substring(0, bracketIndex+1)
-                       + AlfrescoStreamHandler.getIndexedField(newField, indexSchema, AlfrescoSolrDataModel.FieldUse.FACET)
+                       + AlfrescoStreamHandler.getIndexedField(newField, indexSchema, AlfrescoSolrDataModel.FieldUse.SORT)
                        + theField.substring(endIndex);
            }
         }
-        return AlfrescoStreamHandler.getIndexedField(theField, indexSchema, AlfrescoSolrDataModel.FieldUse.FACET);
+        return AlfrescoStreamHandler.getIndexedField(theField, indexSchema, AlfrescoSolrDataModel.FieldUse.SORT);
     }
 
     public void close() throws IOException
