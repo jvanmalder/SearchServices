@@ -107,7 +107,8 @@ public class AlfrescoStatsStream extends TupleStream implements Expressible  {
             }
 
             String column = metric.getColumns()[0];
-            String newColumn = AlfrescoStreamHandler.getIndexedField(column, indexSchema);
+            String newColumn = AlfrescoStreamHandler.getIndexedField(column, indexSchema,
+                    AlfrescoSolrDataModel.FieldUse.SORT);
             reverseLookup.put(newColumn, column);
             if(metric.getFunctionName().equals("sum"))
             {

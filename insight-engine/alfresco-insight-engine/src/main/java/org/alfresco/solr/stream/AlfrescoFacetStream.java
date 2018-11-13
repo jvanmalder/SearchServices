@@ -25,6 +25,7 @@
  */
 package org.alfresco.solr.stream;
 
+import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.sql.AlfrescoCalciteSolrDriver;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.client.solrj.io.comp.FieldComparator;
@@ -106,7 +107,8 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
             }
 
             String column = metric.getColumns()[0];
-            String newColumn = "field("+AlfrescoStreamHandler.getIndexedField(column, indexSchema)+")";
+            String newColumn = "field("+AlfrescoStreamHandler.getIndexedField(column, indexSchema,
+                    AlfrescoSolrDataModel.FieldUse.FACET)+")";
             String metFunc = metric.getFunctionName()+"(";
             reverseLookup.put(metFunc+newColumn+")", metFunc+column+")");
             if(metric.getFunctionName().equals("sum"))
@@ -131,7 +133,8 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
 
         Bucket[] buckets = facetStream.getBuckets();
         for (int i = 0; i <buckets.length ; i++) {
-            String newColumn = AlfrescoStreamHandler.getIndexedField(buckets[i].toString(), indexSchema);
+            String newColumn = AlfrescoStreamHandler.getIndexedField(buckets[i].toString(), indexSchema,
+                    AlfrescoSolrDataModel.FieldUse.FACET);
             reverseLookup.put(newColumn, buckets[i].toString());
             buckets[i] = new Bucket(newColumn);
         }
@@ -158,11 +161,11 @@ public class AlfrescoFacetStream extends TupleStream implements Expressible  {
            {
                String newField = theField.substring(bracketIndex+1, endIndex);
                return theField.substring(0, bracketIndex+1)
-                       + AlfrescoStreamHandler.getIndexedField(newField, indexSchema)
+                       + AlfrescoStreamHandler.getIndexedField(newField, indexSchema, AlfrescoSolrDataModel.FieldUse.FACET)
                        + theField.substring(endIndex);
            }
         }
-        return AlfrescoStreamHandler.getIndexedField(theField, indexSchema);
+        return AlfrescoStreamHandler.getIndexedField(theField, indexSchema, AlfrescoSolrDataModel.FieldUse.FACET);
     }
 
     public void close() throws IOException

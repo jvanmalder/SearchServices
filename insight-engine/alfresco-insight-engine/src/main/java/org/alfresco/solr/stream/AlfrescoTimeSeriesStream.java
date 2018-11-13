@@ -116,7 +116,8 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
             }
 
             String column = metric.getColumns()[0];
-            String newColumn = AlfrescoStreamHandler.getIndexedField(column, indexSchema);
+            String newColumn = AlfrescoStreamHandler.getIndexedField(column, indexSchema,
+                    AlfrescoSolrDataModel.FieldUse.SORT);
 
             newColumn = "field("+newColumn+")";
 
@@ -153,7 +154,8 @@ public class AlfrescoTimeSeriesStream extends TupleStream implements Expressible
             field = vfield;
         }
 
-        String newField = AlfrescoStreamHandler.getIndexedField(field, indexSchema);
+        String newField = AlfrescoStreamHandler.getIndexedField(field, indexSchema,
+                AlfrescoSolrDataModel.FieldUse.SORT);
         reverseLookup.put(newField, vfield);
         timeSeriesStream.setField(newField);
         this.timeSeriesStream.open();

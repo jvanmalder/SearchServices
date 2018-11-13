@@ -100,7 +100,7 @@ public class AlfrescoStreamHandler extends StreamHandler
      * @return a field in the index
      */
 
-    public static String getIndexedField(String field, IndexSchema schema)
+    public static String getIndexedField(String field, IndexSchema schema, AlfrescoSolrDataModel.FieldUse fieldUse)
     {
         if (schema.getFieldOrNull(field) != null)
         {
@@ -123,7 +123,7 @@ public class AlfrescoStreamHandler extends StreamHandler
             {
                 AlfrescoSolrDataModel.IndexedField fields = dataModel
                     .getQueryableFields(propertyDef.getName(), dataModel.getTextField(fieldNameAndEnding.getSecond()),
-                        AlfrescoSolrDataModel.FieldUse.SORT);
+                        fieldUse);
                 if (fields.getFields().size() > 0)
                 {
                     return fields.getFields().get(0).getField();
