@@ -164,7 +164,9 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             double indexSum = daySum.get(day).doubleValue();
             double sum = tuple.getDouble("sm");
             assertEquals(indexSum, sum, 0.0);
-            assertTrue(lastSum > sum);
+
+            // Asserts that the current tuple is respecting the descending order
+            assertTrue(lastSum >= sum);
             lastSum = sum;
         }
 
