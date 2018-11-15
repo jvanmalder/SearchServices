@@ -25,6 +25,15 @@
  */
 package org.alfresco.solr.query.stream;
 
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.list;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -61,15 +70,7 @@ import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-
-import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
-import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
-import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
+import java.util.TimeZone;
 
 /**
  * @author Michael Suzuki
@@ -231,7 +232,9 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
 
     protected Date getDate(int year, int month, int day)
     {
-        return new Date(new GregorianCalendar(year, month, day, 10, 0).getTimeInMillis());
+        GregorianCalendar calendar = new GregorianCalendar(year, month, day, 10, 0);
+        calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return calendar.getTime();
     }
     
     /**
