@@ -1,6 +1,6 @@
 # Alfresco Insight Engine ${project.version} Docker Image
 
-FROM alfresco/alfresco-base-java:11-openjdk-centos-7
+FROM alfresco/alfresco-base-java:11.0.1-openjdk-centos-7-1fd3c4475374
 LABEL creator="Tuna Aksoy" maintainer="Alfresco Search Services Team"
 
 ENV DIST_DIR /opt/alfresco-insight-engine
