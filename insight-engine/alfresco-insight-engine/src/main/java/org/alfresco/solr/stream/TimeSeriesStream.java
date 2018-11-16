@@ -25,14 +25,19 @@
  */
 package org.alfresco.solr.stream;
 
+import static java.util.Optional.ofNullable;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.TimeZone;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.solr.client.solrj.SolrClient;
@@ -477,55 +482,53 @@ public class TimeSeriesStream extends TupleStream implements Expressible  {
         NamedList facets = (NamedList)response.get("facets");
         fillTuples(tuples, tuple, facets, field, metrics);
     }
-    
+
+    @SuppressWarnings("unchecked")
     private void fillTuples(List<Tuple> tuples,
                             Tuple currentTuple,
                             NamedList facets,
                             String field,
-                            Metric[] _metrics) {
-        NamedList nl = (NamedList)facets.get("timeseries");
-        if(nl == null) {
-          return;
-        }
-        
-        List allBuckets = (List)nl.get("buckets");
-        for(int b=0; b<allBuckets.size(); b++) 
-        {
-            NamedList bucket = (NamedList)allBuckets.get(b);
-            Object val = bucket.get("val");
+                            Metric[] _metrics)
+    {
+        List<NamedList> allBuckets =
+                ofNullable(facets.get("timeseries"))
+                        .map(NamedList.class::cast)
+                        .map(timeseries -> (List<NamedList>)timeseries.get("buckets"))
+                        .orElse(Collections.emptyList());
 
-            if(format != null)
-            {
-                val = DateFormatUtils.format((java.util.Date) val, format);
-            }
+        final TimeZone tz =
+                timeZone != null
+                        ? TimeZone.getTimeZone(timeZone)
+                        : TimeZone.getTimeZone("UTC");
+
+        for (NamedList bucket : allBuckets)
+        {
             Tuple t = currentTuple.clone();
-            t.put(field, val);
+            t.put(field,
+                  ofNullable(bucket.get("val"))
+                            .map(value -> format != null ? DateFormatUtils.format((Date) value, format, tz) : value)
+                            .orElse(null));
             int m = 0;
-            for(Metric metric : _metrics) 
+            for (Metric metric : _metrics)
             {
                 String identifier = metric.getIdentifier();
-                if(!identifier.startsWith("count("))
+                if (!identifier.startsWith("count("))
                 {
-                    Object o = bucket.get("facet_"+m);
-                    if(o != null) {
-                        Number d = (Number) o;
-                        if (metric.outputLong) {
-                            t.put(identifier, Math.round(d.doubleValue()));
-                        } else {
-                            t.put(identifier, d.doubleValue());
-                        }
-                    } else {
-                        t.put(identifier, 0);
-                    }
+                    t.put(identifier,
+                        ofNullable(bucket.get("facet_" + m))
+                            .map(Number.class::cast)
+                            .map(Number::doubleValue)
+                            .map(value -> metric.outputLong ? Math.round(value) : value)
+                            .orElse(0d));
                     ++m;
                 }
                 else
                 {
-                    long l = ((Number)bucket.get("count")).longValue();
+                    long l = ((Number) bucket.get("count")).longValue();
                     t.put("count(*)", l);
                 }
             }
-        tuples.add(t);
+            tuples.add(t);
         }
     }
 
