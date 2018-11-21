@@ -102,6 +102,31 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
             assertEquals(max, 10, 0);
         }
 
+        sql = "select " +
+                "cm_created_month as ReferenceMonth, " +
+                "sum(exif_exposureTime) as TotalExposureTime " +
+                "from alfresco " +
+                "where " +
+                "exif_exposureTime > 0 and " +
+                "cm_created >= '2010-02-01T01:01:01Z' " +
+                "group by cm_created_month " +
+                "order by sum(exif_exposureTime) desc";
+
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertEquals(106, tuples.size());
+
+        tuples.forEach(tuple ->
+        {
+            String referenceMonth = tuple.getString("ReferenceMonth");
+            switch(referenceMonth)
+            {
+                case "2010-02":
+                    assertEquals(2500.0, tuple.getDouble("TotalExposureTime"), 0);
+                    break;
+                default:
+                    assertEquals(0, tuple.getDouble("TotalExposureTime"), 0);
+            }
+        });
 
         //Test that phrases are working
         sql = "select cm_created_day, count(*), sum(cm_fiveStarRatingSchemeTotal), avg(cm_fiveStarRatingSchemeTotal), min(cm_fiveStarRatingSchemeTotal), max(cm_fiveStarRatingSchemeTotal) from alfresco where cm_owner='jim' and cm_content='world hello' and cm_created >= '2010-02-01T01:01:01Z' and cm_created <= '2010-02-14T23:59:59Z' group by cm_created_day";
@@ -427,6 +452,7 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
 
             nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED, new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
             nodeMetaData1.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
+            nodeMetaData1.getProperties().put(PROP_EXPOSURE_TIME, new StringPropertyValue("10.0"));
             nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue(Integer.toString(track)));
             nodeMetaData1.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
             nodeMetaData1.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name1"));
