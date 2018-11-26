@@ -16,10 +16,11 @@
  */
 package org.alfresco.solr.stream;
 
+import static java.util.Optional.ofNullable;
+import static java.util.Optional.of;
+
+import org.alfresco.util.CachingDateFormat;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.apache.solr.client.solrj.impl.CloudSolrClient.Builder;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.SolrClientCache;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.client.solrj.io.comp.ComparatorOrder;
@@ -488,59 +489,71 @@ public class FacetStream extends TupleStream implements Expressible  {
 
   }
 
+  @SuppressWarnings("unchecked")
   private void fillTuples(int level,
                           List<Tuple> tuples,
                           Tuple currentTuple,
                           NamedList facets,
                           Bucket[] _buckets,
-                          Metric[] _metrics) {
-
-    String bucketName = _buckets[level].toString();
-    NamedList nl = (NamedList)facets.get(bucketName);
-    if(nl == null) {
-      return;
-    }
-    if(reverseLookup.containsKey(bucketName)) {
-      bucketName = reverseLookup.get(bucketName);
-    }
-    List allBuckets = (List)nl.get("buckets");
-    for(int b=0; b<allBuckets.size(); b++) {
-      NamedList bucket = (NamedList)allBuckets.get(b);
-      Object val = bucket.get("val");
-      Tuple t = currentTuple.clone();
-      t.put(bucketName, val);
-      int nextLevel = level+1;
-      if(nextLevel<_buckets.length) {
-        fillTuples(nextLevel,
-                   tuples,
-                   t.clone(),
-                   bucket,
-                   _buckets,
-                   _metrics);
-      } else {
-        int m = 0;
-        for(Metric metric : _metrics) {
-          String identifier = metric.getIdentifier();
-          if(reverseLookup.containsKey(identifier)) {
-            identifier = reverseLookup.get(identifier);
-          }
-          if(!identifier.startsWith("count(")) {
-            Number n = (Number)bucket.get("facet_"+m);
-            if(metric.outputLong) {
-              t.put(identifier, Math.round(n.doubleValue()));
-            } else {
-              t.put(identifier, n.doubleValue());
-            }
-            ++m;
-          } else {
-            long l = ((Number)bucket.get("count")).longValue();
-            t.put("count(*)", l);
-          }
-        }
-        tuples.add(t);
+                          Metric[] _metrics)
+  {
+      String bucketId = _buckets[level].toString();
+      NamedList bucketsContainer = (NamedList)facets.get(bucketId);
+      if(bucketsContainer == null)
+      {
+          return;
       }
+
+      String bucketName = ofNullable(reverseLookup.get(bucketId)).orElse(bucketId);
+
+      List<NamedList> buckets = (List<NamedList>)bucketsContainer.get("buckets");
+
+      buckets.forEach(bucket ->
+      {
+          Tuple tuple = currentTuple.clone();
+          Object bucketValue = bucket.get("val");
+
+          // TODO: when https://github.com/Alfresco/alfresco-core/pull/26 will be merged remember to switch the method
+          tuple.put(
+                  bucketName,
+                  (bucketValue instanceof Date)
+                          ? CachingDateFormat.getSolrDatetimeFormat().format((Date) bucketValue)
+                          : bucketValue);
+
+          int nextLevel = level + 1;
+          if (nextLevel < _buckets.length)
+          {
+              fillTuples(nextLevel, tuples, tuple.clone(), bucket, _buckets, _metrics);
+          }
+          else
+          {
+              int m = 0;
+              for (Metric metric : _metrics)
+              {
+                  String identifier = ofNullable(reverseLookup.get(metric.getIdentifier())).orElse(metric.getIdentifier());
+                  if (!identifier.startsWith("count("))
+                  {
+                      Number value = (Number) bucket.get("facet_" + m);
+                      tuple.put(
+                              identifier,
+                              (metric.outputLong) ? Math.round(value.doubleValue()) : value.doubleValue());
+                      ++m;
+                  }
+                  else
+                  {
+                      tuple.put(
+                              "count(*)",
+                              of(bucket)
+                                      .map(bckt -> bckt.get("count"))
+                                      .map(Number.class::cast)
+                                      .map(Number::longValue)
+                                      .get());
+                  }
+              }
+              tuples.add(tuple);
+          }
+      });
     }
-  }
 
   public Metric[] getMetrics() {
     return metrics;

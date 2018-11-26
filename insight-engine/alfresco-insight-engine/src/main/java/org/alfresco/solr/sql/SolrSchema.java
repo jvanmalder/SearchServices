@@ -132,7 +132,7 @@ public class SolrSchema extends AbstractSchema {
                 break;
             case "solr.TrieDateField":
                 isDate = true;
-                type = typeFactory.createJavaType(Date.class);
+                type = typeFactory.createJavaType(String.class);
                 break;
             case "java.util.Date":
                 isDate = true;

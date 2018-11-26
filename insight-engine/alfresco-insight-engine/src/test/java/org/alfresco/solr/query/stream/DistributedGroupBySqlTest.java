@@ -67,6 +67,78 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         assertTrue(tuples.get(0).get("barb") instanceof Long);
         assertTrue(tuples.get(0).get("ACLID") instanceof Long);
 
+        // date formats + group and sort by date
+        sql = "select " +
+                    "cm_created,  " +
+                    "count(*) as ExposureCount,  " +
+                    "sum(exif_exposureTime) as TotalExposure,  " +
+                    "avg(exif_exposureTime) as AvgExposure,  " +
+                    "min(exif_exposureTime) as MinExposure,  " +
+                    "max(exif_exposureTime) as MaxExposure  " +
+                "from alfresco  " +
+                "where  " +
+                    "exif_exposureTime > 0 and  " +
+                    "cm_content='world' and  " +
+                    "cm_created BETWEEN '2000-01-01T01:01:01Z' AND '2010-02-14T23:59:59Z'" +
+                "group by cm_created having count(*) > 0 ";
+
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertEquals(4, tuples.size());
+        for (int i = 0; i < 4; i++) {
+            Tuple tuple = tuples.get(i);
+            assertEquals(1L, tuple.getLong("ExposureCount").longValue());
+            assertEquals(10 + i, tuple.getDouble("MaxExposure"),0);
+            assertEquals(10 + i, tuple.getDouble("MinExposure"),0);
+            assertEquals(10 + i, tuple.getDouble("AvgExposure"),0);
+            assertEquals(10 + i, tuple.getDouble("TotalExposure"),0);
+            assertEquals("2000-0" + (i + 1) + "-02T01:00:00Z", tuple.getString("cm_created"));
+        }
+
+        if (true) return;
+
+        sql = "select " +
+                "cm_created,  " +
+                "count(*) as ExposureCount,  " +
+                "sum(exif_exposureTime) as TotalExposure,  " +
+                "avg(exif_exposureTime) as AvgExposure,  " +
+                "min(exif_exposureTime) as MinExposure,  " +
+                "max(exif_exposureTime) as MaxExposure  " +
+                "from alfresco  " +
+                "where  " +
+                "exif_exposureTime > 0 and  " +
+                "cm_content='world' and  " +
+                "cm_created >= '2000-01-01T01:01:01Z' AND cm_created <= '2010-02-14T23:59:59Z' " +
+                "group by cm_created having count(*) > 0 ";
+
+        tuples = sqlQuery(sql, alfrescoJson);
+        assertEquals(4, tuples.size());
+        for (int i = 0; i < 4; i++) {
+            Tuple tuple = tuples.get(i);
+            assertEquals(1L, tuple.getLong("ExposureCount").longValue());
+            assertEquals(10 + i, tuple.getDouble("MaxExposure"),0);
+            assertEquals(10 + i, tuple.getDouble("MinExposure"),0);
+            assertEquals(10 + i, tuple.getDouble("AvgExposure"),0);
+            assertEquals(10 + i, tuple.getDouble("TotalExposure"),0);
+            assertEquals("2000-0" + (i + 1) + "-02T01:01:01Z", tuple.getString("cm_created"));
+        }
+
+        sql = "select " +
+                    "cm_created, " +
+                    "count(*) " +
+                "from alfresco " +
+                "where " +
+                    "cm_created >= '2000-01-01T01:01:01Z' " +
+                    "group by cm_created " +
+                    "order by cm_created desc";
+        tuples = sqlQuery(sql, alfrescoJson);
+
+        for (int i = 0; i < 4; i++) {
+            Tuple tuple = tuples.get(i);
+
+            // Test the descending order
+            assertEquals("2000-0" + (4 - i) + "-02T01:01:01Z", tuple.getString("cm_created"));
+        }
+
         //Test that phrases are working
         sql = "select ACLID, count(*) AS barb from alfresco where `cm:content` = 'world hello' group by ACLID";
         tuples = sqlQuery(sql, alfrescoJson);
