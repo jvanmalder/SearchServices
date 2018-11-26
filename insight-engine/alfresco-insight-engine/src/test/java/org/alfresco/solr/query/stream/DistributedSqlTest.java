@@ -290,6 +290,15 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertNotNull(tuples);
     }
 
+    @Test
+    public void distributedSearch_queryWithCustomModelField_shouldReturnCorrectResults() throws Exception
+    {
+        sql = "select cm_name as `Expense Name`, finance_amount from alfresco";
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 4);
+    }
+
     private void assertResult(List<Tuple> tuples)
     {
 
