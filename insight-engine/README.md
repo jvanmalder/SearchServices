@@ -34,10 +34,16 @@ To run the docker image:
 docker run -p 8983:8983 insightengine:develop
 </code>
 
-To pass environment variables:
+To pass an environment variable:
 
 <code>
 docker run -e SOLR_JAVA_MEM=“-Xms4g -Xmx4g” -p 8983:8983 insightengine:develop
+</code>
+
+To pass several environment variables (e.g. SOLR\_ALFRESCO\_HOST, SOLR\_ALFRESCO\_PORT, SOLR\_SOLR\_HOST, SOLR\_SOLR\_PORT, SOLR\_CREATE\_ALFRESCO\_DEFAULTS, SOLR\_HEAP, etc.):
+
+<code>
+docker run -e SOLR_ALFRESCO_HOST=localhost -e SOLR_ALFRESCO_PORT=8080 -p 8983:8983 insightengine:develop
 </code>
 
 docker-compose files can be used to start up Insight Engine with Alfresco and Share E.g.
