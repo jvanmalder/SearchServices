@@ -90,6 +90,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     protected static final QName PROP_RATING = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "fiveStarRatingSchemeTotal");
     protected static final QName PROP_TRACK  = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "trackNumber");
     protected static final QName PROP_MANUFACTURER  = QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "manufacturer");
+    protected static final QName PROP_EXPOSURE_TIME  = QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "exposureTime");
     protected static final QName PROP_WITH_UNDERSCORE  = QName.createQName("mf", "freetext_underscore");
     protected static final QName PROP_AUTHOR_FT = QName.createQName("ft", "authorft");
     
