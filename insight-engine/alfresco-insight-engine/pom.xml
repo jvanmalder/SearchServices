@@ -73,10 +73,10 @@
                   <configuration>
                      <resources>
                         <resource>
-                           <directory>${basedir}/src/test/resources/solr/conf/</directory>
+                           <directory>${basedir}/src/test/resources/conf</directory>
                         </resource>
                      </resources>
-                     <outputDirectory>${project.build.testOutputDirectory}/test-files/collection1/conf/</outputDirectory>
+                     <outputDirectory>${project.build.testOutputDirectory}/test-files/conf/</outputDirectory>
                   </configuration>
                </execution>
             </executions>

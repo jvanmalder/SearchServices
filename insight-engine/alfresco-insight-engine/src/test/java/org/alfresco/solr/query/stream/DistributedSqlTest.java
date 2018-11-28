@@ -20,12 +20,14 @@ package org.alfresco.solr.query.stream;
 
 import java.io.IOException;
 import java.util.List;
-
+import java.util.Properties;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.client.solrj.embedded.JettySolrRunner;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.junit.Rule;
 import org.junit.Test;
+
 
 /**
  * @author Joel
@@ -35,9 +37,30 @@ import org.junit.Test;
 public class DistributedSqlTest extends AbstractStreamTest
 {
     private String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
+    private Properties getSQLFields()
+    {
+        Properties p = new Properties();
+        p.put("solr.sql.alfresco.fieldname.cmlockOwner", "cm:lockOwner");
+        p.put("solr.sql.alfresco.fieldtype.cmlockOwner", "solr.StrField");
+        p.put("solr.sql.alfresco.fieldname.cmcreated","cm_created");
+        p.put("solr.sql.alfresco.fieldtype.cmcreated","solr.TrieDateField");
+        p.put("solr.sql.alfresco.fieldname.cmowner","cm_owner");
+        p.put("solr.sql.alfresco.fieldtype.cmowner","solr.StrField");
+        p.put("solr.sql.alfresco.fieldname.cmtitle","cm_title");
+        p.put("solr.sql.alfresco.fieldtype.cmtitle","AlfrescoCollatableMLsolr.TextFieldType");
+        p.put("solr.sql.alfresco.fieldname.aspect","ASPECT");
+        p.put("solr.sql.alfresco.fieldtype.aspect","solr.StrField");
+        p.put("solr.sql.alfresco.fieldname.type","TYPE");
+        p.put("solr.sql.alfresco.fieldtype.type","solr.StrField");
+        p.put("solr.sql.alfresco.fieldname.properties","PROPERTIES");
+        p.put("solr.sql.alfresco.fieldtype.properties","solr.StrField");
+        p.put("solr.sql.alfresco.fieldname.audioTrackNumber","audio:trackNumber");
+        p.put("solr.sql.alfresco.fieldtype.audioTrackNumber","solr.TrieLongField");
+        return p;
+    }
     
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(1, this);
+    public JettyServerRule jetty = new JettyServerRule(1, this, getSQLFields());
     
     @Test
     public void testSearch() throws Exception
@@ -243,13 +266,21 @@ public class DistributedSqlTest extends AbstractStreamTest
         }
 
 
-        //SEARCH-856 Select fields not indexed
-        sql = "select cm_lockOwner, count(*) as total from alfresco group by cm_lockOwner";
-        tuples = sqlQuery(sql, alfrescoJson2);
-        assertNotNull(tuples);
+        //SEARCH-856 Select fields not indexed therefore it should throw an error 
+        //unless it has been added to solrcore.properties
+        try
+        {
+            sql = "select cm_lockOwner, count(*) as total from alfresco group by cm_lockOwner";
+            tuples = sqlQuery(sql, alfrescoJson2);
+        }
+        catch (Exception e)
+        {
+            assertNotNull(e);
+        }
+        //SEARCH-856 `cm:lockOwner` has been added to the solrcore therefore it should work
         sql = "select `cm:lockOwner`, count(*) as total from alfresco group by `cm:lockOwner`";
         tuples = sqlQuery(sql, alfrescoJson2);
-        assertNotNull(tuples);        
+        assertNotNull(tuples);
         try
         {
             tuples = sqlQuery("select bob from alfresco", alfrescoJson);
@@ -265,7 +296,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         sql = "select * from alfresco";
         tuples = sqlQuery(sql, alfrescoJson2);
 
-        //Test select *
+//        //Test select *
         sql = "select * from alfresco order by cm_created";
         assertResult(sqlQuery(sql, alfrescoJson2));
 
@@ -283,7 +314,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         
         tuples = sqlQuery("select * from alfresco where PROPERTIES ='title'", alfrescoJson);
         assertNotNull(tuples);
-        
+        //Test predefined fields
         tuples = sqlQuery("select * from alfresco where audio_trackNumber = '12'", alfrescoJson);
         assertNotNull(tuples);
         tuples = sqlQuery("select * from alfresco where `audio:trackNumber` = '12'", alfrescoJson);
@@ -291,12 +322,37 @@ public class DistributedSqlTest extends AbstractStreamTest
     }
 
     @Test
-    public void distributedSearch_queryWithCustomModelField_shouldReturnCorrectResults() throws Exception
+    public void distributedSearch_queryWithCustomModelFieldInSharedProperties_shouldReturnCorrectResults() throws Exception
     {
+        
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+        
         sql = "select cm_name as `Expense Name`, finance_amount from alfresco";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 4);
+        System.clearProperty("solr.solr.home");
+    }
+
+    @Test
+    public void distributedSearch_selectStarQuery_shouldReturnResultsWithDefaultFields() throws Exception
+    {
+
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+
+        sql = "select * from alfresco";
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 4);
+        assertNotNull(tuples);
+        for(Tuple t:tuples){
+            assertTrue(t.fields.size()>=19); //given current documents in the index
+        }
+        System.clearProperty("solr.solr.home");
     }
 
     private void assertResult(List<Tuple> tuples)
