@@ -183,8 +183,6 @@ public class SolrSchema extends AbstractSchema {
         final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
         //Add fields from local index
         Map<String, String> fieldsAndTypeFromSolrIndex = getIndexedFieldsInfo();
-        boolean isDate = false;
-
         Set<Map.Entry<String, String>> fieldsAndTypeEntriesFromSolrIndex = fieldsAndTypeFromSolrIndex.entrySet();
 
         for (Map.Entry<String, String> fieldAndTypeFromSolrIndex : fieldsAndTypeEntriesFromSolrIndex)
@@ -193,9 +191,8 @@ public class SolrSchema extends AbstractSchema {
             RelDataType type;
             type = resolveType(fieldTypeFromSolrIndex, typeFactory);
             addFieldInfoOriginalNameAndFormatted(fieldInfo, fieldAndTypeFromSolrIndex, type, null, null);
-            if (isDate)
+            if (fieldTypeFromSolrIndex.equals("java.util.Date")||fieldTypeFromSolrIndex.equals("solr.TrieDateField"))
             {
-                isDate = false;
                 addTimeFields(fieldInfo, fieldAndTypeFromSolrIndex, typeFactory.createJavaType(String.class));
             }
         }
