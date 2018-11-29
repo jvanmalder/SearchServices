@@ -18,11 +18,9 @@ package org.alfresco.solr.sql;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-import java.util.AbstractMap;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -58,36 +56,81 @@ import org.slf4j.LoggerFactory;
 public class SolrSchema extends AbstractSchema {
 
     private static final String SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP = "solr.sql.alfresco.*.fieldname.*=*";
+    public static final String UNKNOWN_FIELD_DEFAULT_TYPE = "solr.StrField";
     private static Logger logger = LoggerFactory.getLogger(SolrSchema.class);
-    final public static Set<String> selectStarFieldsDefault = new HashSet<String>(Arrays
-        .asList("cm_name", "cm_created", "cm_creator", "cm_modified", "cm_modifier", "cm_owner", "OWNER", "TYPE", "LID",
-            "DBID", "cm_title", "cm_description", "cm_content.size", "cm_content.mimetype", "cm_content.encoding",
-            "cm_content.locale", "cm_lockOwner", "SITE", "PRIMARYPARENT", "PARENT", "PATH", "ASPECT", "QNAME"));
     final Properties properties;
     final SolrCore core;
     final String[] postfixes = { "_day", "_month", "_year" };
     final boolean isSelectStar;
-    final Set<String> selectStarFields = new HashSet<String>();
-    final Set<Map.Entry<String, String>> customFieldsFromSharedProperties = new HashSet<Map.Entry<String, String>>();
+    final Map<String, String> additionalFieldsFromConfiguration = new HashMap<>();
 
     SolrSchema(SolrCore core, Properties properties) {
-    super();
-    this.core = core;
-    this.properties = properties;
-    this.isSelectStar = Boolean.parseBoolean(properties.getProperty(AlfrescoSQLHandler.IS_SELECT_STAR));
+        super();
+        this.core = core;
+        this.properties = properties;
+        this.isSelectStar = Boolean.parseBoolean(properties.getProperty(AlfrescoSQLHandler.IS_SELECT_STAR));
+
+        initFieldsFromConfiguration(properties);
+    }
+
+    /**
+     * Init a map of field-> type from :
+     * - configurations defined in the shared properties
+     * - hard coded list of select star fields
+     * - fields from the sql predicates
+     *
+     * @param properties
+     */
+    private void initFieldsFromConfiguration(Properties properties)
+    {
         fetchCustomFieldsFromSharedProperties();
-    if(isSelectStar) {
-        selectStarFields.addAll(selectStarFieldsDefault);
-        String sql = properties.getProperty("stmt", "");
-        //Add dynamic fields not part of the schema such as custom models and aspects.
-        if(predicateExists(sql))
+
+        if (isSelectStar)
         {
-            SolrSchemaUtil.extractPredicates(sql).forEach(action -> selectStarFields.add(action));
+            SelectStarDefaultField[] defaultSelectStarFields = SelectStarDefaultField.values();
+            for (SelectStarDefaultField fieldAndType : defaultSelectStarFields)
+            {
+                additionalFieldsFromConfiguration.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
+            }
+            String sql = properties.getProperty("stmt", "");
+            //Add dynamic fields not part of the schema such as custom models and aspects.
+            if (predicateExists(sql))
+            {
+                SolrSchemaUtil.extractPredicates(sql).forEach(
+                    fieldName -> additionalFieldsFromConfiguration.putIfAbsent(fieldName, UNKNOWN_FIELD_DEFAULT_TYPE));
+            }
         }
     }
-  }
 
-  @Override
+    /**
+     * This methods extracts a set of custom fields (including type) from the shared properties.
+     */
+    private void fetchCustomFieldsFromSharedProperties()
+    {
+        Properties properties = AlfrescoSolrDataModel.getCommonConfig();
+        properties.forEach((key, value) -> {
+            String label = (String) key;
+            String fieldValue = (String) value;
+            //Match on solr.sql.tablename.field.name=nameValue
+            if (label.matches(SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP))
+            {
+                String val = label.replace("fieldname", "fieldtype");
+                String type = (String) properties.get(val);
+                additionalFieldsFromConfiguration.put(fieldValue, type);
+            }
+        });
+    }
+
+    public boolean predicateExists(String sql)
+    {
+        if(sql != null && sql.toLowerCase().contains("where"))
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    @Override
   protected Map<String, Table> getTableMap() {
     Map<String, Table> map = new HashMap<String, Table>();
     map.put("alfresco", new SolrTable(this, "alfresco"));
@@ -136,50 +179,41 @@ public class SolrSchema extends AbstractSchema {
 
     RelProtoDataType getRelDataType(String collection)
     {
-
         final RelDataTypeFactory typeFactory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
         final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
-        //Add fields from schema.
+        //Add fields from local index
         Map<String, String> fieldsAndTypeFromSolrIndex = getIndexedFieldsInfo();
         boolean isDate = false;
 
         Set<Map.Entry<String, String>> fieldsAndTypeEntriesFromSolrIndex = fieldsAndTypeFromSolrIndex.entrySet();
-        boolean hasLockOwner = false;
 
         for (Map.Entry<String, String> fieldAndTypeFromSolrIndex : fieldsAndTypeEntriesFromSolrIndex)
         {
             String fieldTypeFromSolrIndex = fieldAndTypeFromSolrIndex.getValue();
             RelDataType type;
-            if (!hasLockOwner)
-            {
-                //Check to see if the field exists to avoid duplicating the field.
-                hasLockOwner = lockOwnerFieldExists(fieldAndTypeFromSolrIndex.getKey());
-            }
             type = resolveType(fieldTypeFromSolrIndex, typeFactory);
-            addFieldInfo(fieldInfo, fieldAndTypeFromSolrIndex, type, null);
+            addFieldInfoOriginalNameAndFormatted(fieldInfo, fieldAndTypeFromSolrIndex, type, null, null);
             if (isDate)
             {
                 isDate = false;
                 addTimeFields(fieldInfo, fieldAndTypeFromSolrIndex, typeFactory.createJavaType(String.class));
             }
         }
-
         /**
          * Load mandatory fields that have not already been loaded
          */
-        for (Map.Entry<String, String> field : customFieldsFromSharedProperties)
+        for (Entry<String, String> fieldAndType : additionalFieldsFromConfiguration.entrySet())
         {
-            fieldInfo.add(field.getKey(), resolveType(field.getValue(), typeFactory));
+            String formattedFieldName = getFormattedFieldName(fieldAndType,null);
+            if (!fieldsAndTypeFromSolrIndex.containsKey(fieldAndType.getKey()) && (!fieldsAndTypeFromSolrIndex.containsKey(formattedFieldName)))
+            {
+                addFieldInfoOriginalNameAndFormatted(fieldInfo, fieldAndType,
+                    resolveType(fieldAndType.getValue(), typeFactory), null, formattedFieldName);
+            }
         }
         fieldInfo.add("_query_", typeFactory.createJavaType(String.class));
         fieldInfo.add("score", typeFactory.createJavaType(Double.class));
 
-        if (!hasLockOwner)
-        {
-            //Add fields that might be queried on that does not exist yet.
-            fieldInfo.add("cm:lockOwner", typeFactory.createJavaType(String.class));
-            fieldInfo.add("cm_lockOwner", typeFactory.createJavaType(String.class));
-        }
         return RelDataTypeImpl.proto(fieldInfo.build());
     }
 
@@ -198,47 +232,48 @@ public class SolrSchema extends AbstractSchema {
   }
 
 private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type) {
-    for(String postfix : postfixes) {
-      addFieldInfo(fieldInfo, entry, type, postfix);
+    for(String postfix : postfixes)
+    {
+        addFieldInfoOriginalNameAndFormatted(fieldInfo, entry, type, postfix, null);
     }
-  }
+}
 
-  private void addFieldInfo(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type, String postfix) {
+    private void addFieldInfoOriginalNameAndFormatted(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Entry<String, String> entry, RelDataType type, String postfix, String formattedFieldName)
+    {
+        if(formattedFieldName==null)
+        {
+            formattedFieldName = getFormattedFieldName(entry, postfix);
+        }
+        fieldInfo.add(entry.getKey() + getPostfix(postfix), type).nullable(true);
+        if (!formattedFieldName.contentEquals(entry.getKey() + getPostfix(postfix)))
+        {
+            fieldInfo.add(formattedFieldName, type).nullable(true);
+        }
+    }
 
-      String formatted = entry.getKey();
-      try
-      {
-          String[] withPrefix = QName.splitPrefixedQName(entry.getKey());
-          String prefix = withPrefix[0];
-          if (prefix != null && !prefix.isEmpty())
-          {
-              formatted = withPrefix[0]+"_"+withPrefix[1]+getPostfix(postfix);
-          }
-          
-          //Potentially remove prefix, just shortname if unique
-          //QueryParserUtils.matchPropertyDefinition will throw an error if duplicate
-          
-      } catch (NamespaceException e) {
-          //ignore invalid qnames
-      }
-      
-      if(isSelectStar) 
-      {
-          if ((!selectStarFields.contains(entry.getKey()) && !selectStarFields.contains(formatted)) && (
-              !customFieldsFromSharedProperties.contains(entry.getKey()) && !customFieldsFromSharedProperties
-                  .contains(formatted)))
-          {
-              return;
-          }
-      }
-      fieldInfo.add(entry.getKey()+getPostfix(postfix), type).nullable(true);
-      if(!formatted.contentEquals(entry.getKey() + getPostfix(postfix)))
-      {
-          fieldInfo.add(formatted, type).nullable(true);
-      }
-  }
+    private String getFormattedFieldName(Entry<String, String> entry, String postfix)
+    {
+        String formatted = entry.getKey();
+        try
+        {
+            String[] withPrefix = QName.splitPrefixedQName(entry.getKey());
+            String prefix = withPrefix[0];
+            if (prefix != null && !prefix.isEmpty())
+            {
+                formatted = withPrefix[0]+"_"+withPrefix[1]+getPostfix(postfix);
+            }
+            
+            //Potentially remove prefix, just shortname if unique
+            //QueryParserUtils.matchPropertyDefinition will throw an error if duplicate
+            
+        } catch (NamespaceException e) {
+            //ignore invalid qnames
+        }
+        return formatted;
+    }
 
-  private String getPostfix(String postfix) {
+    private String getPostfix(String postfix)
+    {
     if(postfix != null) {
       return postfix;
     } else {
@@ -290,39 +325,5 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
     } finally {
       refCounted.decref();
     }
-  }
-
-    /**
-     * This methods extracts a set of custom fields (including type) from the shared properties.
-     */
-    private void fetchCustomFieldsFromSharedProperties()
-    {
-        Properties properties = AlfrescoSolrDataModel.getCommonConfig();
-        properties.forEach((key, value) -> {
-            String label = (String) key;
-            String fieldValue = (String) value;
-            //Match on solr.sql.tablename.field.name=nameValue
-            if (label.matches(SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP))
-            {
-                String val = label.replace("fieldname", "fieldtype");
-                String type = (String) properties.get(val);
-                customFieldsFromSharedProperties.add(new AbstractMap.SimpleEntry(fieldValue, type));
-                if (fieldValue.contains(":"))
-                {
-                    customFieldsFromSharedProperties
-                        .add(new AbstractMap.SimpleEntry(fieldValue.replaceAll(":", "_"), type));
-                }
-            }
-        });
-    }
-
-    public boolean predicateExists(String sql)
-  {
-      
-      if(sql != null && sql.toLowerCase().contains("where"))
-      {
-          return true;
-      }
-      return false;
   }
 }

@@ -21,13 +21,15 @@ package org.alfresco.solr.query.stream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
+
+import org.alfresco.solr.sql.SelectStarDefaultField;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.junit.Rule;
 import org.junit.Test;
-
+import org.junit.rules.ExpectedException;
 
 /**
  * @author Joel
@@ -36,6 +38,8 @@ import org.junit.Test;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedSqlTest extends AbstractStreamTest
 {
+    @Rule public ExpectedException exceptionRule = ExpectedException.none();
+
     private String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
     private Properties getSQLFields()
     {
@@ -70,8 +74,6 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 4);
         assertNodes(tuples, node1, node2, node3, node4);
         assertFieldNotNull(tuples, "LID");
-        
-
 
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
         tuples = sqlQuery(sql, alfrescoJson2);
@@ -265,41 +267,9 @@ public class DistributedSqlTest extends AbstractStreamTest
             assertEquals("creator1", tuple.get("cm_creator"));
         }
 
-
-        //SEARCH-856 Select fields not indexed therefore it should throw an error 
-        //unless it has been added to solrcore.properties
-        try
-        {
-            sql = "select cm_lockOwner, count(*) as total from alfresco group by cm_lockOwner";
-            tuples = sqlQuery(sql, alfrescoJson2);
-        }
-        catch (Exception e)
-        {
-            assertNotNull(e);
-        }
-        //SEARCH-856 `cm:lockOwner` has been added to the solrcore therefore it should work
-        sql = "select `cm:lockOwner`, count(*) as total from alfresco group by `cm:lockOwner`";
-        tuples = sqlQuery(sql, alfrescoJson2);
-        assertNotNull(tuples);
-        try
-        {
-            tuples = sqlQuery("select bob from alfresco", alfrescoJson);
-            assertFalse("Should never get here",true);
-        }
-        catch (Exception e)
-        {
-            assertNotNull(e);
-            assertTrue(e.getLocalizedMessage().contains("Column 'bob' not found in any table"));
-        }
-
         //Test select *
-        sql = "select * from alfresco";
-        tuples = sqlQuery(sql, alfrescoJson2);
-
-//        //Test select *
         sql = "select * from alfresco order by cm_created";
         assertResult(sqlQuery(sql, alfrescoJson2));
-
         
         //Test upper case
         assertResult(sqlQuery("SELECT * from alfresco", alfrescoJson2));
@@ -321,8 +291,8 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertNotNull(tuples);
     }
 
-    @Test
-    public void distributedSearch_queryWithCustomModelFieldInSharedProperties_shouldReturnCorrectResults() throws Exception
+    @Test 
+    public void distributedSearch_customModelFieldInSharedProperties_shouldReturnCorrectResults() throws Exception
     {
         
         JettySolrRunner localJetty = jettyContainers.values().iterator().next();
@@ -333,13 +303,83 @@ public class DistributedSqlTest extends AbstractStreamTest
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 4);
+        for (Tuple t : tuples)
+        {
+            assertTrue(t.fields.size() == 2); //given current documents in the index
+        }
+
+        System.clearProperty("solr.solr.home");
+    }
+
+    @Test 
+    public void distributedSearch_customModelFieldInSharedPropertiesQueryVariant_shouldReturnCorrectResults()
+        throws Exception
+    {
+
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+
+        sql = "select cm_name as `Expense Name`, `finance:amount` from alfresco";
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 4);
+        for (Tuple t : tuples)
+        {
+            assertTrue(t.fields.size() == 2); //given current documents in the index
+        }
+
+        System.clearProperty("solr.solr.home");
+    }
+
+    @Test 
+    public void distributedSearch_groupingOnCustomFieldDefinedInSharedProperties_shouldReturnCorrectResults()
+        throws Exception
+    {
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+
+        sql = "select finance_Emp from alfresco group by finance_Emp";
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 2);
+        System.clearProperty("solr.solr.home");
+    }
+
+    @Test 
+    public void distributedSearch_groupingOnCustomFieldDefinedInSharedPropertiesVariant_shouldReturnCorrectResults()
+        throws Exception
+    {
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+
+        sql = "select finance_Emp from alfresco group by `finance:Emp`";
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+        assertTrue(tuples.size() == 2);
+        System.clearProperty("solr.solr.home");
+    }
+
+    @Test public void distributedSearch_customModelFieldNotInSharedProperties_shouldThrowException() throws Exception
+    {
+        exceptionRule.expect(Exception.class);
+        exceptionRule.expectMessage("Column 'bob' not found in any table");
+
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+
+        sql = "select bob from alfresco";
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+        sqlQuery(sql, alfrescoJson);
         System.clearProperty("solr.solr.home");
     }
 
     @Test
     public void distributedSearch_selectStarQuery_shouldReturnResultsWithDefaultFields() throws Exception
     {
-
         JettySolrRunner localJetty = jettyContainers.values().iterator().next();
         /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
         System.setProperty("solr.solr.home", localJetty.getSolrHome());
@@ -350,7 +390,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 4);
         assertNotNull(tuples);
         for(Tuple t:tuples){
-            assertTrue(t.fields.size()>=19); //given current documents in the index
+            assertTrue(t.fields.size() >= SelectStarDefaultField.values().length);
         }
         System.clearProperty("solr.solr.home");
     }
@@ -364,15 +404,15 @@ public class DistributedSqlTest extends AbstractStreamTest
         String owner1 = first.getString("cm_owner");
         String title1 = first.getString("cm_title");
 
-        assertEquals(owner1, "michael" );
-        assertEquals(title1, "title1");
+        assertEquals("michael", owner1);
+        assertEquals("title1", title1);
 
         Tuple second = tuples.get(1);
         String owner2 = second.getString("cm_owner");
         String title2 = second.getString("cm_title");
 
-        assertEquals(owner2, "michael" );
-        assertEquals(title2, "title2");
+        assertEquals("michael", owner2);
+        assertEquals("title2", title2);
     }
 }
 
