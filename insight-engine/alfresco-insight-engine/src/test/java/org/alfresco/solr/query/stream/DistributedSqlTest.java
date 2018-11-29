@@ -355,7 +355,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
         System.setProperty("solr.solr.home", localJetty.getSolrHome());
 
-        sql = "select finance_Emp from alfresco group by `finance:Emp`";
+        sql = "select `finance:Emp` from alfresco group by `finance:Emp`";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 2);
