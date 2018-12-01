@@ -90,9 +90,11 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     protected static final QName PROP_RATING = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "fiveStarRatingSchemeTotal");
     protected static final QName PROP_TRACK  = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "trackNumber");
     protected static final QName PROP_MANUFACTURER  = QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "manufacturer");
-    protected static final QName PROP_WITH_UNDERSCORE  = QName.createQName("mf", "freetext_underscore");
     protected static final QName PROP_EXPOSURE_TIME  = QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "exposureTime");
+    protected static final QName PROP_WITH_UNDERSCORE  = QName.createQName("mf", "freetext_underscore");
+    protected static final QName PROP_AUTHOR_FT = QName.createQName("ft", "authorft");
 
+    
     @Before
     public void load() throws Exception
     {
@@ -149,10 +151,12 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData1.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
         nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue("12"));
         nodeMetaData1.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
+        nodeMetaData1.getProperties().put(PROP_AUTHOR_FT, new StringPropertyValue("john snow"));
         nodeMetaData1.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name1"));
         nodeMetaData1.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));
         nodeMetaData1.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
         nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("michael"));
+
         HashSet aspects = new HashSet<QName>();
         aspects.add(ContentModel.ASPECT_AUDITABLE);
         nodeMetaData1.setAspects(aspects);
@@ -165,7 +169,8 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData2.getProperties().put(PROP_TRACK, new StringPropertyValue("8"));
         nodeMetaData2.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
         nodeMetaData2.getProperties().put(PROP_WITH_UNDERSCORE, new StringPropertyValue("camera"));
-        
+        nodeMetaData2.getProperties().put(PROP_AUTHOR_FT, new StringPropertyValue("john snow"));
+
         nodeMetaData2.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name2"));
         nodeMetaData2.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title2"));
         nodeMetaData2.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
@@ -179,6 +184,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData3.getProperties().put(PROP_TRACK, new StringPropertyValue("6"));
         nodeMetaData3.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Canon"));
         nodeMetaData3.getProperties().put(PROP_WITH_UNDERSCORE, new StringPropertyValue("portable"));
+        nodeMetaData3.getProperties().put(PROP_AUTHOR_FT, new StringPropertyValue("gavin snow"));
         nodeMetaData3.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name3"));
         nodeMetaData3.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator2"));
         NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl2, "mike", null, false);
@@ -190,6 +196,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData4.getProperties().put(PROP_TRACK, new StringPropertyValue("4"));
         nodeMetaData4.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
         nodeMetaData4.getProperties().put(PROP_WITH_UNDERSCORE, new StringPropertyValue("camera"));
+        nodeMetaData4.getProperties().put(PROP_AUTHOR_FT, new StringPropertyValue("richard green"));
         nodeMetaData4.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator3"));
         nodeMetaData4.getProperties().put(ContentModel.PROP_CONTENT, new ContentPropertyValue(Locale.FRENCH, 5l, "UTF-8", "text/javascript", null));
 
