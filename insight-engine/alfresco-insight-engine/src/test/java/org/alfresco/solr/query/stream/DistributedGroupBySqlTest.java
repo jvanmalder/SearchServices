@@ -91,10 +91,8 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
             assertEquals(10 + i, tuple.getDouble("MinExposure"),0);
             assertEquals(10 + i, tuple.getDouble("AvgExposure"),0);
             assertEquals(10 + i, tuple.getDouble("TotalExposure"),0);
-            assertEquals("2000-0" + (i + 1) + "-02T01:00:00Z", tuple.getString("cm_created"));
+            assertEquals("2000-0" + (i + 1) + "-02T10:00:00Z", tuple.getString("cm_created"));
         }
-
-        if (true) return;
 
         sql = "select " +
                 "cm_created,  " +
@@ -119,7 +117,7 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
             assertEquals(10 + i, tuple.getDouble("MinExposure"),0);
             assertEquals(10 + i, tuple.getDouble("AvgExposure"),0);
             assertEquals(10 + i, tuple.getDouble("TotalExposure"),0);
-            assertEquals("2000-0" + (i + 1) + "-02T01:01:01Z", tuple.getString("cm_created"));
+            assertEquals("2000-0" + (i + 1) + "-02T10:00:00Z", tuple.getString("cm_created"));
         }
 
         sql = "select " +
@@ -136,7 +134,7 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
             Tuple tuple = tuples.get(i);
 
             // Test the descending order
-            assertEquals("2000-0" + (4 - i) + "-02T01:01:01Z", tuple.getString("cm_created"));
+            assertEquals("2000-0" + (4 - i) + "-02T10:00:00Z", tuple.getString("cm_created"));
         }
 
         //Test that phrases are working

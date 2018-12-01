@@ -513,11 +513,10 @@ public class FacetStream extends TupleStream implements Expressible  {
           Tuple tuple = currentTuple.clone();
           Object bucketValue = bucket.get("val");
 
-          // TODO: when https://github.com/Alfresco/alfresco-core/pull/26 will be merged remember to switch the method
           tuple.put(
                   bucketName,
                   (bucketValue instanceof Date)
-                          ? CachingDateFormat.getSolrDatetimeFormat().format((Date) bucketValue)
+                          ? CachingDateFormat.getSolrDatetimeFormatWithoutMsecs().format((Date) bucketValue)
                           : bucketValue);
 
           int nextLevel = level + 1;
@@ -530,7 +529,10 @@ public class FacetStream extends TupleStream implements Expressible  {
               int m = 0;
               for (Metric metric : _metrics)
               {
-                  String identifier = ofNullable(reverseLookup.get(metric.getIdentifier())).orElse(metric.getIdentifier());
+                  String identifier =
+                          ofNullable(reverseLookup.get(metric.getIdentifier()))
+                                  .orElse(metric.getIdentifier());
+
                   if (!identifier.startsWith("count("))
                   {
                       Number value = (Number) bucket.get("facet_" + m);
@@ -547,7 +549,7 @@ public class FacetStream extends TupleStream implements Expressible  {
                                       .map(bckt -> bckt.get("count"))
                                       .map(Number.class::cast)
                                       .map(Number::longValue)
-                                      .get());
+                                      .orElse(0L));
                   }
               }
               tuples.add(tuple);
