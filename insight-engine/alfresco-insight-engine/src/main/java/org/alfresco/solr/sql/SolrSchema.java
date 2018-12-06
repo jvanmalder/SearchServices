@@ -51,16 +51,38 @@ import org.slf4j.LoggerFactory;
 /*
 * The SolrSchema class creates the "alfresco" table and populates the fields from the index.
 */
+public class SolrSchema extends AbstractSchema
+{
+    private static final Logger LOGGER = LoggerFactory.getLogger(SolrSchema.class);
 
-
-public class SolrSchema extends AbstractSchema {
-
+    /**
+     * Regex for retrieving custom fields definitions (i.e. name and type) from shared.properties
+     */
     private static final String SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP = "solr.sql.alfresco.*.fieldname.*=*";
+
+    /**
+     * The default type we assign to fields not explicitly declared (i.e. defined in shared.properties or hard coded in select star fields).
+     * Using the StrField as default type allows the SQL processor to manage them as opaque literals, without any further parsing.
+     * In this way the (String) literal processing is moved completely on Solr side.
+     */
     public static final String UNKNOWN_FIELD_DEFAULT_TYPE = "solr.StrField";
-    private static Logger logger = LoggerFactory.getLogger(SolrSchema.class);
+
     final Properties properties;
     final SolrCore core;
+
+    /**
+     * When the query contains a date/datetime field (e.g. "cm_created") followed by one of these postfixes (i.e. "cm_created_day")
+     * the insight engine manages them in a special way, creating a "virtual" field ("cm_created_day") containing only the requested portion
+     * of the date/datetime. Note that the virtual field value is no longer a date, but a string (e.g. "31", "2").
+     *
+     *
+     * SEARCH-1315 would introduce a more SQL-compliant way to manage this, as the day/month/year extraction is part of
+     * the date functions supported by Calcite (e.g. "YEAR(date)", "EXTRACT(YEAR from date)"
+     *
+     * @see #addTimeFields(RelDataTypeFactory.FieldInfoBuilder, Entry, RelDataType)
+     */
     final String[] postfixes = { "_day", "_month", "_year" };
+
     final boolean isSelectStar;
     final Map<String, String> additionalFieldsFromConfiguration = new HashMap<>();
 
@@ -177,6 +199,17 @@ public class SolrSchema extends AbstractSchema {
         return type;
     }
 
+    /**
+     * Returns the prototype factory used for further defining the data types associated with this schema.
+     * Each field in the index is associated with a {@link RelDataType} which in turns maps a Java type. That will drive
+     * the field management in terms of processing and parsing.
+     *
+     * @see #resolveType(String, RelDataTypeFactory)
+     * @see SolrTable#getRowType
+     * @see Table#getRowType(RelDataTypeFactory)
+     * @param collection the collection associated with this schema.
+     * @return the prototype factory used for further defining the data types associated with this table/schema.
+     */
     RelProtoDataType getRelDataType(String collection)
     {
         final RelDataTypeFactory typeFactory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
@@ -304,7 +337,7 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
         catch (NamespaceException ne)
         {
               //Field name may have been created but now deactivated, e.g custom model.
-              logger.warn("Unable to resolve field: " + fieldName);
+              LOGGER.warn("Unable to resolve field: " + fieldName);
         }
 
         if (isNotBlank(alfrescoPropertyFromSchemaField) && ftype != null)
