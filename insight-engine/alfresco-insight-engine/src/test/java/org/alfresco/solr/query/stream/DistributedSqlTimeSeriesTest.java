@@ -113,8 +113,6 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
                 "order by sum(exif_exposureTime) desc";
 
         tuples = sqlQuery(sql, alfrescoJson);
-        assertEquals(106, tuples.size());
-
         tuples.forEach(tuple ->
         {
             String referenceMonth = tuple.getString("ReferenceMonth");
