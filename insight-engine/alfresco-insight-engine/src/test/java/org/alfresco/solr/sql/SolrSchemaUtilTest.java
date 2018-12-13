@@ -142,9 +142,7 @@ public class SolrSchemaUtilTest
         Set<String> predicates = extractPredicates(
                 "select * from alfresco where customField1 in (3,4,5)");
         Assert.assertTrue("customField1", predicates.contains("customField1"));
-        Assert.assertTrue("customField2", predicates.contains("customField2"));
-
-        Assert.assertEquals(2, predicates.size());
+        Assert.assertEquals(1, predicates.size());
     }
 
     @Test
