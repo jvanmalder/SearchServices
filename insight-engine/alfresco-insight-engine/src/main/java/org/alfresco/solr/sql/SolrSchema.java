@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Date;
 
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
@@ -95,7 +96,8 @@ public class SolrSchema extends AbstractSchema {
 
     Set<Map.Entry<String, String>> set = fields.entrySet();
     boolean hasLockOwner = false;
-    for(Map.Entry<String, String> entry : set) {
+    for(Map.Entry<String, String> entry : set)
+    {
         String ltype = entry.getValue();
         RelDataType type;
         if(!hasLockOwner)
