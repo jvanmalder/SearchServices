@@ -143,13 +143,18 @@ public class SolrSchemaUtilTest
                 "select * from alfresco where customField1 in (3,4,5)");
         Assert.assertTrue("customField1", predicates.contains("customField1"));
         Assert.assertEquals(1, predicates.size());
+
+        predicates = extractPredicates(
+                "select * from alfresco where customField1 not in (3,4,5)");
+        Assert.assertTrue("customField1", predicates.contains("customField1"));
+        Assert.assertEquals(1, predicates.size());
     }
 
     @Test
     public void predicateExtraction_multiPredicateBelongOperand_shouldExtractCorrectFieldNames()
     {
         Set<String> predicates = extractPredicates(
-                "select * from alfresco where customField1 in (3) AND customField2 <= ('London', 'Paris')");
+                "select * from alfresco where customField1 in (3) AND customField2 not in ('London', 'Paris')");
         Assert.assertTrue("customField1", predicates.contains("customField1"));
         Assert.assertTrue("customField2", predicates.contains("customField2"));
 
