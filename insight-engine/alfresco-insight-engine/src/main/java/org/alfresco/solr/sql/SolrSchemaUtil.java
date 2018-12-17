@@ -49,7 +49,7 @@ public class SolrSchemaUtil
                 String[] conjunctionAndDisjunction = sqlpred[1].split("(?i)and | or");
                 for(int i = 0; i < conjunctionAndDisjunction.length; i++)
                 {
-                    String predic = conjunctionAndDisjunction[i].split("[><!~]=?|<>|=| in ")[0].trim();
+                    String predic = conjunctionAndDisjunction[i].split("[><!~]=?|<>|=| in | not ")[0].trim();
                     if(!predic.startsWith("'"))
                     {
                         predicates.add(predic.replaceAll("`", ""));
