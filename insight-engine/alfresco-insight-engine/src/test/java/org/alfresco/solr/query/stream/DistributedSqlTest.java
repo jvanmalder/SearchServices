@@ -19,10 +19,11 @@
 package org.alfresco.solr.query.stream;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.alfresco.solr.sql.SelectStarDefaultField;
 import org.apache.lucene.util.LuceneTestCase;
@@ -296,7 +297,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     @Test 
     public void distributedSearch_customModelFieldInSharedProperties_shouldReturnCorrectResults() throws Exception
     {
-        List<String> expectedColumns = Arrays.asList("Expense Name","finance_amount");
+        Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","finance_amount"));
         sql = "select cm_name as `Expense Name`, finance_amount from alfresco";
         
         JettySolrRunner localJetty = jettyContainers.values().iterator().next();
@@ -309,7 +310,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 4);
         for (Tuple t : tuples)
         {
-            assertEquals("Mismatched columns", expectedColumns, new ArrayList<>(t.fields.keySet()));
+            assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
         }
 
         System.clearProperty("solr.solr.home");
@@ -319,7 +320,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     public void distributedSearch_customModelFieldInSharedPropertiesQueryVariant_shouldReturnCorrectResults()
         throws Exception
     {
-        List<String> expectedColumns = Arrays.asList("Expense Name","finance_amount");
+        Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","finance:amount"));
         sql = "select cm_name as `Expense Name`, `finance:amount` from alfresco";
         
         JettySolrRunner localJetty = jettyContainers.values().iterator().next();
@@ -331,7 +332,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 4);
         for (Tuple t : tuples)
         {
-            assertEquals("Mismatched columns", expectedColumns, new ArrayList<>(t.fields.keySet()));
+            assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
         }
 
         System.clearProperty("solr.solr.home");
