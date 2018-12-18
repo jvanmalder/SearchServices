@@ -153,10 +153,12 @@ public class SolrSchemaUtilTest
     @Test
     public void predicateExtraction_multiPredicateBelongOperand_shouldExtractCorrectFieldNames()
     {
+
+        // chech event if In and Not in field name may cause problems.
         Set<String> predicates = extractPredicates(
-                "select * from alfresco where customField1 in (3) AND customField2 not in ('London', 'Paris')");
-        Assert.assertTrue("customField1", predicates.contains("customField1"));
-        Assert.assertTrue("customField2", predicates.contains("customField2"));
+                "select * from alfresco where customInField1 in (3) AND customNotInField2 not in ('London', 'Paris')");
+        Assert.assertTrue("customInField1", predicates.contains("customInField1"));
+        Assert.assertTrue("customNotInField2", predicates.contains("customNotInField2"));
 
         Assert.assertEquals(2, predicates.size());
     }
