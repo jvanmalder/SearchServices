@@ -24,7 +24,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Date;
 
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
@@ -59,7 +58,7 @@ public class SolrSchema extends AbstractSchema
     /**
      * Regex for retrieving custom fields definitions (i.e. name and type) from shared.properties
      */
-    private static final String SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP = "solr.sql.alfresco.*.fieldname.*=*";
+    private static final String SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP = "solr\\.sql\\.alfresco\\.fieldname\\..*";
 
     /**
      * The default type we assign to fields not explicitly declared (i.e. defined in shared.properties or hard coded in select star fields).
@@ -84,14 +83,14 @@ public class SolrSchema extends AbstractSchema
      */
     final String[] postfixes = { "_day", "_month", "_year" };
 
-    final boolean isSelectStar;
+    final boolean isSelectStarQuery;
     final Map<String, String> additionalFieldsFromConfiguration = new HashMap<>();
 
     SolrSchema(SolrCore core, Properties properties) {
         super();
         this.core = core;
         this.properties = properties;
-        this.isSelectStar = Boolean.parseBoolean(properties.getProperty(AlfrescoSQLHandler.IS_SELECT_STAR));
+        this.isSelectStarQuery = Boolean.parseBoolean(properties.getProperty(AlfrescoSQLHandler.IS_SELECT_STAR));
 
         initFieldsFromConfiguration(properties);
     }
@@ -108,20 +107,20 @@ public class SolrSchema extends AbstractSchema
     {
         fetchCustomFieldsFromSharedProperties();
 
-        if (isSelectStar)
+        if (isSelectStarQuery)
         {
             SelectStarDefaultField[] defaultSelectStarFields = SelectStarDefaultField.values();
             for (SelectStarDefaultField fieldAndType : defaultSelectStarFields)
             {
                 additionalFieldsFromConfiguration.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
             }
-            String sql = properties.getProperty("stmt", "");
-            //Add dynamic fields not part of the schema such as custom models and aspects.
-            if (predicateExists(sql))
-            {
-                SolrSchemaUtil.extractPredicates(sql).forEach(
-                    fieldName -> additionalFieldsFromConfiguration.putIfAbsent(fieldName, UNKNOWN_FIELD_DEFAULT_TYPE));
-            }
+        }
+        String sql = properties.getProperty("stmt", "");
+        //Add dynamic fields not part of the schema such as custom models and aspects.
+        if (predicateExists(sql))
+        {
+            SolrSchemaUtil.extractPredicates(sql).forEach(
+                fieldName -> additionalFieldsFromConfiguration.putIfAbsent(fieldName, UNKNOWN_FIELD_DEFAULT_TYPE));
         }
     }
 
@@ -139,18 +138,21 @@ public class SolrSchema extends AbstractSchema
             {
                 String val = label.replace("fieldname", "fieldtype");
                 String type = (String) properties.get(val);
-                additionalFieldsFromConfiguration.put(fieldValue, type);
+                if (type == null)
+                {
+                    LOGGER.error("Type definition: " + val + " not found in the shared.properties");
+                }
+                else
+                {
+                    additionalFieldsFromConfiguration.put(fieldValue, type);
+                }
             }
         });
     }
 
     public boolean predicateExists(String sql)
     {
-        if(sql != null && sql.toLowerCase().contains("where"))
-        {
-            return true;
-        }
-        return false;
+        return (sql != null && sql.toLowerCase().contains(" where "));
     }
     
     @Override

@@ -19,6 +19,8 @@
 package org.alfresco.solr.query.stream;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -294,18 +296,20 @@ public class DistributedSqlTest extends AbstractStreamTest
     @Test 
     public void distributedSearch_customModelFieldInSharedProperties_shouldReturnCorrectResults() throws Exception
     {
+        List<String> expectedColumns = Arrays.asList("Expense Name","finance_amount");
+        sql = "select cm_name as `Expense Name`, finance_amount from alfresco";
         
         JettySolrRunner localJetty = jettyContainers.values().iterator().next();
         /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
         System.setProperty("solr.solr.home", localJetty.getSolrHome());
         
-        sql = "select cm_name as `Expense Name`, finance_amount from alfresco";
+        
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 4);
         for (Tuple t : tuples)
         {
-            assertTrue(t.fields.size() == 2); //given current documents in the index
+            assertEquals("Mismatched columns", expectedColumns, new ArrayList<>(t.fields.keySet()));
         }
 
         System.clearProperty("solr.solr.home");
@@ -315,18 +319,19 @@ public class DistributedSqlTest extends AbstractStreamTest
     public void distributedSearch_customModelFieldInSharedPropertiesQueryVariant_shouldReturnCorrectResults()
         throws Exception
     {
-
+        List<String> expectedColumns = Arrays.asList("Expense Name","finance_amount");
+        sql = "select cm_name as `Expense Name`, `finance:amount` from alfresco";
+        
         JettySolrRunner localJetty = jettyContainers.values().iterator().next();
         /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
         System.setProperty("solr.solr.home", localJetty.getSolrHome());
-
-        sql = "select cm_name as `Expense Name`, `finance:amount` from alfresco";
+        
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 4);
         for (Tuple t : tuples)
         {
-            assertTrue(t.fields.size() == 2); //given current documents in the index
+            assertEquals("Mismatched columns", expectedColumns, new ArrayList<>(t.fields.keySet()));
         }
 
         System.clearProperty("solr.solr.home");
@@ -362,7 +367,8 @@ public class DistributedSqlTest extends AbstractStreamTest
         System.clearProperty("solr.solr.home");
     }
 
-    @Test public void distributedSearch_customModelFieldNotInSharedProperties_shouldThrowException() throws Exception
+    @Test 
+    public void distributedSearch_customModelFieldNotInSharedProperties_shouldThrowException() throws Exception
     {
         exceptionRule.expect(Exception.class);
         exceptionRule.expectMessage("Column 'bob' not found in any table");
@@ -372,6 +378,22 @@ public class DistributedSqlTest extends AbstractStreamTest
         System.setProperty("solr.solr.home", localJetty.getSolrHome());
 
         sql = "select bob from alfresco";
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+        sqlQuery(sql, alfrescoJson);
+        System.clearProperty("solr.solr.home");
+    }
+
+    @Test
+    public void distributedSearch_customModelFieldMisconfiguredInSharedProperties_shouldThrowException() throws Exception
+    {
+        exceptionRule.expect(Exception.class);
+        exceptionRule.expectMessage("Column 'finance:misconfigured' not found in any table");
+
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+
+        sql = "select `finance:misconfigured` from alfresco";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         sqlQuery(sql, alfrescoJson);
         System.clearProperty("solr.solr.home");
@@ -390,7 +412,15 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 4);
         assertNotNull(tuples);
         for(Tuple t:tuples){
-            assertTrue(t.fields.size() >= SelectStarDefaultField.values().length);
+            /* Apparently for the hard coded list of fields, there are two copies in the response tuples, except for date fields or integers*
+             * I recommend to investigate this as I am not sure why you would like to return duplicate columns to the user : SEARCH-1363
+             */
+            for(SelectStarDefaultField fieldName: SelectStarDefaultField.values()){
+                String defaultStarFieldName = fieldName.getFieldName();
+                String defaultStarFieldNameVariant = defaultStarFieldName.replaceFirst(":","_");
+                assertTrue(defaultStarFieldName + " is not present",(t.fields.containsKey(defaultStarFieldName) || t.fields.containsKey(
+                    defaultStarFieldNameVariant)));
+            }
         }
         System.clearProperty("solr.solr.home");
     }
