@@ -22,6 +22,10 @@ public class SolrSchemaUtilTest
         predicates = extractPredicates("select * from  alfresco where `mmm:genre`= 'rock'");
         Assert.assertTrue("mmm:genre", predicates.contains("mmm:genre"));
         Assert.assertEquals(1, predicates.size());
+        // check where keyword
+        predicates = extractPredicates("select * from  alfresco where `mmm:wheregenre`= 'rock'");
+        Assert.assertTrue("mmm:wheregenre", predicates.contains("mmm:wheregenre"));
+        Assert.assertEquals(1, predicates.size());
         predicates = extractPredicates("select * from  alfresco WHERE `mmm:genre`= 'rock'");
         Assert.assertTrue("mmm:genre", predicates.contains("mmm:genre"));
         Assert.assertEquals(1, predicates.size());
