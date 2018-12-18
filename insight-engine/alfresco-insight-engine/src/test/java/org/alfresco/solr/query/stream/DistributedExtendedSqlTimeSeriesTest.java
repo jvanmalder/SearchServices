@@ -44,7 +44,9 @@ import java.text.ParseException;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -90,12 +92,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     private Map<String, Integer> createdMonth = new HashMap<>();
     private Map<String, Integer> createdYear = new HashMap<>();
     private boolean debugEnabled = false;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
     @Test
     public void testSearch() throws IOException, ParseException
     {
-        LocalDateTime startDate;
-        LocalDateTime endDate;
         String startDateExpression;
         String endDateExpression;
         List<Tuple> buckets;
@@ -824,41 +826,37 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 
     private int calculateNumberOfBuckets_Month(LocalDateTime startDate, LocalDateTime endDate)
     {
-        LocalDateTime difference = difference(startDate, endDate);
+        Period between = Period.between(startDate.toLocalDate(), endDate.toLocalDate());
+        int years = between.getYears();
+        int months = between.getMonths();
+        months += years * 12;
 
-        if (difference.getHour() > 0 || difference.getMinute() > 0 || difference.getSecond() > 0 || difference.getNano() > 0)
+        if (between.getDays() > 0 ||
+                (ChronoUnit.HOURS.between(endDate, startDate) % 24) > 0 ||
+                (ChronoUnit.MINUTES.between(endDate, startDate) % 60) > 0 ||
+                (ChronoUnit.SECONDS.between(endDate, startDate) % 60) > 0)
         {
-            difference = difference.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+            months += 1;
         }
 
-        int numberOfBuckets = difference.getYear() * 12 + difference.getMonthValue() + (difference.getDayOfMonth() > 0 ? 1 : 0);
-
-        return Math.max(numberOfBuckets, 0);
+        return months;
     }
 
     private int calculateNumberOfBuckets_Year(LocalDateTime startDate, LocalDateTime endDate)
     {
-        LocalDateTime difference = difference(startDate, endDate);
+        Period between = Period.between(startDate.toLocalDate(), endDate.toLocalDate());
+        int years = between.getYears();
 
-        if (difference.getDayOfMonth() > 0 || difference.getHour() > 0 || difference.getMinute() > 0 || difference.getSecond() > 0 || difference.getNano() > 0)
+        if (between.getMonths() > 0 ||
+                between.getDays() > 0 ||
+                (ChronoUnit.HOURS.between(endDate, startDate) % 24 > 0) ||
+                (ChronoUnit.MINUTES.between(endDate, startDate) % 60) > 0 ||
+                (ChronoUnit.SECONDS.between(endDate, startDate) % 60) > 0)
         {
-            difference = difference.plusMonths(1).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+            years += 1;
         }
 
-        int numberOfBuckets = difference.getYear() + (difference.getMonthValue() > 0 ? 1 : 0);
-
-        return Math.max(numberOfBuckets, 0);
-    }
-
-    private LocalDateTime difference(LocalDateTime startDate, LocalDateTime endDate)
-    {
-        LocalDateTime difference = endDate.minusYears(startDate.getYear());
-        difference = difference.minusMonths(startDate.getMonthValue());
-        difference = difference.minusDays(startDate.getDayOfMonth());
-        difference = difference.minusHours(startDate.getHour());
-        difference = difference.minusMinutes(startDate.getMinute());
-        difference = difference.minusSeconds(startDate.getSecond());
-        return difference.minusNanos(startDate.getNano());
+        return years;
     }
 
     private LocalDateTime parseDateMathAsLocalDateTime(String expression) throws ParseException
@@ -876,14 +874,14 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     {
         print("Expected bucket size: " + expectedBucketSize);
         print("Actual bucket size: " + actualBucketSize);
-        assertEquals(expectedBucketSize, actualBucketSize);
+        assertEquals(debugInfo(), expectedBucketSize, actualBucketSize);
     }
 
     private void assertBucketContentSize(long expectedBucketContentSize, long actualBucketContentSize)
     {
         print("Expected bucket content size: " + expectedBucketContentSize);
         print("Actual bucket content size: " + actualBucketContentSize);
-        assertEquals(expectedBucketContentSize, actualBucketContentSize);
+        assertEquals(debugInfo(), expectedBucketContentSize, actualBucketContentSize);
     }
 
     private void assertExpectedBucketContent_Day(List<Tuple> buckets, boolean startInclusive, boolean endInclusive, LocalDateTime start, LocalDateTime end)
@@ -920,7 +918,6 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     {
         print("\n"+ "Start date: " + startDate);
         print("End date: " + endDate);
-        print("Difference between end date and start date: " + difference(startDate, endDate));
 
         ListIterator<Tuple> iterator = buckets.listIterator();
         int counter = 0;
@@ -930,12 +927,12 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
             Tuple tuple = iterator.next();
             boolean hasNext = iterator.hasNext();
             String createdDate = tuple.getString("cm_created_" + type);
-            long count = tuple.getLong("EXPR$1").longValue();
+            long count = tuple.getLong("EXPR$1");
 
             print("\n"+ "Creation date: " + createdDate + ".");
 
             Integer createdDocuments = createdDocumentsMap.get(createdDate);
-            int createdDocumentsValue = createdDocuments == null ? 0 : createdDocuments.intValue();
+            int createdDocumentsValue = createdDocuments == null ? 0 : createdDocuments;
             if (createdDocumentsValue == 0 && buckets.size() == 1)
             {
                 assertEquals(0, count);
@@ -1051,5 +1048,15 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         p.put("solr.sql.alfresco.fieldname.cmcreatedmonth","cm_created_month");
         p.put("solr.sql.alfresco.fieldtype.cmcreatedmonth","solr.TrieDateField");
         return p;
+    }
+
+    /**
+     * Returns a debug message indicating the current start and end date.
+     *
+     * @return a debug message indicating the current start and end date.
+     */
+    private String debugInfo()
+    {
+        return "Start date was " + startDate + ", endDate was " + endDate;
     }
 }

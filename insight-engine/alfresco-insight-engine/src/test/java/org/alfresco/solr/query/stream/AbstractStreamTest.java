@@ -148,6 +148,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         Date date1 = getDate(2000, 0, 2);
         nodeMetaData1.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
+        nodeMetaData1.getProperties().put(PROP_EXPOSURE_TIME, new StringPropertyValue("10.0"));
         nodeMetaData1.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
         nodeMetaData1.getProperties().put(PROP_TRACK, new StringPropertyValue("12"));
         nodeMetaData1.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
@@ -165,11 +166,13 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         Date date2 = getDate(2000, 1, 2);
         nodeMetaData2.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date2)));
+        nodeMetaData2.getProperties().put(PROP_EXPOSURE_TIME, new StringPropertyValue("11.0"));
         nodeMetaData2.getProperties().put(PROP_RATING, new StringPropertyValue("15"));
         nodeMetaData2.getProperties().put(PROP_TRACK, new StringPropertyValue("8"));
         nodeMetaData2.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
         nodeMetaData2.getProperties().put(PROP_WITH_UNDERSCORE, new StringPropertyValue("camera"));
         nodeMetaData2.getProperties().put(PROP_AUTHOR_FT, new StringPropertyValue("john snow"));
+
         nodeMetaData2.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name2"));
         nodeMetaData2.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title2"));
         nodeMetaData2.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
@@ -180,6 +183,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         Date date3 = getDate(2000, 2, 2);
         nodeMetaData3.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date3)));
+        nodeMetaData3.getProperties().put(PROP_EXPOSURE_TIME, new StringPropertyValue("12.0"));
         nodeMetaData3.getProperties().put(PROP_RATING, new StringPropertyValue("10"));
         nodeMetaData3.getProperties().put(PROP_TRACK, new StringPropertyValue("6"));
         nodeMetaData3.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Canon"));
@@ -194,6 +198,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData4.getProperties().put(ContentModel.PROP_CREATED,
                 new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date4)));
         nodeMetaData4.getProperties().put(PROP_RATING, new StringPropertyValue("20"));
+        nodeMetaData4.getProperties().put(PROP_EXPOSURE_TIME, new StringPropertyValue("13.0"));
         nodeMetaData4.getProperties().put(PROP_TRACK, new StringPropertyValue("4"));
         nodeMetaData4.getProperties().put(PROP_MANUFACTURER, new StringPropertyValue("Nikon"));
         nodeMetaData4.getProperties().put(PROP_WITH_UNDERSCORE, new StringPropertyValue("camera"));

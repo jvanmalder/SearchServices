@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Date;
 
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
