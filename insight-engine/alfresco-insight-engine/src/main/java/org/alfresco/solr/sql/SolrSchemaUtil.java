@@ -45,11 +45,11 @@ public class SolrSchemaUtil
             {
                 Set<String> predicates = new HashSet<String>();
                 //Strip NOT,not and Not and split on WHERE,where and Where.
-                String[] sqlpred = sql.replaceAll("(?i)not", "").split("(?i)where");
+                String[] sqlpred = sql.replaceAll(" (?i)not ", " ").split(" (?i)where ");
                 String[] conjunctionAndDisjunction = sqlpred[1].split("(?i)and | or");
                 for(int i = 0; i < conjunctionAndDisjunction.length; i++)
                 {
-                    String predic = conjunctionAndDisjunction[i].split("[><!~]=?|<>|=| in | not ")[0].trim();
+                    String predic = conjunctionAndDisjunction[i].split("[><!~]=?|<>|=| (?i)in ")[0].trim();
                     if(!predic.startsWith("'"))
                     {
                         predicates.add(predic.replaceAll("`", ""));
