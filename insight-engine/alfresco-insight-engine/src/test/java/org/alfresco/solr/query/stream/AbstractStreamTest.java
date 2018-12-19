@@ -93,7 +93,8 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     protected static final QName PROP_EXPOSURE_TIME  = QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "exposureTime");
     protected static final QName PROP_WITH_UNDERSCORE  = QName.createQName("mf", "freetext_underscore");
     protected static final QName PROP_AUTHOR_FT = QName.createQName("ft", "authorft");
-
+    protected static final QName PROP_CUSTOM_FINANCE_MODEL_EMP  = QName.createQName("Finance", "Emp");
+    
     
     @Before
     public void load() throws Exception
@@ -156,10 +157,11 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData1.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title1"));
         nodeMetaData1.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
         nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("michael"));
-
+        nodeMetaData1.getProperties().put(PROP_CUSTOM_FINANCE_MODEL_EMP, new StringPropertyValue("emp1"));
         HashSet aspects = new HashSet<QName>();
         aspects.add(ContentModel.ASPECT_AUDITABLE);
         nodeMetaData1.setAspects(aspects);
+        
         NodeMetaData nodeMetaData2 = getNodeMetaData(node2, txn, acl, "mike", null, false);
         Date date2 = getDate(2000, 1, 2);
         nodeMetaData2.getProperties().put(ContentModel.PROP_CREATED,
@@ -175,6 +177,8 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData2.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title2"));
         nodeMetaData2.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
         nodeMetaData2.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("michael"));
+        nodeMetaData2.getProperties().put(PROP_CUSTOM_FINANCE_MODEL_EMP, new StringPropertyValue("emp1"));
+        
         NodeMetaData nodeMetaData3 = getNodeMetaData(node3, txn, acl2, "mike", null, false);
         Date date3 = getDate(2000, 2, 2);
         nodeMetaData3.getProperties().put(ContentModel.PROP_CREATED,
@@ -187,6 +191,8 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData3.getProperties().put(PROP_AUTHOR_FT, new StringPropertyValue("gavin snow"));
         nodeMetaData3.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name3"));
         nodeMetaData3.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator2"));
+        nodeMetaData3.getProperties().put(PROP_CUSTOM_FINANCE_MODEL_EMP, new StringPropertyValue("emp1"));
+        
         NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl2, "mike", null, false);
         Date date4 = getDate(2000, 3, 2);
         nodeMetaData4.getProperties().put(ContentModel.PROP_CREATED,
@@ -199,7 +205,9 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData4.getProperties().put(PROP_AUTHOR_FT, new StringPropertyValue("richard green"));
         nodeMetaData4.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator3"));
         nodeMetaData4.getProperties().put(ContentModel.PROP_CONTENT, new ContentPropertyValue(Locale.FRENCH, 5l, "UTF-8", "text/javascript", null));
+        nodeMetaData4.getProperties().put(PROP_CUSTOM_FINANCE_MODEL_EMP, new StringPropertyValue("emp2"));
 
+        
         //Index the transaction, nodes, and nodeMetaDatas.
         //Note that the content is automatically created by the test framework.
         indexTransaction(txn,
