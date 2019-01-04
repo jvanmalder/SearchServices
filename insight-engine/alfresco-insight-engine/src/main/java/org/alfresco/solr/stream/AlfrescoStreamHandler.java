@@ -16,6 +16,14 @@
  */
 package org.alfresco.solr.stream;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.search.impl.QueryParserUtils;
@@ -34,26 +42,20 @@ import org.apache.solr.common.util.ContentStream;
 import org.apache.solr.common.util.ContentStreamBase;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.schema.IndexSchema;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 public class AlfrescoStreamHandler extends StreamHandler
 {
+    /** The ACL filter query. */
+    protected static final String AFTS_AUTHORITY_FILTER_FROM_JSON = "{!afts}AUTHORITY_FILTER_FROM_JSON";
 
     /*
     * This method is called when creating a stream context for TupleStream.
     * The stream context is then used to convey the json payload to the stream sources
     */
-
     public StreamContext getStreamContext(SolrQueryRequest req)
     {
         StreamContext streamContext = new StreamContext();
@@ -137,8 +139,9 @@ public class AlfrescoStreamHandler extends StreamHandler
         }
     }
 
-
-
+    /**
+     * The request factory for generating Alfresco requests that respect ACLs.
+     */
     public static class AlfrescoRequestFactory extends RequestFactory
     {
         private String alfrescoJson;
@@ -153,10 +156,32 @@ public class AlfrescoStreamHandler extends StreamHandler
             ModifiableSolrParams modifiableSolrParams = (ModifiableSolrParams)solrParams;
             modifiableSolrParams.set(CommonParams.QT, "/sqlfts");
             modifiableSolrParams.set(FacetParams.FACET, "true");
-            modifiableSolrParams.set(CommonParams.FQ, "{!afts}AUTHORITY_FILTER_FROM_JSON");
+            addQueryFilter(modifiableSolrParams, alfrescoJson);
             AlfrescoQueryRequest alfrescoQueryRequest = new AlfrescoQueryRequest(alfrescoJson, solrParams);
             alfrescoQueryRequest.setMethod(SolrRequest.METHOD.POST);
             return alfrescoQueryRequest;
+        }
+    }
+
+    /**
+     * Add the authority filter query and any filter queries supplied in the request.
+     *
+     * @param modifiableSolrParams The object to update.
+     * @param alfrescoJson The JSON request from ACS.
+     */
+    private static void addQueryFilter(ModifiableSolrParams modifiableSolrParams, String alfrescoJson)
+    {
+        modifiableSolrParams.set(CommonParams.FQ, AFTS_AUTHORITY_FILTER_FROM_JSON);
+
+        JSONObject json = new JSONObject(alfrescoJson);
+        JSONArray filterQueries = json.optJSONArray("filterQueries");
+        if (filterQueries != null)
+        {
+            for (int i = 0; i < filterQueries.length(); i++)
+            {
+                String filterQuery = filterQueries.getString(i);
+                modifiableSolrParams.add(CommonParams.FQ, filterQuery);
+            }
         }
     }
 
