@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TimeZone;
 
 import org.alfresco.solr.client.Node;
@@ -73,7 +74,7 @@ import org.junit.Test;
 public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 {
     @Rule
-    public JettyServerRule jetty = new JettyServerRule(1, this);
+    public JettyServerRule jetty = new JettyServerRule(1, this, getSQLFields());
 
     private int hours = 24;
     private int days = 31;
@@ -1035,6 +1036,18 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
         {
             System.out.println(message);
         }
+    }
+    public Properties getSQLFields()
+    {
+        Properties p = new Properties();
+        
+        p.put("solr.sql.alfresco.fieldname.cmcreatedday","cm_created_day");
+        p.put("solr.sql.alfresco.fieldtype.cmcreatedday","solr.TrieDateField");
+        p.put("solr.sql.alfresco.fieldname.cmcreatedyear","cm_created_year");
+        p.put("solr.sql.alfresco.fieldtype.cmcreatedyear","solr.TrieDateField");
+        p.put("solr.sql.alfresco.fieldname.cmcreatedmonth","cm_created_month");
+        p.put("solr.sql.alfresco.fieldtype.cmcreatedmonth","solr.TrieDateField");
+        return p;
     }
 
     /**
