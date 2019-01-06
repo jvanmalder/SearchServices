@@ -22,6 +22,10 @@ public class SolrSchemaUtilTest
         predicates = extractPredicates("select * from  alfresco where `mmm:genre`= 'rock'");
         Assert.assertTrue("mmm:genre", predicates.contains("mmm:genre"));
         Assert.assertEquals(1, predicates.size());
+        // check where keyword
+        predicates = extractPredicates("select * from  alfresco where `mmm:wheregenre`= 'rock'");
+        Assert.assertTrue("mmm:wheregenre", predicates.contains("mmm:wheregenre"));
+        Assert.assertEquals(1, predicates.size());
         predicates = extractPredicates("select * from  alfresco WHERE `mmm:genre`= 'rock'");
         Assert.assertTrue("mmm:genre", predicates.contains("mmm:genre"));
         Assert.assertEquals(1, predicates.size());
@@ -135,7 +139,34 @@ public class SolrSchemaUtilTest
 
         Assert.assertEquals(2, predicates.size());
     }
-    
+
+    @Test
+    public void predicateExtraction_singlePredicateBelongOperand_shouldExtractCorrectFieldNames()
+    {
+        Set<String> predicates = extractPredicates(
+                "select * from alfresco where customField1 in (3,4,5)");
+        Assert.assertTrue("customField1", predicates.contains("customField1"));
+        Assert.assertEquals(1, predicates.size());
+
+        predicates = extractPredicates(
+                "select * from alfresco where customField1 not in (3,4,5)");
+        Assert.assertTrue("customField1", predicates.contains("customField1"));
+        Assert.assertEquals(1, predicates.size());
+    }
+
+    @Test
+    public void predicateExtraction_multiPredicateBelongOperand_shouldExtractCorrectFieldNames()
+    {
+
+        // chech event if In and Not in field name may cause problems.
+        Set<String> predicates = extractPredicates(
+                "select * from alfresco where customInField1 in (3) AND customNotInField2 not in ('London', 'Paris')");
+        Assert.assertTrue("customInField1", predicates.contains("customInField1"));
+        Assert.assertTrue("customNotInField2", predicates.contains("customNotInField2"));
+
+        Assert.assertEquals(2, predicates.size());
+    }
+
     @Test
     public void lockOwnerFieldExists()
     {
