@@ -277,6 +277,14 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
         {
             formattedFieldName = getFormattedFieldName(entry, postfix);
         }
+
+        if (isSelectStarQuery){
+            if(!additionalFieldsFromConfiguration.keySet().contains(entry.getKey())
+                    && !additionalFieldsFromConfiguration.keySet().contains(formattedFieldName)) {
+                return;
+            }
+        }
+
         fieldInfo.add(entry.getKey() + getPostfix(postfix), type).nullable(true);
         if (!formattedFieldName.contentEquals(entry.getKey() + getPostfix(postfix)))
         {
