@@ -25,8 +25,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.sql.SelectStarDefaultField;
+import org.alfresco.solr.sql.SolrSchema;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
@@ -401,6 +404,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         System.clearProperty("solr.solr.home");
     }
 
+
     @Test
     public void distributedSearch_selectStarQuery_shouldReturnResultsWithDefaultFieldsOnly() throws Exception
     {
@@ -414,9 +418,12 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertTrue(tuples.size() == 4);
         assertNotNull(tuples);
 
-        Set<String> selectStarFields = Arrays.asList(
-                SelectStarDefaultField.values()).stream().map(
-                        s -> s.getFieldName().replaceFirst(":","_")).collect(Collectors.toSet());
+        /* Set containing the hard coded select * fields and the fields taken from shared.properties.
+         */
+        Set<String> selectStarFields =  Stream.concat(
+                SolrSchema.fetchCustomFieldsFromSharedProperties().keySet().stream(),
+                Arrays.asList(SelectStarDefaultField.values()).stream().map(s -> s.getFieldName()))
+                        .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
 
         for(Tuple t:tuples){
             /* Apparently for the hard coded list of fields, there are two copies in the response tuples, except for date fields or integers*

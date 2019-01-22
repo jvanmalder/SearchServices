@@ -105,7 +105,7 @@ public class SolrSchema extends AbstractSchema
      */
     private void initFieldsFromConfiguration(Properties properties)
     {
-        fetchCustomFieldsFromSharedProperties();
+        additionalFieldsFromConfiguration.putAll(fetchCustomFieldsFromSharedProperties());
 
         if (isSelectStarQuery)
         {
@@ -127,8 +127,9 @@ public class SolrSchema extends AbstractSchema
     /**
      * This methods extracts a set of custom fields (including type) from the shared properties.
      */
-    private void fetchCustomFieldsFromSharedProperties()
+    public static Map<String, String> fetchCustomFieldsFromSharedProperties()
     {
+        Map<String, String> collection = new HashMap<>();
         Properties properties = AlfrescoSolrDataModel.getCommonConfig();
         properties.forEach((key, value) -> {
             String label = (String) key;
@@ -144,10 +145,11 @@ public class SolrSchema extends AbstractSchema
                 }
                 else
                 {
-                    additionalFieldsFromConfiguration.put(fieldValue, type);
+                    collection.put(fieldValue, type);
                 }
             }
         });
+        return collection;
     }
 
     public boolean predicateExists(String sql)
