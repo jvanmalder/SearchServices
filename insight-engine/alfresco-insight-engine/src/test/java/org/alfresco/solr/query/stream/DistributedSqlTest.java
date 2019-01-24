@@ -24,8 +24,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.alfresco.solr.sql.SelectStarDefaultField;
+import org.alfresco.solr.sql.SolrSchemaUtil;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
@@ -401,7 +404,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     }
 
     @Test
-    public void distributedSearch_selectStarQuery_shouldReturnResultsWithDefaultFields() throws Exception
+    public void distributedSearch_selectStarQuery_shouldReturnResultsWithDefaultFieldsOnly() throws Exception
     {
         JettySolrRunner localJetty = jettyContainers.values().iterator().next();
         /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
@@ -412,16 +415,22 @@ public class DistributedSqlTest extends AbstractStreamTest
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertTrue(tuples.size() == 4);
         assertNotNull(tuples);
+
+        /* Set containing the hard coded select * fields and the fields taken from shared.properties.
+         */
+        Set<String> selectStarFields =  Stream.concat(
+                SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().keySet().stream(),
+                Arrays.asList(SelectStarDefaultField.values()).stream().map(s -> s.getFieldName()))
+                        .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
+
         for(Tuple t:tuples){
             /* Apparently for the hard coded list of fields, there are two copies in the response tuples, except for date fields or integers*
              * I recommend to investigate this as I am not sure why you would like to return duplicate columns to the user : SEARCH-1363
              */
-            for(SelectStarDefaultField fieldName: SelectStarDefaultField.values()){
-                String defaultStarFieldName = fieldName.getFieldName();
-                String defaultStarFieldNameVariant = defaultStarFieldName.replaceFirst(":","_");
-                assertTrue(defaultStarFieldName + " is not present",(t.fields.containsKey(defaultStarFieldName) || t.fields.containsKey(
-                    defaultStarFieldNameVariant)));
-            }
+            Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(
+                    s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
+            assertTrue(selectStarFields.equals(tupleFields));
+
         }
         System.clearProperty("solr.solr.home");
     }
