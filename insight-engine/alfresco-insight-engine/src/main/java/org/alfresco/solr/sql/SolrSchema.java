@@ -55,10 +55,7 @@ public class SolrSchema extends AbstractSchema
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SolrSchema.class);
 
-    /**
-     * Regex for retrieving custom fields definitions (i.e. name and type) from shared.properties
-     */
-    private static final String SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP = "solr\\.sql\\.alfresco\\.fieldname\\..*";
+
 
     /**
      * The default type we assign to fields not explicitly declared (i.e. defined in shared.properties or hard coded in select star fields).
@@ -105,7 +102,7 @@ public class SolrSchema extends AbstractSchema
      */
     private void initFieldsFromConfiguration(Properties properties)
     {
-        additionalFieldsFromConfiguration.putAll(fetchCustomFieldsFromSharedProperties());
+        additionalFieldsFromConfiguration.putAll(SolrSchemaUtil.fetchCustomFieldsFromSharedProperties());
 
         if (isSelectStarQuery)
         {
@@ -122,34 +119,6 @@ public class SolrSchema extends AbstractSchema
             SolrSchemaUtil.extractPredicates(sql).forEach(
                 fieldName -> additionalFieldsFromConfiguration.putIfAbsent(fieldName, UNKNOWN_FIELD_DEFAULT_TYPE));
         }
-    }
-
-    /**
-     * This methods extracts a set of custom fields (including type) from the shared properties.
-     */
-    public static Map<String, String> fetchCustomFieldsFromSharedProperties()
-    {
-        Map<String, String> collection = new HashMap<>();
-        Properties properties = AlfrescoSolrDataModel.getCommonConfig();
-        properties.forEach((key, value) -> {
-            String label = (String) key;
-            String fieldValue = (String) value;
-            //Match on solr.sql.tablename.field.name=nameValue
-            if (label.matches(SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP))
-            {
-                String val = label.replace("fieldname", "fieldtype");
-                String type = (String) properties.get(val);
-                if (type == null)
-                {
-                    LOGGER.error("Type definition: " + val + " not found in the shared.properties");
-                }
-                else
-                {
-                    collection.put(fieldValue, type);
-                }
-            }
-        });
-        return collection;
     }
 
     public boolean predicateExists(String sql)

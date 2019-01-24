@@ -18,11 +18,19 @@
  */
 package org.alfresco.solr.sql;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Collections;
+import java.util.HashMap;
+
+import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Util class for all Solr schema related functions.
  * @author Michael Suzuki
@@ -30,6 +38,14 @@ import org.apache.commons.lang.StringUtils;
  */
 public class SolrSchemaUtil 
 {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SolrSchema.class);
+
+    /**
+     * Regex for retrieving custom fields definitions (i.e. name and type) from shared.properties
+     */
+    private static final String SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP = "solr\\.sql\\.alfresco\\.fieldname\\..*";
+
     /**
      * Extract predicates of dynamic properties, such as custom model, to help
      *  build a complete table when select start is used.
@@ -37,7 +53,7 @@ public class SolrSchemaUtil
      * @param sql String query
      * @return {@link Set} of predicates
      */
-    public static Set<String> extractPredicates(String sql) 
+    public static Set<String> extractPredicates(String sql)
     {
         if(!StringUtils.isEmpty(sql))
         {
@@ -59,5 +75,33 @@ public class SolrSchemaUtil
             }
         }
         return Collections.emptySet();
+    }
+
+    /**
+     * This methods extracts a set of custom fields (including type) from the shared properties.
+     */
+    public static Map<String, String> fetchCustomFieldsFromSharedProperties()
+    {
+        Map<String, String> collection = new HashMap<>();
+        Properties properties = AlfrescoSolrDataModel.getCommonConfig();
+        properties.forEach((key, value) -> {
+            String label = (String) key;
+            String fieldValue = (String) value;
+            //Match on solr.sql.tablename.field.name=nameValue
+            if (label.matches(SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP))
+            {
+                String val = label.replace("fieldname", "fieldtype");
+                String type = (String) properties.get(val);
+                if (type == null)
+                {
+                    LOGGER.error("Type definition: " + val + " not found in the shared.properties");
+                }
+                else
+                {
+                    collection.put(fieldValue, type);
+                }
+            }
+        });
+        return collection;
     }
 }

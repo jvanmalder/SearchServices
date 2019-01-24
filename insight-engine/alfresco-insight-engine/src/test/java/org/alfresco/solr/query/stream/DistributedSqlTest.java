@@ -27,9 +27,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.sql.SelectStarDefaultField;
-import org.alfresco.solr.sql.SolrSchema;
+import org.alfresco.solr.sql.SolrSchemaUtil;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
@@ -404,7 +403,6 @@ public class DistributedSqlTest extends AbstractStreamTest
         System.clearProperty("solr.solr.home");
     }
 
-
     @Test
     public void distributedSearch_selectStarQuery_shouldReturnResultsWithDefaultFieldsOnly() throws Exception
     {
@@ -421,7 +419,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         /* Set containing the hard coded select * fields and the fields taken from shared.properties.
          */
         Set<String> selectStarFields =  Stream.concat(
-                SolrSchema.fetchCustomFieldsFromSharedProperties().keySet().stream(),
+                SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().keySet().stream(),
                 Arrays.asList(SelectStarDefaultField.values()).stream().map(s -> s.getFieldName()))
                         .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
 
