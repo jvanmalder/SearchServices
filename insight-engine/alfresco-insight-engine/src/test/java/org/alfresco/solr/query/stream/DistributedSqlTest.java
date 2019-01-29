@@ -439,7 +439,7 @@ public class DistributedSqlTest extends AbstractStreamTest
              */
             Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(
                     s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
-            assertTrue(selectStarFields.containsAll(tupleFields));
+            assertTrue("results field set should be equal to selectStarField",selectStarFields.equals(tupleFields));
         }
 
         System.clearProperty("solr.solr.home");
