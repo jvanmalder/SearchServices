@@ -203,18 +203,7 @@ public class SolrSchema extends AbstractSchema
                 addTimeFields(fieldInfo, fieldAndTypeFromSolrIndex, typeFactory.createJavaType(String.class));
             }
         }
-        /**
-         * Load mandatory fields that have not already been loaded
-         */
-        for (Entry<String, String> fieldAndType : additionalFieldsFromConfiguration.entrySet())
-        {
-            String formattedFieldName = getFormattedFieldName(fieldAndType,null);
-            if (!fieldsAndTypeFromSolrIndex.containsKey(fieldAndType.getKey()) && (!fieldsAndTypeFromSolrIndex.containsKey(formattedFieldName)))
-            {
-                addFieldInfoOriginalNameAndFormatted(fieldInfo, fieldAndType,
-                    resolveType(fieldAndType.getValue(), typeFactory), null, formattedFieldName);
-            }
-        }
+
         fieldInfo.add("_query_", typeFactory.createJavaType(String.class));
         fieldInfo.add("score", typeFactory.createJavaType(Double.class));
 
