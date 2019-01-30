@@ -467,6 +467,29 @@ public class DistributedSqlTest extends AbstractStreamTest
         System.clearProperty("solr.solr.home");
     }
 
+    @Test
+    public void distributedSearch_query_shouldReturnOnlySelectedFields() throws Exception
+    {
+
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+
+        // Query select * with property in predicate belonging to select * fields
+        List<Tuple> tuples = sqlQuery("select cm_name from alfresco where cm_name = 'name1'", alfrescoJson);
+        assertNotNull(tuples);
+        assertEquals(tuples.size(), 1);
+        List<String> tupleFields = ((Set<String>) tuples.get(0).fields.keySet()).stream().map(
+                s -> s.replaceFirst(":", "_")).collect(Collectors.toList());
+
+        assertEquals("only one field should be returned", tupleFields.size(), 1);
+        assertEquals("the field returned should be cm_name", tupleFields.get(0), "cm_name");
+
+        System.clearProperty("solr.solr.home");
+    }
+
     private void assertResult(List<Tuple> tuples)
     {
 
