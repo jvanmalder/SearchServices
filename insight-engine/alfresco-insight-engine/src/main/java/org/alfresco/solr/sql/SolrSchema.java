@@ -18,12 +18,9 @@ package org.alfresco.solr.sql;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
@@ -83,6 +80,11 @@ public class SolrSchema extends AbstractSchema
     final boolean isSelectStarQuery;
     final Map<String, String> additionalFieldsFromConfiguration = new HashMap<>();
 
+    /**
+     * formattedFileds is used to check if a fields in already inserted in additionalFieldsFromConfiguration.
+     */
+    final Set<String> formattedFields = new HashSet<>();
+
     SolrSchema(SolrCore core, Properties properties) {
         super();
         this.core = core;
@@ -112,11 +114,15 @@ public class SolrSchema extends AbstractSchema
                 additionalFieldsFromConfiguration.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
             }
         }
+
+        formattedFields.addAll(additionalFieldsFromConfiguration.entrySet()
+                .stream().map(e -> getFormattedFieldName(e, null)).collect(Collectors.toList()));
+
         String sql = properties.getProperty("stmt", "");
         //Add dynamic fields not part of the schema such as custom models and aspects.
         if (predicateExists(sql))
         {
-            SolrSchemaUtil.extractPredicates(sql).forEach(
+            SolrSchemaUtil.extractPredicates(sql).stream().filter(fieldName -> formattedFields.contains(fieldName)).forEach(
                 fieldName -> additionalFieldsFromConfiguration.putIfAbsent(fieldName, UNKNOWN_FIELD_DEFAULT_TYPE));
         }
     }
@@ -259,13 +265,6 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
         }
 
         fieldInfo.add(entry.getKey() + getPostfix(postfix), type).nullable(true);
-
-        /* If selectStarQuery, check if formattedFieldName is already contained in additionalFieldsFromConfiguration.
-         * This check avoids to insert the same field twice, that would cause the failure of the query.
-         */
-        if (isSelectStarQuery && additionalFieldsFromConfiguration.keySet().contains(formattedFieldName)) {
-            return;
-        }
 
         if (!formattedFieldName.contentEquals(entry.getKey() + getPostfix(postfix)))
         {
