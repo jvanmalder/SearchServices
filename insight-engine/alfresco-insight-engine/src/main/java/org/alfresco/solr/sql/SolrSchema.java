@@ -86,7 +86,7 @@ public class SolrSchema extends AbstractSchema
     final Map<String, String> additionalFieldsFromConfiguration = new HashMap<>();
 
     /**
-     * formattedFileds is used to check if a fields in already inserted in additionalFieldsFromConfiguration.
+     * formattedFileds is used to check if a fields is already inserted in additionalFieldsFromConfiguration.
      */
     final Set<String> formattedFields = new HashSet<>();
 
@@ -261,7 +261,6 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
             formattedFieldName = getFormattedFieldName(entry, postfix);
         }
 
-        /* If selectStarQuery check that the field is contained in additionalFieldsFromConfiguration. Otherwise, should not be inserted. */
         if (isSelectStarQuery){
             if(!additionalFieldsFromConfiguration.keySet().contains(entry.getKey())
                     && !additionalFieldsFromConfiguration.keySet().contains(formattedFieldName)) {
