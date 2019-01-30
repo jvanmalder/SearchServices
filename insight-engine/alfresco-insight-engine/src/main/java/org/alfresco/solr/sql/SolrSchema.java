@@ -250,6 +250,7 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
             formattedFieldName = getFormattedFieldName(entry, postfix);
         }
 
+        /* If selectStarQuery check that the field is contained in additionalFieldsFromConfiguration. Otherwise, should not be inserted. */
         if (isSelectStarQuery){
             if(!additionalFieldsFromConfiguration.keySet().contains(entry.getKey())
                     && !additionalFieldsFromConfiguration.keySet().contains(formattedFieldName)) {
@@ -258,8 +259,15 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
         }
 
         fieldInfo.add(entry.getKey() + getPostfix(postfix), type).nullable(true);
-        if (!additionalFieldsFromConfiguration.keySet().contains(formattedFieldName) &&
-                !formattedFieldName.contentEquals(entry.getKey() + getPostfix(postfix)))
+
+        /* If selectStarQuery, check if formattedFieldName is already contained in additionalFieldsFromConfiguration.
+         * This check avoids to insert the same field twice, that would cause the failure of the query.
+         */
+        if (isSelectStarQuery && additionalFieldsFromConfiguration.keySet().contains(formattedFieldName)) {
+            return;
+        }
+
+        if (!formattedFieldName.contentEquals(entry.getKey() + getPostfix(postfix)))
         {
             fieldInfo.add(formattedFieldName, type).nullable(true);
         }
