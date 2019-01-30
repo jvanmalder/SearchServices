@@ -68,6 +68,16 @@ public class DistributedSqlTest extends AbstractStreamTest
         p.put("solr.sql.alfresco.fieldtype.audioTrackNumber","solr.TrieLongField");
         return p;
     }
+
+    private Set<String> getSelectStarFields()
+    {
+        /* Set containing the hard coded select * fields and the fields taken from shared.properties.
+         */
+        return Stream.concat(
+                SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().keySet().stream(),
+                Arrays.asList(SelectStarDefaultField.values()).stream().map(s -> s.getFieldName()))
+                .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
+    }
     
     @Rule
     public JettyServerRule jetty = new JettyServerRule(1, this, getSQLFields());
@@ -411,32 +421,44 @@ public class DistributedSqlTest extends AbstractStreamTest
         /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
         System.setProperty("solr.solr.home", localJetty.getSolrHome());
 
-        /* Set containing the hard coded select * fields and the fields taken from shared.properties.
-         */
-        Set<String> selectStarFields =  Stream.concat(
-                SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().keySet().stream(),
-                Arrays.asList(SelectStarDefaultField.values()).stream().map(s -> s.getFieldName()))
-                .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
-
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
         List<Tuple> tuples = sqlQuery("select * from alfresco", alfrescoJson);
         assertNotNull(tuples);
         assertEquals(tuples.size(), 4);
 
-        // Query select * with property in predicate belonging to select * fields
-        List<Tuple> tuplesWithNames = sqlQuery("select * from alfresco where cm_name = 'name1'", alfrescoJson);
-        assertNotNull(tuplesWithNames);
-        assertEquals(tuplesWithNames.size(), 1);
+        Set<String> selectStarFields = getSelectStarFields();
 
-        tuples.addAll(tuplesWithNames);
-
-        /* Check that the properties returned are a subset of the selectStar fields
-         */
         for(Tuple t:tuples){
             /* Apparently for the hard coded list of fields, there are two copies in the response tuples, except for date fields or integers*
              * I recommend to investigate this as I am not sure why you would like to return duplicate columns to the user : SEARCH-1363
              */
+            Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(
+                    s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
+            assertTrue("results field set should be equal to selectStarField", selectStarFields.equals(tupleFields));
+        }
+
+        System.clearProperty("solr.solr.home");
+    }
+
+    @Test
+    public void distributedSearch_selectStarQueryWithPredicates_shouldReturnResultsWithDefaultFieldsOnly() throws Exception
+    {
+
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+
+        // Query select * with property in predicate belonging to select * fields
+        List<Tuple> tuples = sqlQuery("select * from alfresco where cm_name = 'name1'", alfrescoJson);
+        assertNotNull(tuples);
+        assertEquals(tuples.size(), 1);
+
+        Set<String> selectStarFields = getSelectStarFields();
+
+        for(Tuple t:tuples){
             Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(
                     s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
             assertTrue("results field set should be equal to selectStarField",selectStarFields.equals(tupleFields));
