@@ -64,8 +64,9 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.util.DateMathParser;
 import org.joda.time.DateTimeZone;
+import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -73,8 +74,17 @@ import org.junit.Test;
  */
 public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(1, this, getSQLFields());
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(1, getClassName(), null);
+    }
+
+    @AfterClass
+    private static void destroyData()
+    {
+        dismissSolrServers();
+    }
 
     private int hours = 24;
     private int days = 31;
@@ -813,8 +823,7 @@ public class DistributedExtendedSqlTimeSeriesTest extends AbstractStreamTest
     private List<Tuple> executeQuery(String sql) throws IOException
     {
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
-        List<Tuple> response = sqlQuery(sql, alfrescoJson);
-        return response;
+        return sqlQuery(sql, alfrescoJson);
     }
 
     private int calculateNumberOfBuckets_Day(LocalDateTime startDate, LocalDateTime endDate)

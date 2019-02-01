@@ -18,6 +18,8 @@
  */
 package org.alfresco.solr.query;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
@@ -25,7 +27,6 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
 import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Date;
@@ -58,7 +59,9 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.common.params.SolrParams;
-import org.junit.Rule;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,8 +75,23 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
 {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(2, this);
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(2, getClassName(), null);
+    }
+
+    @AfterClass
+    private static void destroyData()
+    {
+        dismissSolrServers();
+    }
+
+    @After
+    public void clearData() throws Exception
+    {
+        deleteByQueryAllClients("*:*");
+    }
 
     @Test
     public void testExpression() throws Exception
@@ -89,12 +107,12 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
         Acl acl = getAcl(aclChangeSet);
         Acl acl2 = getAcl(aclChangeSet);
 
-        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
-        AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, list("jim"), list("phil"), null);
+        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, singletonList("joel"), singletonList("phil"), null);
+        AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, singletonList("jim"), singletonList("phil"), null);
 
         indexAclChangeSet(aclChangeSet,
-                list(acl, acl2),
-                list(aclReaders, aclReaders2));
+                asList(acl, acl2),
+                asList(aclReaders, aclReaders2));
 
 
         //Check for the ACL state stamp.
@@ -148,8 +166,8 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
         //Index the transaction, nodes, and nodeMetaDatas.
         //Note that the content is automatically created by the test framework.
         indexTransaction(txn,
-                list(node1, node2, node3, node4),
-                list(nodeMetaData1, nodeMetaData2, nodeMetaData3, nodeMetaData4));
+                asList(node1, node2, node3, node4),
+                asList(nodeMetaData1, nodeMetaData2, nodeMetaData3, nodeMetaData4));
 
         //Check for the TXN state stamp.
         builder = new BooleanQuery.Builder();
@@ -166,7 +184,7 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
         waitForDocCountAllCores(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, 80000);
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 4, 80000);
 
-        List<SolrClient> clusterClients = getClusterClients();
+        List<SolrClient> clusterClients = getShardedClients();
 
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
@@ -180,7 +198,7 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
                                                     "count(*))," +
                                         "get(a)))";
 
-        String shards = getShardsString(clusterClients);
+        String shards = getShardsString();
 
 
         SolrParams params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
@@ -189,7 +207,7 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
                 params);
         tupleStream.setJson(alfrescoJson);
         List<Tuple> tuples = getTuples(tupleStream);
-        assertTrue(tuples.size() == 5);
+        assertEquals(5, tuples.size());
         assertBuckets("cm:created", tuples, "2000-01", "2000-02", "2000-03", "2000-04", "2000-05");
         assertCounts("count(*)", tuples, 1, 1, 1, 1, 0);
 
@@ -198,7 +216,7 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
         tupleStream = new AlfrescoSolrStream(((HttpSolrClient)clusterClients.get(0)).getBaseURL(), params);
         tupleStream.setJson(alfrescoJson2);
         tuples = getTuples(tupleStream);
-        assertTrue(tuples.size() == 5);
+        assertEquals(5, tuples.size());
         assertBuckets("cm:created", tuples, "2000-01", "2000-02", "2000-03", "2000-04", "2000-05");
         assertCounts("count(*)", tuples, 1, 1, 0, 0, 0);
 
@@ -216,7 +234,7 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
         tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
         tupleStream.setJson(alfrescoJson);
         tuples = getTuples(tupleStream);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
 
         expr = "alfrescoExpr(search(myCollection, q=\"cm:content:world\", sort=\"cm:created desc\"))";
         params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
@@ -224,7 +242,7 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
         tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
         tupleStream.setJson(alfrescoJson);
         tuples = getTuples(tupleStream);
-        assertTrue(tuples.size() == 4);
+        assertEquals(4, tuples.size());
 
         expr = "alfrescoExpr(having(facet("
                 + "myCollection, "
@@ -239,7 +257,7 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
         tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
         tupleStream.setJson(alfrescoJson);
         tuples = getTuples(tupleStream);
-        assertTrue(tuples.size() == 4);
+        assertEquals(4, tuples.size());
 
     }
 
@@ -254,11 +272,14 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
         }
     }
 
-    private void assertCounts(String field, List<Tuple> tuples, long ... counts) throws Exception {
+    private void assertCounts(String field, List<Tuple> tuples, long ... counts) throws Exception
+    {
         int i=0;
-        for(long count : counts) {
+        for(long count : counts)
+        {
             Tuple tuple = tuples.get(i);
-            if(!tuple.getLong(field).equals(count)) {
+            if(!tuple.getLong(field).equals(count))
+            {
                 logger.error("Invalid tuple "+tuple.getMap());
                 logger.error("Locale is "+Locale.getDefault());
                 logger.error("TimeZone is "+TimeZone.getDefault());
@@ -272,6 +293,5 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
     {
         return new Date(new GregorianCalendar(year, month, day, 10, 0).getTimeInMillis());
     }
-
 }
 
