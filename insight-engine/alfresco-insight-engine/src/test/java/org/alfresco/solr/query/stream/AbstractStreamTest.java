@@ -236,6 +236,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     public void clearData() throws Exception
     {
         deleteByQueryAllClients("*:*");
+        commit(getStandaloneClients().iterator().next(), true);
     }
 
     protected void assertNodes(List<Tuple> tuples, Node... nodes) throws Exception {

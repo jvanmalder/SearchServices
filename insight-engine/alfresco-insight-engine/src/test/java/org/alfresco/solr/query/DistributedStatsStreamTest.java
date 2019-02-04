@@ -72,12 +72,6 @@ public class DistributedStatsStreamTest extends AbstractAlfrescoDistributedTest 
         dismissSolrServers();
     }
 
-    @After
-    public void clearData() throws Exception
-    {
-        deleteByQueryAllClients("*:*");
-    }
-
     @Test
     public void testStats() throws Exception
     {

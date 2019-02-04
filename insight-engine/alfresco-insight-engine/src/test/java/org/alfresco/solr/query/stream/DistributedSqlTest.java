@@ -49,7 +49,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     @Rule public ExpectedException exceptionRule = ExpectedException.none();
 
     private String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
-    private Properties getSQLFields()
+    private static Properties getSQLFields()
     {
         Properties p = new Properties();
         p.put("solr.sql.alfresco.fieldname.cmlockOwner", "cm:lockOwner");
@@ -74,7 +74,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     @BeforeClass
     private static void initData() throws Throwable
     {
-        initSolrServers(1, getClassName(), null);
+        initSolrServers(1, getClassName(), getSQLFields());
         JettySolrRunner localJetty = jettyContainers.values().iterator().next();
         System.setProperty("solr.solr.home", localJetty.getSolrHome());
     }
@@ -320,7 +320,11 @@ public class DistributedSqlTest extends AbstractStreamTest
     {
         Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","finance_amount"));
         sql = "select cm_name as `Expense Name`, finance_amount from alfresco";
-        
+
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertEquals(4, tuples.size());

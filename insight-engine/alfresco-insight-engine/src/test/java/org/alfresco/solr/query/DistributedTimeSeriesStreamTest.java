@@ -87,12 +87,6 @@ public class DistributedTimeSeriesStreamTest extends AbstractAlfrescoDistributed
         dismissSolrServers();
     }
 
-    @After
-    public void clearData() throws Exception
-    {
-        deleteByQueryAllClients("*:*");
-    }
-
     @Test
     public void testTimeSeries() throws Exception
     {

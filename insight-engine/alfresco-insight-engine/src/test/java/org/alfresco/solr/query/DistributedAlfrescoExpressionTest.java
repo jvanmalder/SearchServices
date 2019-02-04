@@ -87,12 +87,6 @@ public class DistributedAlfrescoExpressionTest extends AbstractAlfrescoDistribut
         dismissSolrServers();
     }
 
-    @After
-    public void clearData() throws Exception
-    {
-        deleteByQueryAllClients("*:*");
-    }
-
     @Test
     public void testExpression() throws Exception
     {
