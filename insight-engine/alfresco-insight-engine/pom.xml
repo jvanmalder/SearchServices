@@ -28,6 +28,18 @@
                      <includes>**/test-files/</includes>
                   </configuration>
                </execution>
+                <execution>
+                    <id>copy-schema</id>
+                    <phase>process-test-resources</phase>
+                    <goals>
+                        <goal>unpack-dependencies</goal>
+                    </goals>
+                    <configuration>
+                        <includeArtifactIds>alfresco-search</includeArtifactIds>
+                        <outputDirectory>${java.io.tmpdir}</outputDirectory>
+                        <includes>**/solr/instance/templates/rerank/conf/schema.xml</includes>
+                    </configuration>
+                </execution>
             </executions>
          </plugin>
          <plugin>
@@ -71,6 +83,7 @@
                      <goal>copy-resources</goal>
                   </goals>
                   <configuration>
+                      <overwrite>true</overwrite>
                      <resources>
                         <resource>
                            <directory>${basedir}/src/test/resources/conf</directory>
@@ -79,6 +92,21 @@
                      <outputDirectory>${project.build.testOutputDirectory}/test-files/conf/</outputDirectory>
                   </configuration>
                </execution>
+                <execution>
+                    <id>copy-schema</id>
+                    <phase>process-test-resources</phase>
+                    <goals>
+                        <goal>copy-resources</goal>
+                    </goals>
+                    <configuration>
+                        <resources>
+                            <resource>
+                                <directory>${java.io.tmpdir}/solr/instance/templates/rerank/conf</directory>
+                            </resource>
+                        </resources>
+                        <outputDirectory>${project.build.testOutputDirectory}/test-files/collection1/conf/</outputDirectory>
+                    </configuration>
+                </execution>
             </executions>
          </plugin>
          <plugin>
