@@ -33,6 +33,8 @@ import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
 import org.apache.solr.client.solrj.io.Tuple;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -47,7 +49,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     @Rule public ExpectedException exceptionRule = ExpectedException.none();
 
     private String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
-    private Properties getSQLFields()
+    private static Properties getSQLFields()
     {
         Properties p = new Properties();
         p.put("solr.sql.alfresco.fieldname.cmlockOwner", "cm:lockOwner");
@@ -68,22 +70,34 @@ public class DistributedSqlTest extends AbstractStreamTest
         p.put("solr.sql.alfresco.fieldtype.audioTrackNumber","solr.TrieLongField");
         return p;
     }
-    
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(1, this, getSQLFields());
+
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(1, getClassName(), getSQLFields());
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+    }
+
+    @AfterClass
+    private static void destroyData()
+    {
+        dismissSolrServers();
+        System.clearProperty("solr.solr.home");
+    }
     
     @Test
     public void testSearch() throws Exception
     {
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 4);
+        assertEquals(4, tuples.size());
         assertNodes(tuples, node1, node2, node3, node4);
         assertFieldNotNull(tuples, "LID");
 
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
         tuples = sqlQuery(sql, alfrescoJson2);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
         assertNodes(tuples, node1, node2);
         assertFieldNotNull(tuples, "LID");
         
@@ -91,128 +105,131 @@ public class DistributedSqlTest extends AbstractStreamTest
         sql = "SELECT DBID,cm_created FROM alfresco order by `cm:created`";
         tuples = sqlQuery(sql, alfrescoJson2);
         assertNotNull(tuples);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
         sql = "SELECT DBID,cm_created FROM alfresco order by cm_created";
         tuples = sqlQuery(sql, alfrescoJson2);
         assertNotNull(tuples);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
+
         try
         {
             sql = "SELECT DBID,cm_created FROM alfresco order by cm_fake";
-            tuples = sqlQuery(sql, alfrescoJson2);
+            sqlQuery(sql, alfrescoJson2);
         }
         catch (IOException e) 
         {
             assertNotNull(e);
         }
+
         sql = "select DBID, LID from alfresco where `cm:content` = 'world' order by DBID limit 1";
         tuples = sqlQuery(sql, alfrescoJson2);
-        assertTrue(tuples.size() == 1);
+        assertEquals(1, tuples.size());
         assertFieldNotNull(tuples, "DBID");
         assertFieldNotNull(tuples, "LID");
 
         //This phrase search should find results
         sql = "select DBID, LID from alfresco where `cm:content` = 'hello world' order by DBID limit 1";
         tuples = sqlQuery(sql, alfrescoJson2);
-        assertTrue(tuples.size() == 1);
+        assertEquals(1, tuples.size());
         assertFieldNotNull(tuples, "DBID");
         assertFieldNotNull(tuples, "LID");
 
         //This query will be treated as a conjunction
         sql = "select DBID, LID from alfresco where `cm:content` = '(world hello)' order by DBID limit 1";
         tuples = sqlQuery(sql, alfrescoJson2);
-        assertTrue(tuples.size() == 1);
+        assertEquals(1, tuples.size());
         assertFieldNotNull(tuples, "DBID");
         assertFieldNotNull(tuples, "LID");
 
         //This phrase search should not find results
         sql = "select DBID, LID from alfresco where `cm:content` = 'world hello' order by DBID limit 1";
         tuples = sqlQuery(sql, alfrescoJson2);
-        assertTrue(tuples.size() == 0);
+        assertEquals(0, tuples.size());
 
         sql = "select DBID, LID from alfresco where `cm:content` = 'world' order by DBID";
         tuples = sqlQuery(sql, alfrescoJson2);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
         assertFieldNotNull(tuples, "DBID");
         assertFieldNotNull(tuples, "LID");
 
         sql = "select DBID, LID from alfresco where `cm:content` = 'world'";
         tuples = sqlQuery(sql, alfrescoJson2);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
         assertFieldNotNull(tuples, "DBID");
         assertFieldNotNull(tuples, "LID");
 
         sql = "select DBID, LID from alfresco";
         tuples = sqlQuery(sql, alfrescoJson2);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
         assertFieldNotNull(tuples, "DBID");
         assertFieldNotNull(tuples, "LID");
 
         sql = "select TYPE, SITE from alfresco";
         tuples = sqlQuery(sql, alfrescoJson2);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
         assertFieldNotNull(tuples, "TYPE");
         assertFieldNotNull(tuples, "SITE");
 
         sql = "select DBID from alfresco where cm_creator = 'creator1'";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
 
         sql = "select DBID from alfresco where `cm:creator` = 'creator1'";
         List<Tuple> tuplesAgain = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuplesAgain.size() == 2);
+        assertEquals(2, tuplesAgain.size());
 
         sql = "select DBID from alfresco where cm_created = '[2000 TO 2001]'";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 4);
+        assertEquals(4, tuples.size());
 
         sql = "select DBID from alfresco where cm_fiveStarRatingSchemeTotal = '[4 TO 21]'";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 4);
+        assertEquals(4, tuples.size());
 
         sql = "select DBID from alfresco where audio_trackNumber = '[5 TO 10>'";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
 
         sql = "select DBID from alfresco where `audio:trackNumber` = '[4 TO 12]'";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 4);
+        assertEquals(4, tuples.size());
 
         sql = "select DBID from alfresco where audio_trackNumber = '[5 TO 10]' AND cm_fiveStarRatingSchemeTotal = '[10 TO 12]'";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 1);
+        assertEquals(1, tuples.size());
 
         //It will return null but, in the debugger, the syntax looks right.
         sql = "select DBID from alfresco where TYPE = 'content' AND NOT TYPE = 'fm:post'";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 0);
+        assertEquals(0, tuples.size());
 
         sql = "select DBID from alfresco where `cm_content.mimetype` = 'text/plain'";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 3);
+        assertEquals(3, tuples.size());
 
         sql = "select DBID from alfresco where `cm:content.mimetype` = 'text/javascript'";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 1);
+        assertEquals(1, tuples.size());
 
         //Test negation
         sql = "select DBID from alfresco where `cm:content.mimetype` != 'text/javascript'";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 3);
+        assertEquals(3, tuples.size());
 
         sql = "select DBID from alfresco where `cm:content.size` > 0";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 1);
+        assertEquals(1, tuples.size());
 
         sql = "select DBID from alfresco where `cm:content.size` = '[1 TO *]'";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 1);
+        assertEquals(1, tuples.size());
 
         sql = "select cm_creator, cm_name, `exif:manufacturer`, audio_trackNumber from alfresco order by `audio:trackNumber` asc";
         tuples = sqlQuery(sql, alfrescoJson2);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
 
-        for(Tuple tuple : tuples) {
+        for(Tuple tuple : tuples)
+        {
             assertTrue(tuple.get("audio_trackNumber") instanceof Long);
             assertTrue(tuple.get("cm_creator") instanceof String);
             assertTrue(tuple.get("exif:manufacturer") instanceof String);
@@ -220,23 +237,24 @@ public class DistributedSqlTest extends AbstractStreamTest
         }
 
         Tuple t = tuples.get(0);
-        assertTrue(t.getLong("audio_trackNumber") == 8);
-        assertTrue(t.getString("exif:manufacturer").equals("Nikon"));
-        assertTrue(t.getString("cm_creator").equals("creator1"));
-        assertTrue(t.getString("cm_name").equals("name2"));
+        assertEquals(8, (long) t.getLong("audio_trackNumber"));
+        assertEquals("Nikon", t.getString("exif:manufacturer"));
+        assertEquals("creator1", t.getString("cm_creator"));
+        assertEquals("name2", t.getString("cm_name"));
 
         t = tuples.get(1);
-        assertTrue(t.getLong("audio_trackNumber") == 12);
-        assertTrue(t.getString("exif:manufacturer").equals("Nikon"));
-        assertTrue(t.getString("cm_creator").equals("creator1"));
-        assertTrue(t.getString("cm_name").equals("name1"));
+        assertEquals(12, (long) t.getLong("audio_trackNumber"));
+        assertEquals("Nikon", t.getString("exif:manufacturer"));
+        assertEquals("creator1", t.getString("cm_creator"));
+        assertEquals("name1", t.getString("cm_name"));
 
 
         sql = "select cm_creator, cm_name, `exif:manufacturer`, audio_trackNumber as atrack from alfresco order by `audio:trackNumber` desc";
         tuples = sqlQuery(sql, alfrescoJson2);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
 
-        for(Tuple tuple : tuples) {
+        for(Tuple tuple : tuples)
+        {
             assertTrue(tuple.get("atrack") instanceof Long);
             assertTrue(tuple.get("cm_creator") instanceof String);
             assertTrue(tuple.get("exif:manufacturer") instanceof String);
@@ -244,21 +262,21 @@ public class DistributedSqlTest extends AbstractStreamTest
         }
 
         t = tuples.get(0);
-        assertTrue(t.getLong("atrack") == 12);
-        assertTrue(t.getString("exif:manufacturer").equals("Nikon"));
-        assertTrue(t.getString("cm_creator").equals("creator1"));
-        assertTrue(t.getString("cm_name").equals("name1"));
+        assertEquals(12, (long) t.getLong("atrack"));
+        assertEquals("Nikon", t.getString("exif:manufacturer"));
+        assertEquals("creator1", t.getString("cm_creator"));
+        assertEquals("name1", t.getString("cm_name"));
 
         t = tuples.get(1);
-        assertTrue(t.getLong("atrack") == 8);
-        assertTrue(t.getString("exif:manufacturer").equals("Nikon"));
-        assertTrue(t.getString("cm_creator").equals("creator1"));
-        assertTrue(t.getString("cm_name").equals("name2"));
+        assertEquals(8, (long) t.getLong("atrack"));
+        assertEquals("Nikon", t.getString("exif:manufacturer"));
+        assertEquals("creator1", t.getString("cm_creator"));
+        assertEquals("name2", t.getString("cm_name"));
 
 
         sql = "select `cm:name`, `cm:fiveStarRatingSchemeTotal` from alfresco";
         tuples = sqlQuery(sql, alfrescoJson2);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
         for(Tuple tuple : tuples) {
             assertTrue(tuple.get("cm:fiveStarRatingSchemeTotal") instanceof Double);
             assertTrue(tuple.get("cm:name") instanceof String);
@@ -267,7 +285,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         sql = "select cm_creator from alfresco where _query_ = 'cm_creator:creator1'";
         tuples = sqlQuery(sql, alfrescoJson2);
         assertNotNull(tuples);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
         for(Tuple tuple : tuples) {
             assertTrue(tuple.get("cm_creator") instanceof String);
             assertEquals("creator1", tuple.get("cm_creator"));
@@ -302,15 +320,14 @@ public class DistributedSqlTest extends AbstractStreamTest
     {
         Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","finance_amount"));
         sql = "select cm_name as `Expense Name`, finance_amount from alfresco";
-        
+
         JettySolrRunner localJetty = jettyContainers.values().iterator().next();
         /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
         System.setProperty("solr.solr.home", localJetty.getSolrHome());
-        
-        
+
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 4);
+        assertEquals(4, tuples.size());
         for (Tuple t : tuples)
         {
             assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
@@ -332,7 +349,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 4);
+        assertEquals(4, tuples.size());
         for (Tuple t : tuples)
         {
             assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
@@ -352,7 +369,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         sql = "select finance_Emp from alfresco group by finance_Emp";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
         System.clearProperty("solr.solr.home");
     }
 
@@ -367,7 +384,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         sql = "select `finance:Emp` from alfresco group by `finance:Emp`";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
         System.clearProperty("solr.solr.home");
     }
 
@@ -413,14 +430,14 @@ public class DistributedSqlTest extends AbstractStreamTest
         sql = "select * from alfresco";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 4);
+        assertEquals(4, tuples.size());
         assertNotNull(tuples);
 
         /* Set containing the hard coded select * fields and the fields taken from shared.properties.
          */
         Set<String> selectStarFields =  Stream.concat(
                 SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().keySet().stream(),
-                Arrays.asList(SelectStarDefaultField.values()).stream().map(s -> s.getFieldName()))
+                Arrays.stream(SelectStarDefaultField.values()).map(SelectStarDefaultField::getFieldName))
                         .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
 
         for(Tuple t:tuples){
@@ -429,7 +446,7 @@ public class DistributedSqlTest extends AbstractStreamTest
              */
             Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(
                     s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
-            assertTrue(selectStarFields.equals(tupleFields));
+            assertEquals(selectStarFields, tupleFields);
 
         }
         System.clearProperty("solr.solr.home");

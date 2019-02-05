@@ -21,7 +21,8 @@ package org.alfresco.solr.query.stream;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.io.Tuple;
-import org.junit.Rule;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
@@ -33,9 +34,18 @@ import java.util.List;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedGroupBySqlTest extends AbstractStreamTest
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(1, this);
-    
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(1, getClassName(), null);
+    }
+
+    @AfterClass
+    private static void destroyData()
+    {
+        dismissSolrServers();
+    }
+
     @Test
     public void testSearch() throws Exception
     {
@@ -45,14 +55,17 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
 
         //We are grouping by ACLID so there will be two with a count(*) of 2.
         //The first 2 nodes on indexed with the same acl and the second 2 nodes are indexed with their same acl.
-        assertTrue(tuples.size() == 2);
-        assertTrue(tuples.get(0).getLong("EXPR$1") == 2);
-        assertTrue(tuples.get(1).getLong("EXPR$1") == 2);
+        assertEquals(2, tuples.size());
+        assertEquals(2, (long) tuples.get(0).getLong("EXPR$1"));
+        assertEquals(2, (long) tuples.get(1).getLong("EXPR$1"));
         
-        if(node1.getAclId() != tuples.get(0).getLong("ACLID")) {
+        if(node1.getAclId() != tuples.get(0).getLong("ACLID"))
+        {
             throw new Exception("Incorrect Acl ID, found "+tuples.get(0).getLong("ACLID")+" expected "+node1.getAclId());
         }
-        if(node3.getAclId() != tuples.get(1).getLong("ACLID")) {
+
+        if(node3.getAclId() != tuples.get(1).getLong("ACLID"))
+        {
             throw new Exception("Incorrect Acl ID, found "+tuples.get(0).getLong("ACLID")+" expected "+node3.getAclId());
         }
 
@@ -60,9 +73,9 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         tuples = sqlQuery(sql, alfrescoJson);
 
         //Now uses an alias
-        assertTrue(tuples.size() == 2);
-        assertTrue(tuples.get(0).getLong("barb") == 2);
-        assertTrue(tuples.get(1).getLong("barb") == 2);
+        assertEquals(2, tuples.size());
+        assertEquals(2, (long) tuples.get(0).getLong("barb"));
+        assertEquals(2, (long) tuples.get(1).getLong("barb"));
 
         assertTrue(tuples.get(0).get("barb") instanceof Long);
         assertTrue(tuples.get(0).get("ACLID") instanceof Long);
@@ -84,7 +97,8 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
 
         tuples = sqlQuery(sql, alfrescoJson);
         assertEquals(4, tuples.size());
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++)
+        {
             Tuple tuple = tuples.get(i);
             assertEquals(1L, tuple.getLong("ExposureCount").longValue());
             assertEquals(10 + i, tuple.getDouble("MaxExposure"),0);
@@ -110,7 +124,8 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
 
         tuples = sqlQuery(sql, alfrescoJson);
         assertEquals(4, tuples.size());
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++)
+        {
             Tuple tuple = tuples.get(i);
             assertEquals(1L, tuple.getLong("ExposureCount").longValue());
             assertEquals(10 + i, tuple.getDouble("MaxExposure"),0);
@@ -130,7 +145,8 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
                     "order by cm_created desc";
         tuples = sqlQuery(sql, alfrescoJson);
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++)
+        {
             Tuple tuple = tuples.get(i);
 
             // Test the descending order
@@ -142,117 +158,119 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
         tuples = sqlQuery(sql, alfrescoJson);
 
         //Now uses an alias
-        assertTrue(tuples.size() == 0);
+        assertEquals(0, tuples.size());
 
 
         sql = "select SITE, count(*) AS docsPerSite from alfresco where `cm:content` = 'world' group by SITE having count(*) > 1 AND count(*) < 10000";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 1);
-        assertTrue("_REPOSITORY_".equals(tuples.get(0).getString(("SITE"))));
-        assertTrue(tuples.get(0).getLong("docsPerSite") == 4);
+        assertEquals(1, tuples.size());
+        assertEquals("_REPOSITORY_", tuples.get(0).getString(("SITE")));
+        assertEquals(4, (long) tuples.get(0).getLong("docsPerSite"));
 
         sql = "select `cm:fiveStarRatingSchemeTotal` as rating, avg(`audio:trackNumber`) as track from alfresco where `cm:content` = 'world' group by `cm:fiveStarRatingSchemeTotal`";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 3);
+        assertEquals(3, tuples.size());
 
-
-        assertTrue(tuples.get(0).getDouble("rating") == 10);
-        assertTrue(tuples.get(0).getLong(("track")) == 9);
+        assertEquals(10, tuples.get(0).getDouble("rating"), 0.0);
+        assertEquals(9, (long) tuples.get(0).getLong(("track")));
 
         assertTrue(tuples.get(0).get("rating") instanceof Double);
         assertTrue(tuples.get(0).get("track") instanceof Long);
 
-        assertTrue(tuples.get(1).getDouble("rating") == 15);
-        assertTrue(tuples.get(1).getLong(("track")) == 8);
-        assertTrue(tuples.get(2).getDouble("rating") == 20);
-        assertTrue(tuples.get(2).getLong(("track")) == 4);
+        assertEquals(15, tuples.get(1).getDouble("rating"), 0.0);
+        assertEquals(8, (long) tuples.get(1).getLong(("track")));
+        assertEquals(20, tuples.get(2).getDouble("rating"), 0.0);
+        assertEquals(4, (long) tuples.get(2).getLong(("track")));
 
         sql = "select cm_fiveStarRatingSchemeTotal, avg(audio_trackNumber) as track from alfresco where cm_content = 'world' group by cm_fiveStarRatingSchemeTotal";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 3);
-        assertTrue(tuples.get(0).getDouble("cm_fiveStarRatingSchemeTotal") == 10);
-        assertTrue(tuples.get(0).getLong(("track")) == 9);
+        assertEquals(3, tuples.size());
+        assertEquals(10, tuples.get(0).getDouble("cm_fiveStarRatingSchemeTotal"), 0.0);
+        assertEquals(9, (long) tuples.get(0).getLong(("track")));
 
-
-        assertTrue(tuples.get(1).getDouble("cm_fiveStarRatingSchemeTotal") == 15);
-        assertTrue(tuples.get(1).getLong(("track")) == 8);
-        assertTrue(tuples.get(2).getDouble("cm_fiveStarRatingSchemeTotal") == 20);
-        assertTrue(tuples.get(2).getLong(("track")) == 4);
+        assertEquals(15, tuples.get(1).getDouble("cm_fiveStarRatingSchemeTotal"), 0.0);
+        assertEquals(8, (long) tuples.get(1).getLong(("track")));
+        assertEquals(20, tuples.get(2).getDouble("cm_fiveStarRatingSchemeTotal"), 0.0);
+        assertEquals(4, (long) tuples.get(2).getLong(("track")));
 
         sql = "select exif_manufacturer as manu, count(*) as tot, max(cm_fiveStarRatingSchemeTotal) AS cre from alfresco where cm_content = 'world' group by exif_manufacturer order by tot asc";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 2);
-        assertTrue("canon".equals(tuples.get(0).getString(("manu"))));
-        assertTrue(tuples.get(0).getLong("tot") == 1);
-        assertTrue(tuples.get(0).getDouble("cre") == 10);
+        assertEquals(2, tuples.size());
+        assertEquals("canon", tuples.get(0).getString(("manu")));
+        assertEquals(1, (long) tuples.get(0).getLong("tot"));
+        assertEquals(10, tuples.get(0).getDouble("cre"), 0.0);
 
         assertTrue(tuples.get(0).get("tot") instanceof Long);
         assertTrue(tuples.get(0).get("cre") instanceof Double);
 
-
-        assertTrue("nikon".equals(tuples.get(1).getString(("manu"))));
-        assertTrue(tuples.get(1).getLong("tot") == 3);
-        assertTrue(tuples.get(1).getDouble("cre") == 20);
+        assertEquals("nikon", tuples.get(1).getString(("manu")));
+        assertEquals(3, (long) tuples.get(1).getLong("tot"));
+        assertEquals(20, tuples.get(1).getDouble("cre"), 0.0);
 
         sql = "select exif_manufacturer as manu, sum(cm_fiveStarRatingSchemeTotal), min(cm_fiveStarRatingSchemeTotal) from alfresco where cm_content = 'world' group by exif_manufacturer order by manu asc";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 2);
-        assertTrue("canon".equals(tuples.get(0).getString(("manu"))));
-        assertTrue(tuples.get(0).getDouble("EXPR$1") == 10);
-        assertTrue(tuples.get(0).getDouble("EXPR$2") == 10);
+        assertEquals(2, tuples.size());
+        assertEquals("canon", tuples.get(0).getString(("manu")));
+        assertEquals(10, tuples.get(0).getDouble("EXPR$1"), 0.0);
+        assertEquals(10, tuples.get(0).getDouble("EXPR$2"), 0.0);
 
         assertTrue(tuples.get(0).get("EXPR$1") instanceof Double);
         assertTrue(tuples.get(0).get("EXPR$2") instanceof Double);
 
-
-        assertTrue("nikon".equals(tuples.get(1).getString(("manu"))));
-        assertTrue(tuples.get(1).getDouble("EXPR$1") == 45);
-        assertTrue(tuples.get(1).getDouble("EXPR$2") == 10);
+        assertEquals("nikon", tuples.get(1).getString(("manu")));
+        assertEquals(45, tuples.get(1).getDouble("EXPR$1"), 0.0);
+        assertEquals(10, tuples.get(1).getDouble("EXPR$2"), 0.0);
 
 
         sql = "select `cm_content.mimetype`, count(*) from alfresco group by `cm_content.mimetype` having count(*) < 4 order by count(*) asc";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 2);
-        assertTrue("text/javascript".equals(tuples.get(0).getString(("cm_content.mimetype"))));
-        assertTrue(tuples.get(0).getDouble("EXPR$1") == 1);
+        assertEquals(2, tuples.size());
+        assertEquals("text/javascript", tuples.get(0).getString(("cm_content.mimetype")));
+        assertEquals(1, tuples.get(0).getDouble("EXPR$1"), 0.0);
 
-        assertTrue("text/plain".equals(tuples.get(1).getString(("cm_content.mimetype"))));
-        assertTrue(tuples.get(1).getDouble("EXPR$1") == 3);
+        assertEquals("text/plain", tuples.get(1).getString(("cm_content.mimetype")));
+        assertEquals(3, tuples.get(1).getDouble("EXPR$1"), 0.0);
 
         sql = "select `cm_content.mimetype`, count(*) as mcount from alfresco group by `cm_content.mimetype` having count(*) = 3";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 1);
-        assertTrue("text/plain".equals(tuples.get(0).getString(("cm_content.mimetype"))));
-        assertTrue(tuples.get(0).getDouble("mcount") == 3);
+        assertEquals(1, tuples.size());
+        assertEquals("text/plain", tuples.get(0).getString(("cm_content.mimetype")));
+        assertEquals(3, tuples.get(0).getDouble("mcount"), 0.0);
 
         sql = "select cm_name, count(*) from alfresco where `cm:name` = 'name*' group by cm_name";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 3);
+        assertEquals(3, tuples.size());
         tuples.forEach(tuple -> assertTrue(tuple.getString("cm_name").startsWith("name")));
 
         sql = "select cm_name, count(*) from alfresco where cm_name = '*3' group by cm_name";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 1);
-        assertTrue("name3".equals(tuples.get(0).getString(("cm_name"))));
+        assertEquals(1, tuples.size());
+        assertEquals("name3", tuples.get(0).getString(("cm_name")));
 
         sql = "select TYPE, count(*) from alfresco group by TYPE";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 1);
-        assertTrue(tuples.get(0).getString("TYPE").equals("{http://www.alfresco.org/test/solrtest}testSuperType"));
-        assertTrue(tuples.get(0).getLong("EXPR$1") == 4);
+        assertEquals(1, tuples.size());
+        assertEquals("{http://www.alfresco.org/test/solrtest}testSuperType", tuples.get(0).getString("TYPE"));
+        assertEquals(4, (long) tuples.get(0).getLong("EXPR$1"));
 
         sql = "select cm_creator, count(*) from alfresco group by cm_creator having count(*) = 2";
         tuples = sqlQuery(sql, alfrescoJson);
-        assertTrue(tuples.size() == 1);
-        assertTrue("creator1".equals(tuples.get(0).getString(("cm_creator"))));
+        assertEquals(1, tuples.size());
+        assertEquals("creator1", tuples.get(0).getString(("cm_creator")));
         sql = "select cm_name, count(*) from alfresco group by cm_name having (count(*) > 1 AND cm_name = 'bill') order by count(*) asc";
-        try {
+        try
+        {
             sqlQuery(sql, alfrescoJson);
             throw new Exception("Exception should have been thrown");
-        } catch (Throwable e) {
-            if(e.getMessage().equals("Exception should have been thrown")) {
+        }
+        catch (Throwable e)
+        {
+            if(e.getMessage().equals("Exception should have been thrown"))
+            {
                 throw e;
-            } else {
+            }
+            else
+            {
                 assertTrue(e.getMessage().contains("HAVING clause can only be applied to aggregate functions."));
             }
         }
@@ -261,29 +279,27 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
     @Test
     public void sqlSearchNestedGroupByTokenizedField() throws Exception
     {
-
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         String sql = "select ft_authorft as Author, cm_name as Name from alfresco group by ft_authorft, cm_name";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
 
-        assertTrue(tuples.size() == 3);
-        assertTrue(tuples.get(0).fields.size() == 2);
-        assertTrue(tuples.get(1).fields.size() == 2);
-        assertTrue(tuples.get(2).fields.size() == 2);
-        assertTrue("gavin snow".equals(tuples.get(0).getString("Author")));
-        assertTrue("john snow".equals(tuples.get(1).getString("Author")));
-        assertTrue("john snow".equals(tuples.get(2).getString("Author")));
-        assertTrue("name3".equals(tuples.get(0).getString("Name")));
-        assertTrue("name1".equals(tuples.get(1).getString("Name")));
-        assertTrue("name2".equals(tuples.get(2).getString("Name")));
+        assertEquals(3, tuples.size());
+        assertEquals(2, tuples.get(0).fields.size());
+        assertEquals(2, tuples.get(1).fields.size());
+        assertEquals(2, tuples.get(2).fields.size());
+        assertEquals("gavin snow", tuples.get(0).getString("Author"));
+        assertEquals("john snow", tuples.get(1).getString("Author"));
+        assertEquals("john snow", tuples.get(2).getString("Author"));
+        assertEquals("name3", tuples.get(0).getString("Name"));
+        assertEquals("name1", tuples.get(1).getString("Name"));
+        assertEquals("name2", tuples.get(2).getString("Name"));
 
 
         String sql2 = "select cm_name as Name, ft_authorft as Author from alfresco group by cm_name, ft_authorft";
         List<Tuple> tuples2 = sqlQuery(sql2, alfrescoJson);
-        assertTrue(tuples2.size() == 3);
-        assertTrue("gavin snow".equals(tuples2.get(2).getString("Author")));
-        assertTrue("name3".equals(tuples2.get(2).getString("Name")));
-
+        assertEquals(3, tuples2.size());
+        assertEquals("gavin snow", tuples2.get(2).getString("Author"));
+        assertEquals("name3", tuples2.get(2).getString("Name"));
     }
 
     @Test 
@@ -295,35 +311,35 @@ public class DistributedGroupBySqlTest extends AbstractStreamTest
 
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
 
-        assertTrue(tuples.size() == 2);
-        assertTrue("portable".equals(tuples.get(0).getString(("underscoreField"))));
-        assertTrue(tuples.get(0).getLong("numFound") == 1);
+        assertEquals(2, tuples.size());
+        assertEquals("portable", tuples.get(0).getString(("underscoreField")));
+        assertEquals(1, (long) tuples.get(0).getLong("numFound"));
         assertTrue(tuples.get(0).get("numFound") instanceof Long);
-        assertTrue("camera".equals(tuples.get(1).getString(("underscoreField"))));
-        assertTrue(tuples.get(1).getLong("numFound") == 2);
+        assertEquals("camera", tuples.get(1).getString(("underscoreField")));
+        assertEquals(2, (long) tuples.get(1).getLong("numFound"));
 
         //Alternative syntax escaping ':'
         sql = "select `mf:freetext_underscore` as underscoreField, count(*) as numFound from alfresco where `cm:content` = 'world' group by `mf:freetext_underscore` order by numFound asc";
 
         tuples = sqlQuery(sql, alfrescoJson);
 
-        assertTrue(tuples.size() == 2);
-        assertTrue("portable".equals(tuples.get(0).getString(("underscoreField"))));
-        assertTrue(tuples.get(0).getLong("numFound") == 1);
+        assertEquals(2, tuples.size());
+        assertEquals("portable", tuples.get(0).getString(("underscoreField")));
+        assertEquals(1, (long) tuples.get(0).getLong("numFound"));
         assertTrue(tuples.get(0).get("numFound") instanceof Long);
-        assertTrue("camera".equals(tuples.get(1).getString(("underscoreField"))));
-        assertTrue(tuples.get(1).getLong("numFound") == 2);
+        assertEquals("camera", tuples.get(1).getString(("underscoreField")));
+        assertEquals(2, (long) tuples.get(1).getLong("numFound"));
 
         sql = "select mf_freetext_underscore as underscoreField, count(*) as numFound from alfresco where `cm:content` = 'world' group by mf_freetext_underscore order by numFound asc";
 
         tuples = sqlQuery(sql, alfrescoJson);
 
-        assertTrue(tuples.size() == 2);
-        assertTrue("portable".equals(tuples.get(0).getString(("underscoreField"))));
-        assertTrue(tuples.get(0).getLong("numFound") == 1);
+        assertEquals(2, tuples.size());
+        assertEquals("portable", tuples.get(0).getString(("underscoreField")));
+        assertEquals(1, (long) tuples.get(0).getLong("numFound"));
         assertTrue(tuples.get(0).get("numFound") instanceof Long);
-        assertTrue("camera".equals(tuples.get(1).getString(("underscoreField"))));
-        assertTrue(tuples.get(1).getLong("numFound") == 2);
+        assertEquals("camera", tuples.get(1).getString(("underscoreField")));
+        assertEquals(2, (long) tuples.get(1).getLong("numFound"));
     }
 }
 

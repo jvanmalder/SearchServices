@@ -18,13 +18,21 @@
  */
 package org.alfresco.solr.query;
 
+import static java.util.Collections.singletonList;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AbstractAlfrescoDistributedTest;
 import org.alfresco.solr.client.*;
-import org.alfresco.solr.stream.AlfrescoFacetStream;
 import org.alfresco.solr.stream.AlfrescoSolrStream;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
@@ -37,36 +45,46 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.common.params.SolrParams;
-import org.junit.Rule;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
-
 @SolrTestCaseJ4.SuppressSSL
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class DistributedFacetsStreamTest extends AbstractAlfrescoDistributedTest {
+public class DistributedFacetsStreamTest extends AbstractAlfrescoDistributedTest
+{
+    private static final QName PROP_RATING = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "fiveStarRatingSchemeTotal");
+    private static final QName PROP_TRACK  = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "trackNumber");
 
-    static final QName PROP_RATING = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "fiveStarRatingSchemeTotal");
-    static final QName PROP_TRACK  = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "trackNumber");
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(2, getClassName(), null);
+    }
 
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(2, this);
+    @AfterClass
+    private static void destroyData()
+    {
+        dismissSolrServers();
+    }
 
     @Test
-    public void testFacets() throws Exception {
+    public void testFacets() throws Exception
+    {
 
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
         Acl acl = getAcl(aclChangeSet);
 
-        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
+        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, singletonList("joel"), singletonList("phil"), null);
 
         indexAclChangeSet(aclChangeSet,
-                list(acl),
-                list(aclReaders));
+                singletonList(acl),
+                singletonList(aclReaders));
 
         //Check for the ACL state stamp.
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
@@ -81,12 +99,13 @@ public class DistributedFacetsStreamTest extends AbstractAlfrescoDistributedTest
 
         //First create a transaction.
         int numNodes = 10;
-        List<Node> nodes = new ArrayList();
-        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+        List<Node> nodes = new ArrayList<>();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
 
         Transaction bigTxn = getTransaction(0, numNodes);
 
-        for (int i = 0; i < numNodes; i++) {
+        for (int i = 0; i < numNodes; i++)
+        {
             Node node = getNode(bigTxn, acl, Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, acl, "mike", null, false);
@@ -102,8 +121,8 @@ public class DistributedFacetsStreamTest extends AbstractAlfrescoDistributedTest
 
         putHandleDefaults();
 
-        List<SolrClient> clusterClients = getClusterClients();
-        String shards = getShardsString(clusterClients);
+        List<SolrClient> clusterClients = getShardedClients();
+        String shards = getShardsString();
 
         String alfrescoJson = "{ \"authorities\": [ \"mike\"], \"tenants\": [ \"\" ] }";
         String expr = "alfrescoFacets(facet("
@@ -124,7 +143,7 @@ public class DistributedFacetsStreamTest extends AbstractAlfrescoDistributedTest
         Tuple tuple = tuples.get(0);
 
         Double count = tuple.getDouble("count(*)");
-        assertTrue(count.doubleValue() == 10);
+        assertEquals(10, count, 0.0);
 
         expr = "alfrescoFacets(facet("
                 + "myCollection, "
@@ -143,31 +162,33 @@ public class DistributedFacetsStreamTest extends AbstractAlfrescoDistributedTest
         tuples = getTuples(tupleStream);
 
         assert (tuples.size() == 3);
-        for (Tuple aTuple : tuples) {
-            switch (aTuple.getDouble("audio:trackNumber").intValue()) {
+        for (Tuple aTuple : tuples)
+        {
+            switch (aTuple.getDouble("audio:trackNumber").intValue())
+            {
                 case 2:
-                    assertTrue(aTuple.getDouble("count(*)").doubleValue() == 4D);
-                    assertTrue(aTuple.getDouble("min(cm:fiveStarRatingSchemeTotal)").doubleValue() == 1D);
-                    assertTrue(aTuple.getDouble("max(cm:fiveStarRatingSchemeTotal)").doubleValue() == 10D);
-                    assertTrue(aTuple.getDouble("sum(cm:fiveStarRatingSchemeTotal)").doubleValue() == 22D);
-                    assertTrue(aTuple.getDouble("avg(cm:fiveStarRatingSchemeTotal)").doubleValue() == 5.5D);
+                    assertEquals(4D, aTuple.getDouble("count(*)"), 0.0);
+                    assertEquals(1D, aTuple.getDouble("min(cm:fiveStarRatingSchemeTotal)"), 0.0);
+                    assertEquals(10D, aTuple.getDouble("max(cm:fiveStarRatingSchemeTotal)"), 0.0);
+                    assertEquals(22D, aTuple.getDouble("sum(cm:fiveStarRatingSchemeTotal)"), 0.0);
+                    assertEquals(5.5D, aTuple.getDouble("avg(cm:fiveStarRatingSchemeTotal)"), 0.0);
                     break;
                 case 4:
-                    assertTrue(aTuple.getDouble("count(*)").doubleValue() == 3D);
-                    assertTrue(aTuple.getDouble("min(cm:fiveStarRatingSchemeTotal)").doubleValue() == 2D);
-                    assertTrue(aTuple.getDouble("max(cm:fiveStarRatingSchemeTotal)").doubleValue() == 8D);
-                    assertTrue(aTuple.getDouble("sum(cm:fiveStarRatingSchemeTotal)").doubleValue() == 15D);
-                    assertTrue(aTuple.getDouble("avg(cm:fiveStarRatingSchemeTotal)").doubleValue() == 5D);
+                    assertEquals(3D, aTuple.getDouble("count(*)"), 0.0);
+                    assertEquals(2D, aTuple.getDouble("min(cm:fiveStarRatingSchemeTotal)"), 0.0);
+                    assertEquals(8D, aTuple.getDouble("max(cm:fiveStarRatingSchemeTotal)"), 0.0);
+                    assertEquals(15D, aTuple.getDouble("sum(cm:fiveStarRatingSchemeTotal)"), 0.0);
+                    assertEquals(5D, aTuple.getDouble("avg(cm:fiveStarRatingSchemeTotal)"), 0.0);
                     break;
                 case 6:
-                    assertTrue(aTuple.getDouble("count(*)").doubleValue() == 3D);
-                    assertTrue(aTuple.getDouble("min(cm:fiveStarRatingSchemeTotal)").doubleValue() == 3D);
-                    assertTrue(aTuple.getDouble("max(cm:fiveStarRatingSchemeTotal)").doubleValue() == 9D);
-                    assertTrue(aTuple.getDouble("sum(cm:fiveStarRatingSchemeTotal)").doubleValue() == 18D);
-                    assertTrue(aTuple.getDouble("avg(cm:fiveStarRatingSchemeTotal)").doubleValue() == 6D);
+                    assertEquals(3D, aTuple.getDouble("count(*)"), 0.0);
+                    assertEquals(3D, aTuple.getDouble("min(cm:fiveStarRatingSchemeTotal)"), 0.0);
+                    assertEquals(9D, aTuple.getDouble("max(cm:fiveStarRatingSchemeTotal)"), 0.0);
+                    assertEquals(18D, aTuple.getDouble("sum(cm:fiveStarRatingSchemeTotal)"), 0.0);
+                    assertEquals(6D, aTuple.getDouble("avg(cm:fiveStarRatingSchemeTotal)"), 0.0);
                     break;
                 default:
-                    assertTrue("Incorrect bucket sizes", false);
+                    fail("Incorrect bucket sizes");
             }
         }
 

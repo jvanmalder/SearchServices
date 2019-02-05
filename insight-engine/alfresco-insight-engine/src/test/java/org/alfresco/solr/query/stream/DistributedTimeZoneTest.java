@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.query.stream;
 
+import static java.util.Collections.singletonList;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
@@ -25,11 +26,6 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
 import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
-
-import java.time.*;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
@@ -50,10 +46,18 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.io.Tuple;
-import org.joda.time.DateTimeZone;
+import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Calendar;
+import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Test that validates the time zone is taken into account when a query is executed.
@@ -71,19 +75,35 @@ import org.junit.Test;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedTimeZoneTest extends AbstractStreamTest
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(1, this);
-    
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(1, getClassName(), null);
+    }
+
+    @AfterClass
+    private static void destroyData()
+    {
+        dismissSolrServers();
+    }
+
     @Before
     public void loadTimeZoneData() throws Exception
     {
         AclChangeSet aclChangeSet = getAclChangeSet(1);
         Acl tzAcl = getAcl(aclChangeSet);
-        AclReaders tzAclReaders = getAclReaders(aclChangeSet, tzAcl, list("mcfly"), list("delorean"), null);
+        AclReaders tzAclReaders =
+                getAclReaders(
+                        aclChangeSet,
+                        tzAcl,
+                        singletonList("mcfly"),
+                        singletonList("delorean"), null);
+
         indexAclChangeSet(aclChangeSet,
-                list(tzAcl),
-                list(tzAclReaders));
-      //Check for the ACL state stamp.
+                singletonList(tzAcl),
+                singletonList(tzAclReaders));
+
+        //Check for the ACL state stamp.
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX")), BooleanClause.Occur.MUST));
         builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId(), aclChangeSet.getId() + 1, true, false), BooleanClause.Occur.MUST));
@@ -128,8 +148,9 @@ public class DistributedTimeZoneTest extends AbstractStreamTest
              nodeMeta.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("Dr who" + i));
              
              indexTransaction(txn,
-                     list(node),
-                     list(nodeMeta));
+                     singletonList(node),
+                     singletonList(nodeMeta));
+
              //Check for the TXN state stamp.
              builder = new BooleanQuery.Builder();
              builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!TX")), BooleanClause.Occur.MUST));
@@ -140,7 +161,8 @@ public class DistributedTimeZoneTest extends AbstractStreamTest
          }
     }
 
-    private long now() {
+    private long now()
+    {
         TimeZone timeZone = TimeZone.getTimeZone("UTC");
         Calendar cal = Calendar.getInstance(timeZone);
         cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), 10, 0, 0);
@@ -155,16 +177,14 @@ public class DistributedTimeZoneTest extends AbstractStreamTest
         long now = now();
         List<Tuple> tuples = sqlQuery(sql, timeJson);
         System.out.println("UTC " + tuples.get(0).get("total") + ":" + tuples.size());
-        assertEquals(new Long(24), tuples.get(0).get("total"));
+        assertEquals(24L, tuples.get(0).get("total"));
 
         tuples = sqlQuery(sql, timeJson, "America/Los_Angeles", now);
         System.out.println("LA " + tuples.get(0).get("total"));
-        assertEquals(new Long(16), tuples.get(0).get("total"));
+        assertEquals(16L, tuples.get(0).get("total"));
 
         tuples = sqlQuery(sql, timeJson, "Japan", now);
         System.out.println("Japan " + tuples.get(0).get("total"));
-        assertEquals(new Long(16), tuples.get(0).get("total"));
+        assertEquals(16L, tuples.get(0).get("total"));
     }
-
 }
-

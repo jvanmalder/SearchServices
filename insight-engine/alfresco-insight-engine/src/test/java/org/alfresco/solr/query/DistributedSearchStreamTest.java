@@ -28,7 +28,8 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.common.params.SolrParams;
-import org.junit.Rule;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -38,19 +39,28 @@ import org.junit.Test;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedSearchStreamTest extends AbstractStreamTest
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(1, this);
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(1, getClassName(), null);
+    }
+
+    @AfterClass
+    private static void destroyData()
+    {
+        dismissSolrServers();
+    }
 
     @Test
     public void testSearch() throws Exception
     {
-        List<SolrClient> clusterClients = getClusterClients();
+        List<SolrClient> clusterClients = getShardedClients();
 
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
         String expr = "search(myCollection, q=\"cm:content:world\", sort=\"cm:created desc\")";
 
-        String shards = getShardsString(clusterClients);
+        String shards = getShardsString();
         SolrParams params = params("expr", expr, "qt", "/stream", "myCollection.shards", shards);
 
         AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
@@ -58,7 +68,7 @@ public class DistributedSearchStreamTest extends AbstractStreamTest
         tupleStream.setJson(alfrescoJson);
         List<Tuple> tuples = getTuples(tupleStream);
 
-        assertTrue(tuples.size() == 4);
+        assertEquals(4, tuples.size());
         assertNodes(tuples, node4, node3, node2, node1);
 
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
@@ -66,7 +76,7 @@ public class DistributedSearchStreamTest extends AbstractStreamTest
         tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
         tupleStream.setJson(alfrescoJson2);
         tuples = getTuples(tupleStream);
-        assertTrue(tuples.size() == 2);
+        assertEquals(2, tuples.size());
         assertNodes(tuples, node2, node1);
     }
 }
