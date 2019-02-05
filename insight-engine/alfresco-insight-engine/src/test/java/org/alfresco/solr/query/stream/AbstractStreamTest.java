@@ -49,6 +49,8 @@ import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
+import org.alfresco.solr.sql.SelectStarDefaultField;
+import org.alfresco.solr.sql.SolrSchemaUtil;
 import org.alfresco.solr.stream.AlfrescoSolrStream;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
@@ -67,12 +69,16 @@ import org.junit.After;
 import org.junit.Before;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 import java.util.Date;
+import java.util.Set;
+import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.stream.Stream;
 
 /**
  * @author Michael Suzuki
@@ -257,13 +263,45 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         }
     }
 
+
     protected Date getDate(int year, int month, int day)
     {
         GregorianCalendar calendar = new GregorianCalendar(year, month, day, 10, 0);
         calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
         return calendar.getTime();
     }
-    
+
+
+    /**
+     * Get select star fields (hard coded + shared.properties).
+     * @return
+     */
+    protected Set<String> getSelectStarFields()
+    {
+        /* Set containing the hard coded select * fields and the fields taken from shared.properties.
+         */
+        return Stream.concat(
+                SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().keySet().stream(),
+                Arrays.asList(SelectStarDefaultField.values()).stream().map(s -> s.getFieldName()))
+                .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
+    }
+
+
+    /**
+     * Check that each tuple is composed by only the fields passed as argument.
+     * @param tuples set of tuple
+     * @param fields set of fields
+     */
+    protected void checkReturnedFields(List<Tuple> tuples, Set<String> fields)
+    {
+        for(Tuple t:tuples){
+            Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(
+                    s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
+            assertEquals(fields, tupleFields);
+        }
+
+    }
+
     /**
      * Build a sql query with alfresco user authentication and parses the response
      * back into tuples.
