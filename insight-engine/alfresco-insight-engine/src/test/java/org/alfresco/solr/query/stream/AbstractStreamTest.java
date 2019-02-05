@@ -58,10 +58,12 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
+import org.junit.After;
 import org.junit.Before;
 
 import java.io.IOException;
@@ -230,6 +232,12 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 4, 80000);
     }
 
+    @After
+    public void clearData() throws Exception
+    {
+        deleteByQueryAllClients("*:*");
+        commit(getStandaloneClients().iterator().next(), true);
+    }
 
     protected void assertNodes(List<Tuple> tuples, Node... nodes) throws Exception {
         for(int i=0; i<nodes.length; i++) {
@@ -274,8 +282,8 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     {
         System.out.println("######### AFRESCO SQL #######");
         System.out.println(sql);
-        List<SolrClient> clusterClients = getClusterClients();
-        String shards = getShardsString(clusterClients);
+        List<SolrClient> clusterClients = getShardedClients();
+        String shards = getShardsString();
         System.out.println("###########:"+shards);
 
         SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards, "timeZone", timezone);
