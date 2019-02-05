@@ -67,12 +67,10 @@ public class DistributedJdbcTest extends AbstractStreamTest
 
         Properties props = getConnectionProperties(alfrescoJson);
         String connectionString = getConnectionString();
-        Connection con = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-        try
+        try (Connection con = DriverManager.getConnection(connectionString, props);
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(sql))
         {
-            con = DriverManager.getConnection(connectionString, props);
             DatabaseMetaData databaseMetaData = con.getMetaData();
 
             try (ResultSet resultSet2 = databaseMetaData.getTables(null, null, null, null))
@@ -114,8 +112,6 @@ public class DistributedJdbcTest extends AbstractStreamTest
                 assertEquals(resultSetMetaData.getColumnLabel(19), "SCOPE_CATALOG");
             }
 
-            stmt = con.createStatement();
-            rs = stmt.executeQuery(sql);
             int i = 0;
             while (rs.next())
             {
@@ -124,52 +120,21 @@ public class DistributedJdbcTest extends AbstractStreamTest
             }
             assertEquals(i, 4);
         }
-        finally
-        {
-            rs.close();
-            stmt.close();
-            con.close();
-        }
 
         sql = "select cm_name, count(*) from alfresco group by cm_name having (count(*) > 1 AND cm_name = 'bill') order by count(*) asc";
-        try
+        try (Connection con = DriverManager.getConnection(connectionString, props);
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql))
         {
-            try
+            while (rs.next())
             {
-                con = DriverManager.getConnection(connectionString, props);
-                stmt = con.createStatement();
-                rs = stmt.executeQuery(sql);
-                int i=0;
-                while (rs.next())
-                {
-                    ++i;
-                    assertNotNull(rs.getString("DBID"));
-                }
-                throw new Exception("Exception should have been thrown");
+                assertNotNull(rs.getString("DBID"));
             }
-            finally
-            {
-                rs.close();
-                stmt.close();
-                con.close();
-            }
+            throw new Exception();
         }
-        catch (Throwable e)
+        catch (Exception exception)
         {
-            if(e.getMessage().equals("Exception should have been thrown"))
-            {
-                throw e;
-            }
-            else
-            {
-                assertTrue(e.getMessage().contains("HAVING clause can only be applied to aggregate functions."));
-            }
-        }
-        finally
-        {
-            rs.close();
-            stmt.close();
-            con.close();
+            assertTrue(exception.getMessage().contains("HAVING clause can only be applied to aggregate functions."));
         }
     }
     
@@ -181,11 +146,8 @@ public class DistributedJdbcTest extends AbstractStreamTest
 
         Properties props = getConnectionProperties(alfrescoJson);
         String connectionString = getConnectionString();
-        Connection con = null;
-        Statement stmt = null;
-        ResultSet rs = null;
         
-        List<String> fieldList = new ArrayList<String>();
+        List<String> fieldList = new ArrayList<>();
         
         // Expected Field List in the select star response
         fieldList.add("cm_name");
@@ -215,12 +177,10 @@ public class DistributedJdbcTest extends AbstractStreamTest
         // fieldList.add("PRIMARYPARENT");
         // fieldList.add("QNAME");
 
-        try
+        try (Connection con = DriverManager.getConnection(connectionString, props);
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql))
         {
-            con = DriverManager.getConnection(connectionString, props);
-            stmt = con.createStatement();
-            rs = stmt.executeQuery(sql);
-
             while (rs.next())
             {
                 // Fields not expected in the select star response
@@ -253,35 +213,25 @@ public class DistributedJdbcTest extends AbstractStreamTest
                 }
             }
         }
-        catch (Throwable e)
-        {
-           throw e;
-        }
-        finally
-        {
-            rs.close();
-            stmt.close();
-            con.close();
-        }
     }
 
     private String getConnectionString()
     {
         List<SolrClient> clusterClients = getShardedClients();
-        String baseUrl = ((HttpSolrClient) clusterClients.get(0)).getBaseURL();
+        String baseUrl = ((HttpSolrClient) clusterClients.iterator().next()).getBaseURL();
         String[] parts = baseUrl.split("://");
         String uri = parts[1];
         String[] path = uri.split("/");
-        return "jdbc:alfresco://"+path[0]+"?collection="+path[2];
+        return "jdbc:alfresco://" + path[0] + "?collection=" + path[2];
     }
 
     private Properties getConnectionProperties(String json)
     {
-        List<SolrClient> clusterClients = getShardedClients();
         String shards = getShardsString();
         Properties props = new Properties();
         props.put("json", json);
         props.put("alfresco.shards", shards);
+
         //Add the basicauth username and passwords required by test framework
         props.put("user", "test");
         props.put("password", "pass");
