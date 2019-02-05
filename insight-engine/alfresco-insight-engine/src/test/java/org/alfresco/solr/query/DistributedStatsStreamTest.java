@@ -45,7 +45,6 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.common.params.SolrParams;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -134,14 +133,14 @@ public class DistributedStatsStreamTest extends AbstractAlfrescoDistributedTest 
         Tuple tuple = tuples.get(0);
 
         Double sumi = tuple.getDouble("sum(audio:trackNumber)");
-        Double sumf = tuple.getDouble("sum(cm:fiveStarRatingSchemeTotal)");
-        Double mini = tuple.getDouble("min(audio:trackNumber)");
-        Double minf = tuple.getDouble("min(cm:fiveStarRatingSchemeTotal)");
-        Double maxi = tuple.getDouble("max(audio:trackNumber)");
-        Double maxf = tuple.getDouble("max(cm:fiveStarRatingSchemeTotal)");
-        Double avgi = tuple.getDouble("avg(audio:trackNumber)");
-        Double avgf = tuple.getDouble("avg(cm:fiveStarRatingSchemeTotal)");
-        Double count = tuple.getDouble("count(*)");
+        double sumf = tuple.getDouble("sum(cm:fiveStarRatingSchemeTotal)");
+        double mini = tuple.getDouble("min(audio:trackNumber)");
+        double minf = tuple.getDouble("min(cm:fiveStarRatingSchemeTotal)");
+        double maxi = tuple.getDouble("max(audio:trackNumber)");
+        double maxf = tuple.getDouble("max(cm:fiveStarRatingSchemeTotal)");
+        double avgi = tuple.getDouble("avg(audio:trackNumber)");
+        double avgf = tuple.getDouble("avg(cm:fiveStarRatingSchemeTotal)");
+        long count = tuple.getLong("count(*)");
 
         assertEquals(90, sumi.longValue());
         assertEquals(55.0D, sumf, 0.0);
@@ -151,6 +150,6 @@ public class DistributedStatsStreamTest extends AbstractAlfrescoDistributedTest 
         assertEquals(10.0D, maxf, 0.0);
         assertEquals(9.0D, avgi, 0.0);
         assertEquals(5.5D, avgf, 0.0);
-        assertEquals(10, count, 0.0);
+        assertEquals(10L, count);
     }
 }
