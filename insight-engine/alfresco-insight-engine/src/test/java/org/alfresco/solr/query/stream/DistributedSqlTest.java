@@ -85,7 +85,18 @@ public class DistributedSqlTest extends AbstractStreamTest
         dismissSolrServers();
         System.clearProperty("solr.solr.home");
     }
-    
+
+    private Set<String> getSelectStarFields()
+    {
+        /* Set containing the hard coded select * fields and the fields taken from shared.properties.
+         */
+        return Stream.concat(
+                SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().keySet().stream(),
+                Arrays.asList(SelectStarDefaultField.values()).stream().map(s -> s.getFieldName()))
+                .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
+    }
+
+
     @Test
     public void testSearch() throws Exception
     {
@@ -433,12 +444,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertEquals(4, tuples.size());
         assertNotNull(tuples);
 
-        /* Set containing the hard coded select * fields and the fields taken from shared.properties.
-         */
-        Set<String> selectStarFields =  Stream.concat(
-                SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().keySet().stream(),
-                Arrays.stream(SelectStarDefaultField.values()).map(SelectStarDefaultField::getFieldName))
-                        .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
+        Set<String> selectStarFields = getSelectStarFields();
 
         for(Tuple t:tuples){
             /* Apparently for the hard coded list of fields, there are two copies in the response tuples, except for date fields or integers*
@@ -447,8 +453,57 @@ public class DistributedSqlTest extends AbstractStreamTest
             Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(
                     s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
             assertEquals(selectStarFields, tupleFields);
-
         }
+
+        System.clearProperty("solr.solr.home");
+    }
+
+    @Test
+    public void distributedSearch_selectStarQueryWithPredicates_shouldReturnResultsWithDefaultFieldsOnly() throws Exception
+    {
+
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+
+        // Query select * with property in predicate belonging to select * fields
+        List<Tuple> tuples = sqlQuery("select * from alfresco where cm_name = 'name1'", alfrescoJson);
+        assertNotNull(tuples);
+        assertEquals(tuples.size(), 1);
+
+        Set<String> selectStarFields = getSelectStarFields();
+
+        for(Tuple t:tuples){
+            Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(
+                    s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
+            assertEquals(selectStarFields, tupleFields);
+        }
+
+        System.clearProperty("solr.solr.home");
+    }
+
+    @Test
+    public void distributedSearch_query_shouldReturnOnlySelectedFields() throws Exception
+    {
+
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+
+        // Query select * with property in predicate belonging to select * fields
+        List<Tuple> tuples = sqlQuery("select cm_name from alfresco where cm_name = 'name1'", alfrescoJson);
+        assertNotNull(tuples);
+        assertEquals(tuples.size(), 1);
+        List<String> tupleFields = ((Set<String>) tuples.get(0).fields.keySet()).stream().map(
+                s -> s.replaceFirst(":", "_")).collect(Collectors.toList());
+
+        assertEquals("only one field should be returned", tupleFields.size(), 1);
+        assertEquals("the field returned should be cm_name", tupleFields.get(0), "cm_name");
+
         System.clearProperty("solr.solr.home");
     }
 
