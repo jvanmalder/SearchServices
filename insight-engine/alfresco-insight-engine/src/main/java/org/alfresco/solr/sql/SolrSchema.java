@@ -110,7 +110,7 @@ public class SolrSchema extends AbstractSchema
     private void initFieldsFromConfiguration(Properties properties)
     {
 
-        // Get fields from configuration
+        // Get fields from configuration.
         queryFields.putAll(SolrSchemaUtil.fetchCustomFieldsFromSharedProperties());
 
         // Get fields from default fields.
@@ -119,13 +119,13 @@ public class SolrSchema extends AbstractSchema
             queryFields.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
         }
 
-        // Get fields from solr index.
+        // Get fields from solr index. 
         if (!isSelectStarQuery)
         {
             queryFields.putAll(getIndexedFieldsInfo());
         }
 
-        // Create set of formatted fields/
+        // Create set of formatted fields. (Useful to check for duplicates)
         formattedFields.addAll(queryFields.entrySet()
                 .stream().map(e -> getFormattedFieldName(e, null)).collect(Collectors.toList()));
         String sql = properties.getProperty("stmt", "");
@@ -209,7 +209,7 @@ public class SolrSchema extends AbstractSchema
 
 
         /**
-         * Load mandatory queryFields that have not already been loaded
+         * Load query fields
          */
         for (Entry<String, String> fieldAndType : queryFields.entrySet())
         {
