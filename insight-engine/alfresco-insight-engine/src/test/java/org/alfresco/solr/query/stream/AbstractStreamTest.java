@@ -288,11 +288,11 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
 
 
     /**
-     * Check that each tuple is composed by only the fields passed as argument.
-     * @param tuples set of tuple
+     * Check that the formatted fields of the tuple is equal to the set of fields passed as argument.
+     * @param tuples list of tuple
      * @param fields set of fields
      */
-    protected void checkReturnedFields(List<Tuple> tuples, Set<String> fields)
+    protected void checkFormattedReturnedFields(List<Tuple> tuples, Set<String> fields)
     {
         for(Tuple t:tuples){
             Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(

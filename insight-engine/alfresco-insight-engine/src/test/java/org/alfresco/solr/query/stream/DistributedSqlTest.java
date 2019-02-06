@@ -25,11 +25,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import javax.xml.namespace.QName;
-import org.alfresco.solr.sql.SelectStarDefaultField;
-import org.alfresco.solr.sql.SolrSchemaUtil;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
@@ -465,7 +461,12 @@ public class DistributedSqlTest extends AbstractStreamTest
         List<Tuple> tuples = sqlQuery("select * from alfresco where cm_name = 'name1'", alfrescoJson);
         assertNotNull(tuples);
         assertEquals(tuples.size(), 1);
-        checkReturnedFields(tuples, selectStarFields);
+        checkFormattedReturnedFields(tuples, selectStarFields);
+
+        tuples = sqlQuery("select * from alfresco where `cm:name` = 'name1'", alfrescoJson);
+        assertNotNull(tuples);
+        assertEquals(tuples.size(), 1);
+        checkFormattedReturnedFields(tuples, selectStarFields);
 
         System.clearProperty("solr.solr.home");
     }
@@ -485,6 +486,7 @@ public class DistributedSqlTest extends AbstractStreamTest
         System.setProperty("solr.solr.home", localJetty.getSolrHome());
 
         Set<String> selectStarFields = getSelectStarFields();
+        selectStarFields.add("cm_author");
 
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
@@ -492,8 +494,12 @@ public class DistributedSqlTest extends AbstractStreamTest
         List<Tuple> tuples = sqlQuery("select * from alfresco where cm_author != '*'", alfrescoJson);
         assertNotNull(tuples);
         assertEquals(tuples.size(), 4);
-        selectStarFields.add("cm_author");
-        checkReturnedFields(tuples, selectStarFields);
+        checkFormattedReturnedFields(tuples, selectStarFields);
+
+        tuples = sqlQuery("select * from alfresco where `cm:author` != '*'", alfrescoJson);
+        assertNotNull(tuples);
+        assertEquals(tuples.size(), 4);
+        checkFormattedReturnedFields(tuples, selectStarFields);
 
         System.clearProperty("solr.solr.home");
     }
@@ -517,6 +523,16 @@ public class DistributedSqlTest extends AbstractStreamTest
 
         assertEquals("only one field should be returned", tupleFields.size(), 1);
         assertEquals("the field returned should be cm_name", tupleFields.get(0), "cm_name");
+
+
+        tuples = sqlQuery("select `cm:name`, cm_author from alfresco where cm_author != '*'", alfrescoJson);
+        assertNotNull(tuples);
+        assertEquals(tuples.size(), 4);
+        tupleFields = ((Set<String>) tuples.get(0).fields.keySet()).stream().map(
+                s -> s.replaceFirst(":", "_")).collect(Collectors.toList());
+
+        assertEquals("two fields should be returned", tupleFields.size(), 2);
+        assertEquals("the fields returned should be `cm:name` and cm_author", tupleFields.get(0), "cm_name");
 
         System.clearProperty("solr.solr.home");
     }
