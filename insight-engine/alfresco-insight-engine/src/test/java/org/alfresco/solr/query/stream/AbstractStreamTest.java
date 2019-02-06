@@ -25,6 +25,7 @@
  */
 package org.alfresco.solr.query.stream;
 
+import static java.util.Arrays.stream;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
@@ -282,7 +283,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
          */
         return Stream.concat(
                 SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().keySet().stream(),
-                Arrays.asList(SelectStarDefaultField.values()).stream().map(s -> s.getFieldName()))
+                stream(SelectStarDefaultField.values()).map(s -> s.getFieldName()))
                 .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
     }
 
