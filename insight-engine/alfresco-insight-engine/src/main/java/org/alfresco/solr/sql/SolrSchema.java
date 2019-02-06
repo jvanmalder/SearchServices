@@ -119,7 +119,7 @@ public class SolrSchema extends AbstractSchema
             queryFields.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
         }
 
-        // Get fields from solr index. 
+        // Get fields from solr index.
         if (!isSelectStarQuery)
         {
             queryFields.putAll(getIndexedFieldsInfo());
@@ -219,7 +219,8 @@ public class SolrSchema extends AbstractSchema
             addFieldInfoOriginalNameAndFormatted(fieldInfo, fieldAndType,
                 resolveType(fieldAndType.getValue(), typeFactory), null, formattedFieldName);
 
-            if (fieldType.equals("java.util.Date") || fieldType.equals("solr.TrieDateField")) {
+            if (fieldType.equals("java.util.Date") || fieldType.equals("solr.TrieDateField"))
+            {
                 addTimeFields(fieldInfo, fieldAndType, typeFactory.createJavaType(String.class));
             }
 
