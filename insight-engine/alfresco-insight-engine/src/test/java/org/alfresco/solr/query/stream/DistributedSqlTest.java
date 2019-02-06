@@ -518,21 +518,19 @@ public class DistributedSqlTest extends AbstractStreamTest
         List<Tuple> tuples = sqlQuery("select cm_name from alfresco where cm_name = 'name1'", alfrescoJson);
         assertNotNull(tuples);
         assertEquals(tuples.size(), 1);
-        List<String> tupleFields = ((Set<String>) tuples.get(0).fields.keySet()).stream().map(
-                s -> s.replaceFirst(":", "_")).collect(Collectors.toList());
 
-        assertEquals("only one field should be returned", tupleFields.size(), 1);
-        assertEquals("the field returned should be cm_name", tupleFields.get(0), "cm_name");
+        Set<String> fieldsToBeReturned = new HashSet<>();
+        fieldsToBeReturned.add("cm_name");
 
+        checkFormattedReturnedFields(tuples, fieldsToBeReturned);
 
         tuples = sqlQuery("select `cm:name`, cm_author from alfresco where cm_author != '*'", alfrescoJson);
         assertNotNull(tuples);
         assertEquals(tuples.size(), 4);
-        tupleFields = ((Set<String>) tuples.get(0).fields.keySet()).stream().map(
-                s -> s.replaceFirst(":", "_")).collect(Collectors.toList());
 
-        assertEquals("two fields should be returned", tupleFields.size(), 2);
-        assertEquals("the fields returned should be `cm:name` and cm_author", tupleFields.get(0), "cm_name");
+        // add cm_author to the list for fields to be returned.
+        fieldsToBeReturned.add("cm_author");
+        checkFormattedReturnedFields(tuples, fieldsToBeReturned);
 
         System.clearProperty("solr.solr.home");
     }
