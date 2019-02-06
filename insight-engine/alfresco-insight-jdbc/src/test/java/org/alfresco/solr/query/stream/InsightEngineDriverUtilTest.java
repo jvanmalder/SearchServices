@@ -30,11 +30,10 @@ public class InsightEngineDriverUtilTest
     @Test
     public void isJDBCProtocolTest()
     {
-        Assert.assertEquals(false,
-                isJDBCProtocol("http://localhost:8080/alfresco/api/-default-/public/search/versions/1/sql"));
-        Assert.assertEquals(false, isJDBCProtocol(""));
-        Assert.assertEquals(false, isJDBCProtocol(null));
-        Assert.assertEquals(true, isJDBCProtocol("jdbc:alfresco://localhost:8983?collection=alfresco"));
+        Assert.assertFalse(isJDBCProtocol("http://localhost:8080/alfresco/api/-default-/public/search/versions/1/sql"));
+        Assert.assertFalse(isJDBCProtocol(""));
+        Assert.assertFalse(isJDBCProtocol(null));
+        Assert.assertTrue(isJDBCProtocol("jdbc:alfresco://localhost:8983?collection=alfresco"));
     }
     @Test
     public void buildJsonTest()
@@ -57,9 +56,7 @@ public class InsightEngineDriverUtilTest
         String sql3 = "select SITE, CM_OWNER\n from alfresco\r group by\n SITE,CM_OWNER";
         String sql4 = "select SITE, CM_OWNER\n\n from alfresco\r group by\n SITE,CM_OWNER";
         String expected = "select SITE, CM_OWNER from alfresco group by SITE,CM_OWNER";
-        String[] locales = new String[2];
-        locales[0]= "en_UK";
-        locales[1]= "en_US";
+
         Assert.assertEquals(expected, formatSQL(sql));
         Assert.assertEquals(expected, formatSQL(sql2));
         Assert.assertEquals(expected, formatSQL(sql3));

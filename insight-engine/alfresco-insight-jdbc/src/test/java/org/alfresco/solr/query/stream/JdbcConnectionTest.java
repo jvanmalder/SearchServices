@@ -31,6 +31,7 @@ import org.junit.Test;
 
 /**
  * Test to ensure we capture bad connection error and not display user credentials.
+ *
  * @author Michael Suzuki
  */
 public class JdbcConnectionTest 
@@ -42,30 +43,23 @@ public class JdbcConnectionTest
     }
 
     @Test
-    public void testSearch() throws Exception
+    public void testSearch()
     {
         String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
         Properties props = getConnectionProperties(alfrescoJson);
         String connectionString ="jdbc:alfresco://fakeurl?collection=alfresco";
-        Connection con = null;
-        Statement stmt = null;
-        try 
+
+        try (Connection con = DriverManager.getConnection(connectionString, props);
+             Statement stmt = con.createStatement())
         {
-            con = DriverManager.getConnection(connectionString, props);
-            stmt = con.createStatement();
             stmt.executeQuery(sql);
         }
         catch (Exception e)
         {
             assertNotNull(e);
             assertEquals("Unable to execute the query, please check your settings", e.getMessage());
-        }
-        finally
-        {
-            stmt.close();
-            con.close();
         }
     }
 
@@ -78,6 +72,4 @@ public class JdbcConnectionTest
         props.put("password", "pass");
         return props;
     }
-
 }
-
