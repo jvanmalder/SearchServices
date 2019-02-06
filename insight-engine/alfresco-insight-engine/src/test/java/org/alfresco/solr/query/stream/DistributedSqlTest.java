@@ -504,6 +504,29 @@ public class DistributedSqlTest extends AbstractStreamTest
         System.clearProperty("solr.solr.home");
     }
 
+    /**
+     * This test check that queries with field missing in solr index does not fail if they belongs to
+     * default fields.
+     * SEARCH-1446
+     * @throws Exception
+     */
+    @Test
+    public void distributedSearch_queryFieldsMissingInSolrIndex() throws Exception
+    {
+
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+
+        // Query select * with property in predicate not belonging to select * fields
+        List<Tuple> tuples = sqlQuery("select cm_lockOwner, count(*) as total from alfresco group by cm_lockOwner", alfrescoJson);
+        assertNotNull(tuples);
+        assertEquals("no results should be found", tuples.size(), 0);
+
+        System.clearProperty("solr.solr.home");
+    }
+
 
     @Test
     public void distributedSearch_query_shouldReturnOnlySelectedFields() throws Exception
