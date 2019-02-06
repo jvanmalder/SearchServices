@@ -25,10 +25,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.alfresco.solr.sql.SelectStarDefaultField;
-import org.alfresco.solr.sql.SolrSchemaUtil;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
@@ -84,16 +81,6 @@ public class DistributedSqlTest extends AbstractStreamTest
     {
         dismissSolrServers();
         System.clearProperty("solr.solr.home");
-    }
-
-    private Set<String> getSelectStarFields()
-    {
-        /* Set containing the hard coded select * fields and the fields taken from shared.properties.
-         */
-        return Stream.concat(
-                SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().keySet().stream(),
-                Arrays.asList(SelectStarDefaultField.values()).stream().map(s -> s.getFieldName()))
-                .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
     }
 
 
@@ -466,28 +453,84 @@ public class DistributedSqlTest extends AbstractStreamTest
         /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
         System.setProperty("solr.solr.home", localJetty.getSolrHome());
 
+        Set<String> selectStarFields = getSelectStarFields();
+
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
         // Query select * with property in predicate belonging to select * fields
         List<Tuple> tuples = sqlQuery("select * from alfresco where cm_name = 'name1'", alfrescoJson);
         assertNotNull(tuples);
         assertEquals(tuples.size(), 1);
+        checkFormattedReturnedFields(tuples, selectStarFields);
 
-        Set<String> selectStarFields = getSelectStarFields();
-
-        for(Tuple t:tuples){
-            Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(
-                    s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
-            assertEquals(selectStarFields, tupleFields);
-        }
+        tuples = sqlQuery("select * from alfresco where `cm:name` = 'name1'", alfrescoJson);
+        assertNotNull(tuples);
+        assertEquals(tuples.size(), 1);
+        checkFormattedReturnedFields(tuples, selectStarFields);
 
         System.clearProperty("solr.solr.home");
     }
 
+
+    /**
+     * Check the correctness of the fields returned from a select * query with field in predicate not belonging
+     * to selectStarFields
+     * @throws Exception
+     */
+    @Test
+    public void distributedSearch_selectStarQueryWithPredicates_notDefault_shouldReturnResultsWithDefaultFieldsOnly() throws Exception
+    {
+
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+
+        Set<String> selectStarFields = getSelectStarFields();
+        selectStarFields.add("cm_author");
+
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+
+        // Query select * with property in predicate not belonging to select * fields
+        List<Tuple> tuples = sqlQuery("select * from alfresco where cm_author != '*'", alfrescoJson);
+        assertNotNull(tuples);
+        assertEquals(tuples.size(), 4);
+        checkFormattedReturnedFields(tuples, selectStarFields);
+
+        tuples = sqlQuery("select * from alfresco where `cm:author` != '*'", alfrescoJson);
+        assertNotNull(tuples);
+        assertEquals(tuples.size(), 4);
+        checkFormattedReturnedFields(tuples, selectStarFields);
+
+        System.clearProperty("solr.solr.home");
+    }
+
+    /**
+     * This test check that queries with field missing in solr index does not fail if they belongs to
+     * default fields.
+     * SEARCH-1446
+     * @throws Exception
+     */
+    @Test
+    public void distributedSearch_queryFieldsMissingInSolrIndex() throws Exception
+    {
+
+        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
+        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
+        System.setProperty("solr.solr.home", localJetty.getSolrHome());
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+
+        // Query select * with property in predicate not belonging to select * fields
+        List<Tuple> tuples = sqlQuery("select cm_lockOwner, count(*) as total from alfresco group by cm_lockOwner", alfrescoJson);
+        assertNotNull(tuples);
+        assertEquals("no results should be found", tuples.size(), 0);
+
+        System.clearProperty("solr.solr.home");
+    }
+
+
     @Test
     public void distributedSearch_query_shouldReturnOnlySelectedFields() throws Exception
     {
-
         JettySolrRunner localJetty = jettyContainers.values().iterator().next();
         /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
         System.setProperty("solr.solr.home", localJetty.getSolrHome());
@@ -498,11 +541,19 @@ public class DistributedSqlTest extends AbstractStreamTest
         List<Tuple> tuples = sqlQuery("select cm_name from alfresco where cm_name = 'name1'", alfrescoJson);
         assertNotNull(tuples);
         assertEquals(tuples.size(), 1);
-        List<String> tupleFields = ((Set<String>) tuples.get(0).fields.keySet()).stream().map(
-                s -> s.replaceFirst(":", "_")).collect(Collectors.toList());
 
-        assertEquals("only one field should be returned", tupleFields.size(), 1);
-        assertEquals("the field returned should be cm_name", tupleFields.get(0), "cm_name");
+        Set<String> fieldsToBeReturned = new HashSet<>();
+        fieldsToBeReturned.add("cm_name");
+
+        checkFormattedReturnedFields(tuples, fieldsToBeReturned);
+
+        tuples = sqlQuery("select `cm:name`, cm_author from alfresco where cm_author != '*'", alfrescoJson);
+        assertNotNull(tuples);
+        assertEquals(tuples.size(), 4);
+
+        // add cm_author to the list for fields to be returned.
+        fieldsToBeReturned.add("cm_author");
+        checkFormattedReturnedFields(tuples, fieldsToBeReturned);
 
         System.clearProperty("solr.solr.home");
     }

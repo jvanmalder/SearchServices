@@ -51,7 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /*
-* The SolrSchema class creates the "alfresco" table and populates the fields from the index.
+* The SolrSchema class creates the "alfresco" table and populates the queryFields from the index.
 */
 public class SolrSchema extends AbstractSchema
 {
@@ -60,7 +60,7 @@ public class SolrSchema extends AbstractSchema
 
 
     /**
-     * The default type we assign to fields not explicitly declared (i.e. defined in shared.properties or hard coded in select star fields).
+     * The default type we assign to queryFields not explicitly declared (i.e. defined in shared.properties or hard coded in select star queryFields).
      * Using the StrField as default type allows the SQL processor to manage them as opaque literals, without any further parsing.
      * In this way the (String) literal processing is moved completely on Solr side.
      */
@@ -83,10 +83,10 @@ public class SolrSchema extends AbstractSchema
     final String[] postfixes = { "_day", "_month", "_year" };
 
     final boolean isSelectStarQuery;
-    final Map<String, String> additionalFieldsFromConfiguration = new HashMap<>();
+    final Map<String, String> queryFields = new HashMap<>();
 
     /**
-     * formattedFileds is used to check if a fields is already inserted in additionalFieldsFromConfiguration.
+     * formattedFileds is used to check if a queryFields is already inserted in queryFields.
      */
     final Set<String> formattedFields = new HashSet<>();
 
@@ -102,33 +102,40 @@ public class SolrSchema extends AbstractSchema
     /**
      * Init a map of field-> type from :
      * - configurations defined in the shared properties
-     * - hard coded list of select star fields
-     * - fields from the sql predicates
+     * - hard coded list of select star queryFields
+     * - queryFields from the sql predicates
      *
      * @param properties
      */
     private void initFieldsFromConfiguration(Properties properties)
     {
-        additionalFieldsFromConfiguration.putAll(SolrSchemaUtil.fetchCustomFieldsFromSharedProperties());
 
-        if (isSelectStarQuery)
+        // Get fields from configuration.
+        queryFields.putAll(SolrSchemaUtil.fetchCustomFieldsFromSharedProperties());
+
+        // Get fields from default fields.
+        for (SelectStarDefaultField fieldAndType : SelectStarDefaultField.values())
         {
-            SelectStarDefaultField[] defaultSelectStarFields = SelectStarDefaultField.values();
-            for (SelectStarDefaultField fieldAndType : defaultSelectStarFields)
-            {
-                additionalFieldsFromConfiguration.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
-            }
+            queryFields.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
         }
 
-        formattedFields.addAll(additionalFieldsFromConfiguration.entrySet()
-                .stream().map(e -> getFormattedFieldName(e, null)).collect(Collectors.toList()));
+        // Get fields from solr index.
+        if (!isSelectStarQuery)
+        {
+            queryFields.putAll(getIndexedFieldsInfo());
+        }
 
+        // Create set of formatted fields. (Useful to check for duplicates)
+        formattedFields.addAll(queryFields.entrySet()
+                .stream().map(e -> getFormattedFieldName(e, null)).collect(Collectors.toList()));
         String sql = properties.getProperty("stmt", "");
-        //Add dynamic fields not part of the schema such as custom models and aspects.
+
+        //Add dynamic queryFields not part of the schema such as custom models and aspects.
         if (predicateExists(sql))
         {
-            SolrSchemaUtil.extractPredicates(sql).stream().filter(fieldName -> !formattedFields.contains(fieldName)).forEach(
-                fieldName -> additionalFieldsFromConfiguration.putIfAbsent(fieldName, UNKNOWN_FIELD_DEFAULT_TYPE));
+            SolrSchemaUtil.extractPredicates(sql).stream().filter(fieldName ->
+                    !formattedFields.contains(fieldName)).forEach(
+                fieldName -> queryFields.putIfAbsent(fieldName, UNKNOWN_FIELD_DEFAULT_TYPE));
         }
     }
 
@@ -199,34 +206,26 @@ public class SolrSchema extends AbstractSchema
     {
         final RelDataTypeFactory typeFactory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
         final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
-        //Add fields from local index
-        Map<String, String> fieldsAndTypeFromSolrIndex = getIndexedFieldsInfo();
-        Set<Map.Entry<String, String>> fieldsAndTypeEntriesFromSolrIndex = fieldsAndTypeFromSolrIndex.entrySet();
 
-        for (Map.Entry<String, String> fieldAndTypeFromSolrIndex : fieldsAndTypeEntriesFromSolrIndex)
-        {
-            String fieldTypeFromSolrIndex = fieldAndTypeFromSolrIndex.getValue();
-            RelDataType type;
-            type = resolveType(fieldTypeFromSolrIndex, typeFactory);
-            addFieldInfoOriginalNameAndFormatted(fieldInfo, fieldAndTypeFromSolrIndex, type, null, null);
-            if (fieldTypeFromSolrIndex.equals("java.util.Date")||fieldTypeFromSolrIndex.equals("solr.TrieDateField"))
-            {
-                addTimeFields(fieldInfo, fieldAndTypeFromSolrIndex, typeFactory.createJavaType(String.class));
-            }
-        }
 
         /**
-         * Load mandatory fields that have not already been loaded
+         * Load query fields
          */
-        for (Entry<String, String> fieldAndType : additionalFieldsFromConfiguration.entrySet())
+        for (Entry<String, String> fieldAndType : queryFields.entrySet())
         {
+            String fieldType = fieldAndType.getKey();
             String formattedFieldName = getFormattedFieldName(fieldAndType,null);
-            if (!fieldsAndTypeFromSolrIndex.containsKey(fieldAndType.getKey()) && (!fieldsAndTypeFromSolrIndex.containsKey(formattedFieldName)))
+
+            addFieldInfoOriginalNameAndFormatted(fieldInfo, fieldAndType,
+                resolveType(fieldAndType.getValue(), typeFactory), null, formattedFieldName);
+
+            if (fieldType.equals("java.util.Date") || fieldType.equals("solr.TrieDateField"))
             {
-                addFieldInfoOriginalNameAndFormatted(fieldInfo, fieldAndType,
-                    resolveType(fieldAndType.getValue(), typeFactory), null, formattedFieldName);
+                addTimeFields(fieldInfo, fieldAndType, typeFactory.createJavaType(String.class));
             }
+
         }
+
         fieldInfo.add("_query_", typeFactory.createJavaType(String.class));
         fieldInfo.add("score", typeFactory.createJavaType(Double.class));
 
@@ -259,13 +258,6 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
         if(formattedFieldName==null)
         {
             formattedFieldName = getFormattedFieldName(entry, postfix);
-        }
-
-        if (isSelectStarQuery){
-            if(!additionalFieldsFromConfiguration.keySet().contains(entry.getKey())
-                    && !additionalFieldsFromConfiguration.keySet().contains(formattedFieldName)) {
-                return;
-            }
         }
 
         fieldInfo.add(entry.getKey() + getPostfix(postfix), type).nullable(true);
