@@ -80,7 +80,6 @@ public class DistributedSqlTest extends AbstractStreamTest
     private static void destroyData()
     {
         dismissSolrServers();
-        System.clearProperty("solr.solr.home");
     }
 
 
@@ -319,10 +318,6 @@ public class DistributedSqlTest extends AbstractStreamTest
         Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","finance_amount"));
         sql = "select cm_name as `Expense Name`, finance_amount from alfresco";
 
-        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
-        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
-        System.setProperty("solr.solr.home", localJetty.getSolrHome());
-
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertEquals(4, tuples.size());
@@ -330,8 +325,6 @@ public class DistributedSqlTest extends AbstractStreamTest
         {
             assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
         }
-
-        System.clearProperty("solr.solr.home");
     }
 
     @Test 
@@ -341,10 +334,6 @@ public class DistributedSqlTest extends AbstractStreamTest
         Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","finance:amount"));
         sql = "select cm_name as `Expense Name`, `finance:amount` from alfresco";
         
-        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
-        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
-        System.setProperty("solr.solr.home", localJetty.getSolrHome());
-        
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertEquals(4, tuples.size());
@@ -352,38 +341,26 @@ public class DistributedSqlTest extends AbstractStreamTest
         {
             assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
         }
-
-        System.clearProperty("solr.solr.home");
     }
 
     @Test 
     public void distributedSearch_groupingOnCustomFieldDefinedInSharedProperties_shouldReturnCorrectResults()
         throws Exception
     {
-        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
-        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
-        System.setProperty("solr.solr.home", localJetty.getSolrHome());
-
         sql = "select finance_Emp from alfresco group by finance_Emp";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertEquals(2, tuples.size());
-        System.clearProperty("solr.solr.home");
     }
 
     @Test 
     public void distributedSearch_groupingOnCustomFieldDefinedInSharedPropertiesVariant_shouldReturnCorrectResults()
         throws Exception
     {
-        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
-        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
-        System.setProperty("solr.solr.home", localJetty.getSolrHome());
-
         sql = "select `finance:Emp` from alfresco group by `finance:Emp`";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertEquals(2, tuples.size());
-        System.clearProperty("solr.solr.home");
     }
 
     @Test 
@@ -392,14 +369,9 @@ public class DistributedSqlTest extends AbstractStreamTest
         exceptionRule.expect(Exception.class);
         exceptionRule.expectMessage("Column 'bob' not found in any table");
 
-        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
-        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
-        System.setProperty("solr.solr.home", localJetty.getSolrHome());
-
         sql = "select bob from alfresco";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         sqlQuery(sql, alfrescoJson);
-        System.clearProperty("solr.solr.home");
     }
 
     @Test
@@ -408,23 +380,14 @@ public class DistributedSqlTest extends AbstractStreamTest
         exceptionRule.expect(Exception.class);
         exceptionRule.expectMessage("Column 'finance:misconfigured' not found in any table");
 
-        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
-        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
-        System.setProperty("solr.solr.home", localJetty.getSolrHome());
-
         sql = "select `finance:misconfigured` from alfresco";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         sqlQuery(sql, alfrescoJson);
-        System.clearProperty("solr.solr.home");
     }
 
     @Test
     public void distributedSearch_selectStarQuery_shouldReturnResultsWithDefaultFieldsOnly() throws Exception
     {
-        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
-        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
-        System.setProperty("solr.solr.home", localJetty.getSolrHome());
-
         sql = "select * from alfresco";
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
@@ -441,20 +404,12 @@ public class DistributedSqlTest extends AbstractStreamTest
                     s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
             assertEquals(selectStarFields, tupleFields);
         }
-
-        System.clearProperty("solr.solr.home");
     }
 
     @Test
     public void distributedSearch_selectStarQueryWithPredicates_shouldReturnResultsWithDefaultFieldsOnly() throws Exception
     {
-
-        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
-        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
-        System.setProperty("solr.solr.home", localJetty.getSolrHome());
-
         Set<String> selectStarFields = getSelectStarFields();
-
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
         // Query select * with property in predicate belonging to select * fields
@@ -467,8 +422,6 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertNotNull(tuples);
         assertEquals(tuples.size(), 1);
         checkFormattedReturnedFields(tuples, selectStarFields);
-
-        System.clearProperty("solr.solr.home");
     }
 
 
@@ -480,11 +433,6 @@ public class DistributedSqlTest extends AbstractStreamTest
     @Test
     public void distributedSearch_selectStarQueryWithPredicates_notDefault_shouldReturnResultsWithDefaultFieldsOnly() throws Exception
     {
-
-        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
-        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
-        System.setProperty("solr.solr.home", localJetty.getSolrHome());
-
         Set<String> selectStarFields = getSelectStarFields();
         selectStarFields.add("cm_author");
 
@@ -500,8 +448,6 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertNotNull(tuples);
         assertEquals(tuples.size(), 4);
         checkFormattedReturnedFields(tuples, selectStarFields);
-
-        System.clearProperty("solr.solr.home");
     }
 
     /**
@@ -513,28 +459,17 @@ public class DistributedSqlTest extends AbstractStreamTest
     @Test
     public void distributedSearch_queryFieldsMissingInSolrIndex() throws Exception
     {
-
-        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
-        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
-        System.setProperty("solr.solr.home", localJetty.getSolrHome());
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
         // Query select * with property in predicate not belonging to select * fields
         List<Tuple> tuples = sqlQuery("select cm_lockOwner, count(*) as total from alfresco group by cm_lockOwner", alfrescoJson);
         assertNotNull(tuples);
         assertEquals("no results should be found", tuples.size(), 0);
-
-        System.clearProperty("solr.solr.home");
     }
-
 
     @Test
     public void distributedSearch_query_shouldReturnOnlySelectedFields() throws Exception
     {
-        JettySolrRunner localJetty = jettyContainers.values().iterator().next();
-        /* This is a workaround, the solrhome is not currently properly managed in tests : SEARCH-1309*/
-        System.setProperty("solr.solr.home", localJetty.getSolrHome());
-
         String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
         // Query select * with property in predicate belonging to select * fields
@@ -554,8 +489,6 @@ public class DistributedSqlTest extends AbstractStreamTest
         // add cm_author to the list for fields to be returned.
         fieldsToBeReturned.add("cm_author");
         checkFormattedReturnedFields(tuples, fieldsToBeReturned);
-
-        System.clearProperty("solr.solr.home");
     }
 
     private void assertResult(List<Tuple> tuples)
