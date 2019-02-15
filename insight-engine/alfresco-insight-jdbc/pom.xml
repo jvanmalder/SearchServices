@@ -3,17 +3,11 @@
    <modelVersion>4.0.0</modelVersion>
    <parent>
       <groupId>org.alfresco</groupId>
-      <artifactId>alfresco-super-pom</artifactId>
-      <version>10</version>
+      <artifactId>alfresco-insight-engine-parent</artifactId>
+      <version>1.1.0-SNAPSHOT</version>
    </parent>
    <artifactId>alfresco-insight-jdbc</artifactId>
-   <version>1.1.0-SNAPSHOT</version>
    <name>Alfresco Insight Engine JDBC Driver</name>
-   <properties>
-      <solr.version>6.6.5</solr.version>
-      <alfresco.search.dependency.version>1.4.0-SNAPSHOT</alfresco.search.dependency.version>
-      <alfresco.insight.engine.version>1.1.0-SNAPSHOT</alfresco.insight.engine.version>
-   </properties>
    <distributionManagement>
       <repository>
          <id>alfresco-internal</id>
@@ -24,12 +18,6 @@
          <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-snapshots/</url>
       </snapshotRepository>
    </distributionManagement>
-   <scm>
-      <connection>scm:git:https://git.alfresco.com/search_discovery/InsightJDBC.git</connection>
-      <developerConnection>scm:git:https://git.alfresco.com/search_discovery/InsightJDBC.git</developerConnection>
-      <url>https://git.alfresco.com/search_discovery/InsightJDBC.git</url>
-      <tag>HEAD</tag>
-   </scm>
    <build>
       <plugins>
          <plugin>
@@ -93,7 +81,7 @@
       <dependency>
          <groupId>org.alfresco</groupId>
          <artifactId>alfresco-insight-engine</artifactId>
-         <version>${alfresco.insight.engine.version}</version>
+         <version>1.1.0-SNAPSHOT</version>
       </dependency>
       <!-- Provided dependencies -->
       <dependency>
@@ -125,7 +113,7 @@
       <dependency>
          <groupId>org.alfresco</groupId>
          <artifactId>alfresco-insight-engine</artifactId>
-         <version>${alfresco.insight.engine.version}</version>
+         <version>1.1.0-SNAPSHOT</version>
          <scope>test</scope>
          <type>test-jar</type>
       </dependency>

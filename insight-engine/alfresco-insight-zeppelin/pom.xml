@@ -4,11 +4,10 @@
    <packaging>war</packaging>
    <parent>
       <groupId>org.alfresco</groupId>
-      <artifactId>alfresco-super-pom</artifactId>
-      <version>10</version>
+      <artifactId>alfresco-insight-engine-parent</artifactId>
+      <version>1.1.0-SNAPSHOT</version>
    </parent>
    <artifactId>alfresco-insight-zeppelin</artifactId>
-   <version>1.1.0-SNAPSHOT</version>
    <name>Alfresco Insight Zeppelin</name>
    <properties>
       <alfresco.zeppelin.version.suffix>alfresco-patched-2</alfresco.zeppelin.version.suffix>
@@ -20,8 +19,6 @@
       <zeppelin.sample.notebook.2>2DMP8WY2G</zeppelin.sample.notebook.2>
       <zeppelin.port>9090</zeppelin.port>
       <zeppelin.server.context.path>/zeppelin</zeppelin.server.context.path>
-      <alfresco-insight-jdbc.name>alfresco-insight-jdbc</alfresco-insight-jdbc.name>
-      <alfresco-insight-jdbc.version>1.1.0-SNAPSHOT</alfresco-insight-jdbc.version>
    </properties>
    <distributionManagement>
       <repository>
@@ -33,12 +30,6 @@
          <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-snapshots/</url>
       </snapshotRepository>
    </distributionManagement>
-   <scm>
-      <connection>scm:git:https://git.alfresco.com/search_discovery/InsightZeppelin.git</connection>
-      <developerConnection>scm:git:https://git.alfresco.com/search_discovery/InsightZeppelin.git</developerConnection>
-      <url>https://git.alfresco.com/search_discovery/InsightZeppelin.git</url>
-      <tag>HEAD</tag>
-   </scm>
    <build>
       <plugins>
          <plugin>
@@ -68,8 +59,8 @@
                      <artifactItems>
                         <artifactItem>
                            <groupId>org.alfresco</groupId>
-                           <artifactId>${alfresco-insight-jdbc.name}</artifactId>
-                           <version>${alfresco-insight-jdbc.version}</version>
+                           <artifactId>alfresco-insight-jdbc</artifactId>
+                           <version>${project.version}</version>
                         </artifactItem>
                      </artifactItems>
                      <useBaseVersion>true</useBaseVersion>
@@ -155,7 +146,7 @@
                      <target>
                         <move file="${project.build.directory}/${project.artifactId}-${project.version}.war" tofile="${project.build.directory}/dependency/${zeppelin.artifact}/zeppelin-web-${apache.zeppelin.version}.war" />
                         <delete dir="${project.build.directory}/dependency/${zeppelin.artifact}/notebook" />
-                        <copy file="${project.build.directory}/dependency/${alfresco-insight-jdbc.name}-${alfresco-insight-jdbc.version}.jar" todir="${project.build.directory}/dependency/${zeppelin.artifact}/alfresco" />
+                        <copy file="${project.build.directory}/dependency/alfresco-insight-jdbc-${project.version}.jar" todir="${project.build.directory}/dependency/${zeppelin.artifact}/alfresco" />
                         <copy file="${basedir}/src/zeppelin/substituter.sh" todir="${project.build.directory}/dependency/${zeppelin.artifact}/bin" />
                         <copy file="${basedir}/src/zeppelin/substituter.cmd" todir="${project.build.directory}/dependency/${zeppelin.artifact}/bin" />
                         <chmod file="${project.build.directory}/dependency/${zeppelin.artifact}/bin/substituter.sh" perm="755" />
