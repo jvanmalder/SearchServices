@@ -1,0 +1,22 @@
+{
+  "authInfo": {
+    "2CVRR91J2": {
+      "owners": [
+        "admin"
+      ],
+      "readers": [],
+      "writers": [
+        "admin"
+      ]
+    },
+    "2DMP8WY2G": {
+      "owners": [
+        "admin"
+      ],
+      "readers": [],
+      "writers": [
+        "admin"
+      ]
+    }
+  }
+}

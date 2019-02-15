@@ -1,0 +1,124 @@
+{
+  "interpreterSettings": {
+    "2CUZK9W4Z": {
+      "id": "2CUZK9W4Z",
+      "name": "alfresco",
+      "group": "jdbc",
+      "properties": {
+        "zeppelin.jdbc.auth.type": "",
+        "common.max_count": "1000",
+        "zeppelin.jdbc.principal": "",
+        "default.driver": "org.apache.solr.client.solrj.io.sql.InsightEngineDriverImpl",
+        "default.url": "jdbc:alfresco://REPO_HOST:REPO_PORT?collection\u003dalfresco",
+        "zeppelin.jdbc.keytab.location": "",
+        "zeppelin.jdbc.concurrent.use": "true",
+        "zeppelin.jdbc.concurrent.max_connection": "10"
+      },
+      "status": "READY",
+      "interpreterGroup": [
+        {
+          "name": "sql",
+          "class": "org.apache.zeppelin.jdbc.JDBCInterpreter",
+          "defaultInterpreter": true,
+          "editor": {
+            "language": "sql",
+            "editOnDblClick": false
+          }
+        }
+      ],
+      "dependencies": [
+        {
+          "groupArtifactVersion": "../alfresco/${alfresco-insight-jdbc.name}-${alfresco-insight-jdbc.version}.jar",
+          "local": false
+        }
+      ],
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "isolated",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
+    },
+    "2CVAY6EYZ": {
+      "id": "2CVAY6EYZ",
+      "name": "md",
+      "group": "md",
+      "properties": {
+        "markdown.parser.type": "pegdown"
+      },
+      "status": "READY",
+      "interpreterGroup": [
+        {
+          "name": "md",
+          "class": "org.apache.zeppelin.markdown.Markdown",
+          "defaultInterpreter": false,
+          "editor": {
+            "language": "markdown",
+            "editOnDblClick": true
+          }
+        }
+      ],
+      "dependencies": [],
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "shared",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
+    }
+  },
+  "interpreterBindings": {
+    "2CVRR91J2": [
+      "2CUZK9W4Z",
+      "2CVAY6EYZ"
+    ],
+    "2DMP8WY2G": [
+      "2CUZK9W4Z",
+      "2CVAY6EYZ"
+    ]
+  },
+  "interpreterRepositories": [
+    {
+      "id": "central",
+      "type": "default",
+      "url": "http://repo1.maven.org/maven2/",
+      "releasePolicy": {
+        "enabled": true,
+        "updatePolicy": "daily",
+        "checksumPolicy": "warn"
+      },
+      "snapshotPolicy": {
+        "enabled": true,
+        "updatePolicy": "daily",
+        "checksumPolicy": "warn"
+      },
+      "mirroredRepositories": [],
+      "repositoryManager": false
+    },
+    {
+      "id": "local",
+      "type": "default",
+      "url": "",
+      "releasePolicy": {
+        "enabled": true,
+        "updatePolicy": "daily",
+        "checksumPolicy": "warn"
+      },
+      "snapshotPolicy": {
+        "enabled": true,
+        "updatePolicy": "daily",
+        "checksumPolicy": "warn"
+      },
+      "mirroredRepositories": [],
+      "repositoryManager": false
+    }
+  ]
+}

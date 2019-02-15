@@ -1,0 +1,1138 @@
+{
+  "paragraphs": [
+    {
+      "title": "Storage Used (Bytes)",
+      "text": "%alfresco\nselect sum(`cm:content.size`) \nas `Storage Used (bytes)`\nfrom alfresco",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:16 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 4.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 84.0,
+              "optionOpen": false
+            }
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "Storage Used (bytes)\n17640199\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109423_-874953438",
+      "id": "20171002-080556_1550956080",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:16 PM",
+      "dateFinished": "Jun 8, 2018 3:49:17 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Total Documents",
+      "text": "%alfresco\nselect count(*) as Documents from alfresco where TYPE\u003d\u0027cm:content\u0027",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:16 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 4.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 108.0,
+              "optionOpen": false
+            }
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "Documents\n189\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109447_-1179674567",
+      "id": "20171002-073934_2145802019",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:16 PM",
+      "dateFinished": "Jun 8, 2018 3:49:18 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Total Folders",
+      "text": "%alfresco\nselect count(*) as Folders from alfresco where type \u003d \u0027cm:folder\u0027",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:16 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 4.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 92.0,
+              "optionOpen": false
+            }
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "Folders\n80\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109447_-1179674567",
+      "id": "20171002-074001_1741036893",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:17 PM",
+      "dateFinished": "Jun 8, 2018 3:49:18 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Count of Content Created In The Last 60 Days",
+      "text": "%alfresco\nselect cm_created_day, count(*) from alfresco where cm_created \u003e\u003d \u0027NOW/DAY-60DAYS\u0027 group by cm_created_day",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:16 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "lineChart",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_created_day\tEXPR$1\n2018-04-09\t0\n2018-04-10\t0\n2018-04-11\t0\n2018-04-12\t0\n2018-04-13\t0\n2018-04-14\t0\n2018-04-15\t0\n2018-04-16\t0\n2018-04-17\t0\n2018-04-18\t0\n2018-04-19\t0\n2018-04-20\t0\n2018-04-21\t0\n2018-04-22\t0\n2018-04-23\t0\n2018-04-24\t0\n2018-04-25\t0\n2018-04-26\t0\n2018-04-27\t0\n2018-04-28\t0\n2018-04-29\t0\n2018-04-30\t0\n2018-05-01\t0\n2018-05-02\t0\n2018-05-03\t0\n2018-05-04\t0\n2018-05-05\t0\n2018-05-06\t0\n2018-05-07\t0\n2018-05-08\t0\n2018-05-09\t0\n2018-05-10\t0\n2018-05-11\t0\n2018-05-12\t0\n2018-05-13\t0\n2018-05-14\t0\n2018-05-15\t0\n2018-05-16\t0\n2018-05-17\t0\n2018-05-18\t0\n2018-05-19\t0\n2018-05-20\t0\n2018-05-21\t0\n2018-05-22\t0\n2018-05-23\t0\n2018-05-24\t0\n2018-05-25\t0\n2018-05-26\t0\n2018-05-27\t0\n2018-05-28\t0\n2018-05-29\t0\n2018-05-30\t0\n2018-05-31\t0\n2018-06-01\t0\n2018-06-02\t0\n2018-06-03\t0\n2018-06-04\t0\n2018-06-05\t0\n2018-06-06\t0\n2018-06-07\t0\n2018-06-08\t685\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109449_-1181983061",
+      "id": "20171005-083941_109499321",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:17 PM",
+      "dateFinished": "Jun 8, 2018 3:49:21 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Volume of Content Created In The Last 60 Days",
+      "text": "%alfresco\nselect cm_created_day, sum(`cm:content.size`) as `Sum`, max (`cm:content.size`) as `Max`, count(*) as `Count` from alfresco \nwhere cm_created \u003e\u003d \u0027NOW/DAY-60DAYS\u0027 group by cm_created_day \norder by cm_created_day desc",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:55:25 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "lineChart",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_created_day\tSum\tMax\tCount\n2018-06-08\t461022\t10436\t685\n2018-06-07\tnull\tnull\t0\n2018-06-06\tnull\tnull\t0\n2018-06-05\tnull\tnull\t0\n2018-06-04\tnull\tnull\t0\n2018-06-03\tnull\tnull\t0\n2018-06-02\tnull\tnull\t0\n2018-06-01\tnull\tnull\t0\n2018-05-31\tnull\tnull\t0\n2018-05-30\tnull\tnull\t0\n2018-05-29\tnull\tnull\t0\n2018-05-28\tnull\tnull\t0\n2018-05-27\tnull\tnull\t0\n2018-05-26\tnull\tnull\t0\n2018-05-25\tnull\tnull\t0\n2018-05-24\tnull\tnull\t0\n2018-05-23\tnull\tnull\t0\n2018-05-22\tnull\tnull\t0\n2018-05-21\tnull\tnull\t0\n2018-05-20\tnull\tnull\t0\n2018-05-19\tnull\tnull\t0\n2018-05-18\tnull\tnull\t0\n2018-05-17\tnull\tnull\t0\n2018-05-16\tnull\tnull\t0\n2018-05-15\tnull\tnull\t0\n2018-05-14\tnull\tnull\t0\n2018-05-13\tnull\tnull\t0\n2018-05-12\tnull\tnull\t0\n2018-05-11\tnull\tnull\t0\n2018-05-10\tnull\tnull\t0\n2018-05-09\tnull\tnull\t0\n2018-05-08\tnull\tnull\t0\n2018-05-07\tnull\tnull\t0\n2018-05-06\tnull\tnull\t0\n2018-05-05\tnull\tnull\t0\n2018-05-04\tnull\tnull\t0\n2018-05-03\tnull\tnull\t0\n2018-05-02\tnull\tnull\t0\n2018-05-01\tnull\tnull\t0\n2018-04-30\tnull\tnull\t0\n2018-04-29\tnull\tnull\t0\n2018-04-28\tnull\tnull\t0\n2018-04-27\tnull\tnull\t0\n2018-04-26\tnull\tnull\t0\n2018-04-25\tnull\tnull\t0\n2018-04-24\tnull\tnull\t0\n2018-04-23\tnull\tnull\t0\n2018-04-22\tnull\tnull\t0\n2018-04-21\tnull\tnull\t0\n2018-04-20\tnull\tnull\t0\n2018-04-19\tnull\tnull\t0\n2018-04-18\tnull\tnull\t0\n2018-04-17\tnull\tnull\t0\n2018-04-16\tnull\tnull\t0\n2018-04-15\tnull\tnull\t0\n2018-04-14\tnull\tnull\t0\n2018-04-13\tnull\tnull\t0\n2018-04-12\tnull\tnull\t0\n2018-04-11\tnull\tnull\t0\n2018-04-10\tnull\tnull\t0\n2018-04-09\tnull\tnull\t0\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109455_-1182752558",
+      "id": "20171027-154716_370415980",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:55:25 PM",
+      "dateFinished": "Jun 8, 2018 3:55:26 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Count Of Documents By Site",
+      "text": "%alfresco\nselect SITE, count(*) as total from alfresco where TYPE \u003d \u0027cm:content\u0027 group by SITE order by total desc",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:17 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "runOnSelectionChange": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "multiBarChart": {
+                  "stacked": true
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "SITE",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "total",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {
+          "SITE": [
+            "sales",
+            "marketing",
+            "engineering",
+            "_REPOSITORY_",
+            "swsdp"
+          ]
+        },
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "SITE\ttotal\n_REPOSITORY_\t142\nswsdp\t47\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109460_-1173903334",
+      "id": "20170914-160910_2071356464",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:17 PM",
+      "dateFinished": "Jun 8, 2018 3:49:21 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Volume Stored By Site (Bytes)",
+      "text": "%alfresco\nSELECT SITE, sum(`cm_content.size`) from alfresco group by SITE",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:17 PM",
+      "config": {
+        "lineNumbers": true,
+        "tableHide": false,
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "editorHide": false,
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "pieChart",
+              "height": 324.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "SITE\tEXPR$1\n_REPOSITORY_\t466192\nsurf-config\t0\nswsdp\t17174007\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109468_-1176981325",
+      "id": "20170914-113549_1761779241",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:18 PM",
+      "dateFinished": "Jun 8, 2018 3:49:21 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "New Documents By User And Site",
+      "text": "%alfresco\nselect SITE, cm_creator, count(*) as total from alfresco where NOT cm_creator \u003d \u0027System\u0027 group by SITE, cm_creator order by total desc",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:17 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "editorHide": false,
+        "title": true,
+        "runOnSelectionChange": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "multiBarChart": {
+                  "stacked": true
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "cm_creator",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [
+                {
+                  "name": "SITE",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "total",
+                  "index": 2.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {
+          "site": [
+            "sales",
+            "engineering",
+            "marketing",
+            "_REPOSITORY_"
+          ]
+        },
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "SITE\tcm_creator\ttotal\nswsdp\tmjackson\t53\nswsdp\tabeecher\t50\n_REPOSITORY_\tmjackson\t2\n_REPOSITORY_\tabeecher\t1\n_REPOSITORY_\tadmin\t1\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109468_-1176981325",
+      "id": "20170914-114835_1610505512",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:18 PM",
+      "dateFinished": "Jun 8, 2018 3:49:21 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Modified Documents By Site",
+      "text": "%alfresco\nselect SITE, cm_modifier, count(*) as total from alfresco where NOT cm_modifier \u003d \u0027System\u0027 group by SITE, cm_modifier order by total desc",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:17 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "editorHide": false,
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "multiBarChart": {
+                  "stacked": true
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "SITE",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [
+                {
+                  "name": "cm_modifier",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "total",
+                  "index": 2.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "SITE\tcm_modifier\ttotal\nswsdp\tmjackson\t48\nswsdp\tabeecher\t42\nswsdp\tadmin\t13\n_REPOSITORY_\tmjackson\t2\n_REPOSITORY_\tabeecher\t1\n_REPOSITORY_\tadmin\t1\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109470_-1176596576",
+      "id": "20170914-114928_283347429",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:19 PM",
+      "dateFinished": "Jun 8, 2018 3:49:22 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Documents By Site \u0026 Mimetype",
+      "text": "%alfresco\nselect SITE, `cm_content.mimetype`, count(*) as total from alfresco where TYPE \u003d \u0027cm:content\u0027 group by SITE, `cm_content.mimetype` order by total desc",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:18 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "multiBarChart": {
+                  "stacked": true
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "SITE",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [
+                {
+                  "name": "cm_content.mimetype",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "total",
+                  "index": 2.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "SITE\tcm_content.mimetype\ttotal\n_REPOSITORY_\ttext/plain\t120\nswsdp\ttext/html\t12\n_REPOSITORY_\tapplication/x-javascript\t10\nswsdp\timage/png\t10\nswsdp\timage/jpeg\t8\n_REPOSITORY_\ttext/html\t6\n_REPOSITORY_\ttext/xml\t3\nswsdp\tapplication/msword\t3\n_REPOSITORY_\timage/jpeg\t2\nswsdp\tapplication/vnd.ms-powerpoint\t2\n_REPOSITORY_\tapplication/json\t1\nswsdp\tapplication/pdf\t1\nswsdp\tapplication/vnd.ms-excel\t1\nswsdp\tvideo/mp4\t1\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109472_-1190832285",
+      "id": "20170914-161320_1789718632",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:19 PM",
+      "dateFinished": "Jun 8, 2018 3:49:21 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "All Content By Mimetype",
+      "text": "%alfresco\nselect `cm_content.mimetype`, count(*) as total from alfresco where TYPE \u003d \u0027cm:content\u0027 group by `cm_content.mimetype` order by total desc",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:19 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "pieChart",
+              "height": 324.0,
+              "optionOpen": false,
+              "setting": {
+                "multiBarChart": {
+                  "stacked": false
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "cm_content.mimetype",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "total",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_content.mimetype\ttotal\ntext/plain\t120\ntext/html\t18\napplication/x-javascript\t10\nimage/jpeg\t10\nimage/png\t10\napplication/msword\t3\ntext/xml\t3\napplication/vnd.ms-powerpoint\t2\napplication/json\t1\napplication/pdf\t1\napplication/vnd.ms-excel\t1\nvideo/mp4\t1\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109472_-1190832285",
+      "id": "20170914-161110_326800058",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:19 PM",
+      "dateFinished": "Jun 8, 2018 3:49:22 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Locked Content By User",
+      "text": "%alfresco\nselect cm_lockOwner, count(*) as total from alfresco group by cm_lockOwner",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:19 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "pieChart",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_lockOwner\ttotal\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109472_-1190832285",
+      "id": "20170914-161442_2102184707",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:20 PM",
+      "dateFinished": "Jun 8, 2018 3:49:22 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Largest Documents ",
+      "text": "%alfresco\nselect cm_name, cm_creator, site, `cm:content.size` from alfresco order by `cm:content.size` DESC limit 20",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:19 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "editorHide": false,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_name\tcm_creator\tSITE\tcm:content.size\nWebSiteReview.mp4\tabeecher\t[swsdp]\t3737049\nProject Overview.ppt\tmjackson\t[swsdp]\t2898432\nProject Objectives.ppt\tmjackson\t[swsdp]\t2117632\nwebpreview\tmjackson\t[swsdp]\t976492\ninv I200-189.png\tmjackson\t[swsdp]\t777461\nwindmill.png\tabeecher\t[swsdp]\t679602\nwebpreview\tmjackson\t[swsdp]\t672905\nmoney.JPG\tabeecher\t[swsdp]\t540412\ncoins.JPG\tabeecher\t[swsdp]\t501641\nProject Contract.pdf\tabeecher\t[swsdp]\t381778\nsample 2.png\tabeecher\t[swsdp]\t375396\nsample 3.png\tabeecher\t[swsdp]\t350217\ngraph.JPG\tabeecher\t[swsdp]\t342155\nimgpreview\tmjackson\t[swsdp]\t266338\ninv I200-109.png\tmjackson\t[swsdp]\t212734\nimgpreview\tmjackson\t[swsdp]\t196506\nsample 1.png\tabeecher\t[swsdp]\t188533\nlow consumption bulb.png\tabeecher\t[swsdp]\t172648\nturbine.JPG\tabeecher\t[swsdp]\t165798\nimgpreview\tmjackson\t[swsdp]\t155620\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109473_-1191217034",
+      "id": "20171002-151248_2042166563",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:20 PM",
+      "dateFinished": "Jun 8, 2018 3:49:22 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Count of Content Modified In The Last 60 Days",
+      "text": "%alfresco\nselect cm_modified_day, count(*) from alfresco where cm_modified \u003e\u003d \u0027NOW/DAY-60DAYS\u0027 group by cm_modified_day",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:19 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "lineChart",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_modified_day\tEXPR$1\n2018-04-09\t0\n2018-04-10\t0\n2018-04-11\t0\n2018-04-12\t0\n2018-04-13\t0\n2018-04-14\t0\n2018-04-15\t0\n2018-04-16\t0\n2018-04-17\t0\n2018-04-18\t0\n2018-04-19\t0\n2018-04-20\t0\n2018-04-21\t0\n2018-04-22\t0\n2018-04-23\t0\n2018-04-24\t0\n2018-04-25\t0\n2018-04-26\t0\n2018-04-27\t0\n2018-04-28\t0\n2018-04-29\t0\n2018-04-30\t0\n2018-05-01\t0\n2018-05-02\t0\n2018-05-03\t0\n2018-05-04\t0\n2018-05-05\t0\n2018-05-06\t0\n2018-05-07\t0\n2018-05-08\t0\n2018-05-09\t0\n2018-05-10\t0\n2018-05-11\t0\n2018-05-12\t0\n2018-05-13\t0\n2018-05-14\t0\n2018-05-15\t0\n2018-05-16\t0\n2018-05-17\t0\n2018-05-18\t0\n2018-05-19\t0\n2018-05-20\t0\n2018-05-21\t0\n2018-05-22\t0\n2018-05-23\t0\n2018-05-24\t0\n2018-05-25\t0\n2018-05-26\t0\n2018-05-27\t0\n2018-05-28\t0\n2018-05-29\t0\n2018-05-30\t0\n2018-05-31\t0\n2018-06-01\t0\n2018-06-02\t0\n2018-06-03\t0\n2018-06-04\t0\n2018-06-05\t0\n2018-06-06\t0\n2018-06-07\t0\n2018-06-08\t685\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109473_-1191217034",
+      "id": "20171102-160319_1005463480",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:20 PM",
+      "dateFinished": "Jun 8, 2018 3:49:22 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Volume of Content Modified In The Last 60 Days",
+      "text": "%alfresco\nselect cm_modified_day, sum(`cm:content.size`) as `Sum`, max (`cm:content.size`) as `Max` from alfresco \nwhere cm_modified \u003e\u003d \u0027NOW/DAY-60DAYS\u0027 AND cm_modified \u003c\u003d \u0027NOW/DAY+1DAY\u0027 group by cm_modified_day \norder by cm_modified_day desc",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:55:37 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "lineChart",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_modified_day\tSum\tMax\n2018-06-08\t461022\t10436\n2018-06-07\tnull\tnull\n2018-06-06\tnull\tnull\n2018-06-05\tnull\tnull\n2018-06-04\tnull\tnull\n2018-06-03\tnull\tnull\n2018-06-02\tnull\tnull\n2018-06-01\tnull\tnull\n2018-05-31\tnull\tnull\n2018-05-30\tnull\tnull\n2018-05-29\tnull\tnull\n2018-05-28\tnull\tnull\n2018-05-27\tnull\tnull\n2018-05-26\tnull\tnull\n2018-05-25\tnull\tnull\n2018-05-24\tnull\tnull\n2018-05-23\tnull\tnull\n2018-05-22\tnull\tnull\n2018-05-21\tnull\tnull\n2018-05-20\tnull\tnull\n2018-05-19\tnull\tnull\n2018-05-18\tnull\tnull\n2018-05-17\tnull\tnull\n2018-05-16\tnull\tnull\n2018-05-15\tnull\tnull\n2018-05-14\tnull\tnull\n2018-05-13\tnull\tnull\n2018-05-12\tnull\tnull\n2018-05-11\tnull\tnull\n2018-05-10\tnull\tnull\n2018-05-09\tnull\tnull\n2018-05-08\tnull\tnull\n2018-05-07\tnull\tnull\n2018-05-06\tnull\tnull\n2018-05-05\tnull\tnull\n2018-05-04\tnull\tnull\n2018-05-03\tnull\tnull\n2018-05-02\tnull\tnull\n2018-05-01\tnull\tnull\n2018-04-30\tnull\tnull\n2018-04-29\tnull\tnull\n2018-04-28\tnull\tnull\n2018-04-27\tnull\tnull\n2018-04-26\tnull\tnull\n2018-04-25\tnull\tnull\n2018-04-24\tnull\tnull\n2018-04-23\tnull\tnull\n2018-04-22\tnull\tnull\n2018-04-21\tnull\tnull\n2018-04-20\tnull\tnull\n2018-04-19\tnull\tnull\n2018-04-18\tnull\tnull\n2018-04-17\tnull\tnull\n2018-04-16\tnull\tnull\n2018-04-15\tnull\tnull\n2018-04-14\tnull\tnull\n2018-04-13\tnull\tnull\n2018-04-12\tnull\tnull\n2018-04-11\tnull\tnull\n2018-04-10\tnull\tnull\n2018-04-09\tnull\tnull\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109473_-1191217034",
+      "id": "20171027-171139_407740552",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:55:38 PM",
+      "dateFinished": "Jun 8, 2018 3:55:38 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Content By Type",
+      "text": "%alfresco\nselect TYPE, count(*) as `Count` from alfresco group by TYPE",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:20 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "TYPE\tCount\n{http://www.alfresco.org/model/action/1.0}action\t10\n{http://www.alfresco.org/model/action/1.0}actioncondition\t3\n{http://www.alfresco.org/model/action/1.0}actionparameter\t129\n{http://www.alfresco.org/model/action/1.0}compositeaction\t3\n{http://www.alfresco.org/model/content/1.0}authorityContainer\t10\n{http://www.alfresco.org/model/content/1.0}category\t335\n{http://www.alfresco.org/model/content/1.0}category_root\t1\n{http://www.alfresco.org/model/content/1.0}content\t170\n{http://www.alfresco.org/model/content/1.0}folder\t67\n{http://www.alfresco.org/model/content/1.0}mlRoot\t1\n{http://www.alfresco.org/model/content/1.0}person\t4\n{http://www.alfresco.org/model/content/1.0}systemfolder\t4\n{http://www.alfresco.org/model/content/1.0}thumbnail\t35\n{http://www.alfresco.org/model/content/1.0}zone\t3\n{http://www.alfresco.org/model/content/smartfolder/1.0}smartFolderTemplate\t1\n{http://www.alfresco.org/model/datalist/1.0}dataList\t2\n{http://www.alfresco.org/model/datalist/1.0}issue\t4\n{http://www.alfresco.org/model/datalist/1.0}todoList\t5\n{http://www.alfresco.org/model/forum/1.0}forum\t1\n{http://www.alfresco.org/model/forum/1.0}post\t7\n{http://www.alfresco.org/model/forum/1.0}topic\t3\n{http://www.alfresco.org/model/linksmodel/1.0}link\t2\n{http://www.alfresco.org/model/rule/1.0}rule\t3\n{http://www.alfresco.org/model/site/1.0}site\t1\n{http://www.alfresco.org/model/site/1.0}sites\t1\n{http://www.alfresco.org/model/system/1.0}container\t8\n{http://www.alfresco.org/model/system/1.0}store_root\t1\n{http://www.alfresco.org/model/transfer/1.0}transferGroup\t1\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109473_-1191217034",
+      "id": "20171027-160437_1598747271",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:21 PM",
+      "dateFinished": "Jun 8, 2018 3:49:23 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Content by Property",
+      "text": "%alfresco\nselect PROPERTIES, count(*) from alfresco group by PROPERTIES order by count(*) DESC limit 20",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:20 PM",
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "PROPERTIES\tEXPR$1\nlocale\t815\nname\t815\nnode-dbid\t815\nnode-uuid\t815\nstore-identifier\t815\nstore-protocol\t815\n{http://www.alfresco.org/model/content/1.0}name\t815\n{http://www.alfresco.org/model/system/1.0}locale\t815\n{http://www.alfresco.org/model/system/1.0}node-dbid\t815\n{http://www.alfresco.org/model/system/1.0}node-uuid\t815\n{http://www.alfresco.org/model/system/1.0}store-identifier\t815\n{http://www.alfresco.org/model/system/1.0}store-protocol\t815\ncreated\t791\ncreator\t791\nmodified\t791\nmodifier\t791\n{http://www.alfresco.org/model/content/1.0}created\t791\n{http://www.alfresco.org/model/content/1.0}creator\t791\n{http://www.alfresco.org/model/content/1.0}modified\t791\n{http://www.alfresco.org/model/content/1.0}modifier\t791\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522109474_-1190062787",
+      "id": "20170914-161623_459763009",
+      "dateCreated": "Nov 12, 2017 9:28:29 PM",
+      "dateStarted": "Jun 8, 2018 3:49:22 PM",
+      "dateFinished": "Jun 8, 2018 3:49:23 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%alfresco\nselect cm_created_month, sum(`cm:content.size`) as `Sum`, max(`cm:content.size`) as `Max`, \ncount(*) as `Count` from alfresco \nwhere cm_created \u003e\u003d \u0027NOW/YEAR-4YEARS\u0027 group by cm_created_month \norder by cm_created_month asc",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:55:08 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/sql",
+        "tableHide": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_created_month\tSum\tMax\tCount\n2014-01\tnull\tnull\t0\n2014-02\tnull\tnull\t0\n2014-03\tnull\tnull\t0\n2014-04\tnull\tnull\t0\n2014-05\tnull\tnull\t0\n2014-06\tnull\tnull\t0\n2014-07\tnull\tnull\t0\n2014-08\tnull\tnull\t0\n2014-09\tnull\tnull\t0\n2014-10\tnull\tnull\t0\n2014-11\tnull\tnull\t0\n2014-12\tnull\tnull\t0\n2015-01\tnull\tnull\t0\n2015-02\tnull\tnull\t0\n2015-03\tnull\tnull\t0\n2015-04\tnull\tnull\t0\n2015-05\tnull\tnull\t0\n2015-06\tnull\tnull\t0\n2015-07\tnull\tnull\t0\n2015-08\tnull\tnull\t0\n2015-09\t5170\t2823\t2\n2015-10\tnull\tnull\t0\n2015-11\tnull\tnull\t0\n2015-12\tnull\tnull\t0\n2016-01\tnull\tnull\t0\n2016-02\tnull\tnull\t0\n2016-03\tnull\tnull\t0\n2016-04\tnull\tnull\t0\n2016-05\tnull\tnull\t0\n2016-06\tnull\tnull\t0\n2016-07\tnull\tnull\t0\n2016-08\tnull\tnull\t0\n2016-09\tnull\tnull\t0\n2016-10\tnull\tnull\t0\n2016-11\tnull\tnull\t0\n2016-12\tnull\tnull\t0\n2017-01\tnull\tnull\t0\n2017-02\tnull\tnull\t0\n2017-03\tnull\tnull\t0\n2017-04\tnull\tnull\t0\n2017-05\tnull\tnull\t0\n2017-06\tnull\tnull\t0\n2017-07\tnull\tnull\t0\n2017-08\tnull\tnull\t0\n2017-09\tnull\tnull\t0\n2017-10\tnull\tnull\t0\n2017-11\tnull\tnull\t0\n2017-12\tnull\tnull\t0\n2018-01\tnull\tnull\t0\n2018-02\tnull\tnull\t0\n2018-03\tnull\tnull\t0\n2018-04\tnull\tnull\t0\n2018-05\tnull\tnull\t0\n2018-06\t461022\t10436\t685\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522618963_-67414758",
+      "id": "20171112-213658_2018524099",
+      "dateCreated": "Nov 12, 2017 9:36:58 PM",
+      "dateStarted": "Jun 8, 2018 3:55:08 PM",
+      "dateFinished": "Jun 8, 2018 3:55:08 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%alfresco\nselect TYPE, count(*) as `Count` from alfresco group by TYPE",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:20 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "TYPE\tCount\n{http://www.alfresco.org/model/action/1.0}action\t10\n{http://www.alfresco.org/model/action/1.0}actioncondition\t3\n{http://www.alfresco.org/model/action/1.0}actionparameter\t129\n{http://www.alfresco.org/model/action/1.0}compositeaction\t3\n{http://www.alfresco.org/model/content/1.0}authorityContainer\t10\n{http://www.alfresco.org/model/content/1.0}category\t335\n{http://www.alfresco.org/model/content/1.0}category_root\t1\n{http://www.alfresco.org/model/content/1.0}content\t170\n{http://www.alfresco.org/model/content/1.0}folder\t67\n{http://www.alfresco.org/model/content/1.0}mlRoot\t1\n{http://www.alfresco.org/model/content/1.0}person\t4\n{http://www.alfresco.org/model/content/1.0}systemfolder\t4\n{http://www.alfresco.org/model/content/1.0}thumbnail\t35\n{http://www.alfresco.org/model/content/1.0}zone\t3\n{http://www.alfresco.org/model/content/smartfolder/1.0}smartFolderTemplate\t1\n{http://www.alfresco.org/model/datalist/1.0}dataList\t2\n{http://www.alfresco.org/model/datalist/1.0}issue\t4\n{http://www.alfresco.org/model/datalist/1.0}todoList\t5\n{http://www.alfresco.org/model/forum/1.0}forum\t1\n{http://www.alfresco.org/model/forum/1.0}post\t7\n{http://www.alfresco.org/model/forum/1.0}topic\t3\n{http://www.alfresco.org/model/linksmodel/1.0}link\t2\n{http://www.alfresco.org/model/rule/1.0}rule\t3\n{http://www.alfresco.org/model/site/1.0}site\t1\n{http://www.alfresco.org/model/site/1.0}sites\t1\n{http://www.alfresco.org/model/system/1.0}container\t8\n{http://www.alfresco.org/model/system/1.0}store_root\t1\n{http://www.alfresco.org/model/transfer/1.0}transferGroup\t1\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522957366_-952446142",
+      "id": "20171112-214237_103307648",
+      "dateCreated": "Nov 12, 2017 9:42:37 PM",
+      "dateStarted": "Jun 8, 2018 3:49:23 PM",
+      "dateFinished": "Jun 8, 2018 3:49:23 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%alfresco\nselect cm_created_year, sum(`cm:content.size`) as Total, max(`cm:content.size`) as `Max` from alfresco \nwhere cm_created \u003e\u003d \u0027NOW/YEAR-4YEARS\u0027 group by cm_created_year \norder by cm_created_year desc",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:55:51 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_created_year\tTotal\tMax\n2018\t461022\t10436\n2017\tnull\tnull\n2016\tnull\tnull\n2015\t5170\t2823\n2014\tnull\tnull\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522966784_1478027984",
+      "id": "20171112-214246_695171275",
+      "dateCreated": "Nov 12, 2017 9:42:46 PM",
+      "dateStarted": "Jun 8, 2018 3:55:51 PM",
+      "dateFinished": "Jun 8, 2018 3:55:51 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%alfresco\nselect cm_created_day as `Day`, sum(`cm:content.size`) as `Sum`, max(`cm:content.size`) as `Max` from alfresco \nwhere cm_created \u003e\u003d \u0027NOW/DAY-30DAYS\u0027 AND cm_created \u003c\u003d \u0027NOW/DAY+1DAY\u0027 group by cm_created_day \norder by cm_created_day desc",
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:55:56 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "cm_created_day\tSum\tMax\n2018-06-08\t461022\t10436\n2018-06-07\tnull\tnull\n2018-06-06\tnull\tnull\n2018-06-05\tnull\tnull\n2018-06-04\tnull\tnull\n2018-06-03\tnull\tnull\n2018-06-02\tnull\tnull\n2018-06-01\tnull\tnull\n2018-05-31\tnull\tnull\n2018-05-30\tnull\tnull\n2018-05-29\tnull\tnull\n2018-05-28\tnull\tnull\n2018-05-27\tnull\tnull\n2018-05-26\tnull\tnull\n2018-05-25\tnull\tnull\n2018-05-24\tnull\tnull\n2018-05-23\tnull\tnull\n2018-05-22\tnull\tnull\n2018-05-21\tnull\tnull\n2018-05-20\tnull\tnull\n2018-05-19\tnull\tnull\n2018-05-18\tnull\tnull\n2018-05-17\tnull\tnull\n2018-05-16\tnull\tnull\n2018-05-15\tnull\tnull\n2018-05-14\tnull\tnull\n2018-05-13\tnull\tnull\n2018-05-12\tnull\tnull\n2018-05-11\tnull\tnull\n2018-05-10\tnull\tnull\n2018-05-09\tnull\tnull\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522977167_-840853637",
+      "id": "20171112-214257_435141902",
+      "dateCreated": "Nov 12, 2017 9:42:57 PM",
+      "dateStarted": "Jun 8, 2018 3:55:56 PM",
+      "dateFinished": "Jun 8, 2018 3:55:56 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "user": "admin",
+      "dateUpdated": "Jun 8, 2018 3:49:21 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1510522985415_280704731",
+      "id": "20171112-214305_1699946168",
+      "dateCreated": "Nov 12, 2017 9:43:05 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Alfresco Insight Engine - Example Dashboard",
+  "id": "2CVRR91J2",
+  "angularObjects": {
+    "2CVAY6EYZ:shared_process": [],
+    "2CUZK9W4Z:shared_process": []
+  },
+  "config": {
+    "looknfeel": "default",
+    "personalizedMode": "false"
+  },
+  "info": {}
+}

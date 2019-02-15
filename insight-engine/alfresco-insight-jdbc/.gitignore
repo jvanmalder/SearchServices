@@ -1,0 +1,8 @@
+/target/
+/.settings/
+.classpath
+.project
+dependency-reduced-pom.xml
+alfresco.log*
+.idea
+*.iml
