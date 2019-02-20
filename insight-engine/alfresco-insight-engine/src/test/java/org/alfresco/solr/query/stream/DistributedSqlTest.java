@@ -510,5 +510,36 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertEquals("michael", owner2);
         assertEquals("title2", title2);
     }
+    
+    @Test
+    public void distributedSearch_dateCustomModelFieldInSharedProperties_shouldReturnCorrectResults() throws Exception
+    {
+        Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","expense_Recorded_At"));
+        sql = "select cm_name as `Expense Name`, expense_Recorded_At from alfresco";
+
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+        assertEquals(4, tuples.size());
+        for (Tuple t : tuples)
+        {
+            assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
+        }
+    }
+
+    @Test
+    public void distributedSearch_dateCustomModelFieldInSharedPropertiesQueryVariant_shouldReturnCorrectResults()
+        throws Exception
+    {
+        Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","expense:Recorded_At"));
+        sql = "select cm_name as `Expense Name`, `expense:Recorded_At` from alfresco";
+
+        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+        assertEquals(4, tuples.size());
+        for (Tuple t : tuples)
+        {
+            assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
+        }
+    }
 }
 

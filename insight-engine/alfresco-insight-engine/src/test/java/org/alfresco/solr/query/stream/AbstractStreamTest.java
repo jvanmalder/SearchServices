@@ -61,7 +61,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.common.params.ModifiableSolrParams;
@@ -73,7 +72,6 @@ import java.io.IOException;
 import java.util.stream.Collectors;
 import java.util.Date;
 import java.util.Set;
-import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
@@ -103,6 +101,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     protected static final QName PROP_WITH_UNDERSCORE  = QName.createQName("mf", "freetext_underscore");
     protected static final QName PROP_AUTHOR_FT = QName.createQName("ft", "authorft");
     protected static final QName PROP_CUSTOM_FINANCE_MODEL_EMP  = QName.createQName("Finance", "Emp");
+    protected static final QName PROP_CUSTOM_EXPENSE_MODEL_DATE = QName.createQName("http://www.mycompany.com/model/expense/1.0", "Recorded_At");
     
     
     @Before
@@ -167,6 +166,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData1.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
         nodeMetaData1.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("michael"));
         nodeMetaData1.getProperties().put(PROP_CUSTOM_FINANCE_MODEL_EMP, new StringPropertyValue("emp1"));
+        nodeMetaData1.getProperties().put(PROP_CUSTOM_EXPENSE_MODEL_DATE, new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date1)));
         HashSet aspects = new HashSet<QName>();
         aspects.add(ContentModel.ASPECT_AUDITABLE);
         nodeMetaData1.setAspects(aspects);
@@ -187,6 +187,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData2.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator1"));
         nodeMetaData2.getProperties().put(ContentModel.PROP_OWNER, new StringPropertyValue("michael"));
         nodeMetaData2.getProperties().put(PROP_CUSTOM_FINANCE_MODEL_EMP, new StringPropertyValue("emp1"));
+        nodeMetaData2.getProperties().put(PROP_CUSTOM_EXPENSE_MODEL_DATE, new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date2)));
         
         NodeMetaData nodeMetaData3 = getNodeMetaData(node3, txn, acl2, "mike", null, false);
         Date date3 = getDate(2000, 2, 2);
@@ -201,6 +202,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData3.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name3"));
         nodeMetaData3.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator2"));
         nodeMetaData3.getProperties().put(PROP_CUSTOM_FINANCE_MODEL_EMP, new StringPropertyValue("emp1"));
+        nodeMetaData3.getProperties().put(PROP_CUSTOM_EXPENSE_MODEL_DATE, new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date3)));
         
         NodeMetaData nodeMetaData4 = getNodeMetaData(node4, txn, acl2, "mike", null, false);
         Date date4 = getDate(2000, 3, 2);
@@ -215,6 +217,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData4.getProperties().put(ContentModel.PROP_CREATOR, new StringPropertyValue("creator3"));
         nodeMetaData4.getProperties().put(ContentModel.PROP_CONTENT, new ContentPropertyValue(Locale.FRENCH, 5l, "UTF-8", "text/javascript", null));
         nodeMetaData4.getProperties().put(PROP_CUSTOM_FINANCE_MODEL_EMP, new StringPropertyValue("emp2"));
+        nodeMetaData4.getProperties().put(PROP_CUSTOM_EXPENSE_MODEL_DATE, new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date4)));
 
         
         //Index the transaction, nodes, and nodeMetaDatas.
