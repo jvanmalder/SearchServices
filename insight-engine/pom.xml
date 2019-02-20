@@ -13,7 +13,7 @@
    <properties>
       <solr.version>6.6.5</solr.version>
       <alfresco.search.dependency.name>alfresco-search-services</alfresco.search.dependency.name>
-      <alfresco.search.dependency.version>1.4.0-SNAPSHOT</alfresco.search.dependency.version>
+      <alfresco.search.dependency.version>1.4.0-IE1.1-1</alfresco.search.dependency.version>
    </properties>
    <distributionManagement>
       <repository>
