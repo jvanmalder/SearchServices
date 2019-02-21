@@ -46,6 +46,8 @@ public class DistributedSqlTest extends AbstractStreamTest
     @Rule public ExpectedException exceptionRule = ExpectedException.none();
 
     private String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
+    private String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+
     private static Properties getSQLFields()
     {
         Properties p = new Properties();
@@ -69,7 +71,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     }
 
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
         initSolrServers(1, getClassName(), getSQLFields());
         JettySolrRunner localJetty = jettyContainers.values().iterator().next();
@@ -77,22 +79,21 @@ public class DistributedSqlTest extends AbstractStreamTest
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
 
-
     @Test
     public void testSearch() throws Exception
     {
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertEquals(4, tuples.size());
         assertNodes(tuples, node1, node2, node3, node4);
         assertFieldNotNull(tuples, "LID");
 
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
+
         tuples = sqlQuery(sql, alfrescoJson2);
         assertEquals(2, tuples.size());
         assertNodes(tuples, node1, node2);
@@ -318,9 +319,8 @@ public class DistributedSqlTest extends AbstractStreamTest
         Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","finance_amount"));
         sql = "select cm_name as `Expense Name`, finance_amount from alfresco";
 
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
-        assertEquals(4, tuples.size());
+        assertEquals(indexedNodesCount, tuples.size());
         for (Tuple t : tuples)
         {
             assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
@@ -333,10 +333,9 @@ public class DistributedSqlTest extends AbstractStreamTest
     {
         Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","finance:amount"));
         sql = "select cm_name as `Expense Name`, `finance:amount` from alfresco";
-        
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
-        assertEquals(4, tuples.size());
+        assertEquals(indexedNodesCount, tuples.size());
         for (Tuple t : tuples)
         {
             assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
@@ -348,7 +347,6 @@ public class DistributedSqlTest extends AbstractStreamTest
         throws Exception
     {
         sql = "select finance_Emp from alfresco group by finance_Emp";
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertEquals(2, tuples.size());
     }
@@ -358,7 +356,6 @@ public class DistributedSqlTest extends AbstractStreamTest
         throws Exception
     {
         sql = "select `finance:Emp` from alfresco group by `finance:Emp`";
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertEquals(2, tuples.size());
     }
@@ -370,7 +367,6 @@ public class DistributedSqlTest extends AbstractStreamTest
         exceptionRule.expectMessage("Column 'bob' not found in any table");
 
         sql = "select bob from alfresco";
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         sqlQuery(sql, alfrescoJson);
     }
 
@@ -381,17 +377,17 @@ public class DistributedSqlTest extends AbstractStreamTest
         exceptionRule.expectMessage("Column 'finance:misconfigured' not found in any table");
 
         sql = "select `finance:misconfigured` from alfresco";
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
+
         sqlQuery(sql, alfrescoJson);
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void distributedSearch_selectStarQuery_shouldReturnResultsWithDefaultFieldsOnly() throws Exception
     {
         sql = "select * from alfresco";
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
-        assertEquals(4, tuples.size());
+        assertEquals(indexedNodesCount, tuples.size());
         assertNotNull(tuples);
 
         Set<String> selectStarFields = getSelectStarFields();
@@ -410,8 +406,6 @@ public class DistributedSqlTest extends AbstractStreamTest
     public void distributedSearch_selectStarQueryWithPredicates_shouldReturnResultsWithDefaultFieldsOnly() throws Exception
     {
         Set<String> selectStarFields = getSelectStarFields();
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
-
         // Query select * with property in predicate belonging to select * fields
         List<Tuple> tuples = sqlQuery("select * from alfresco where cm_name = 'name1'", alfrescoJson);
         assertNotNull(tuples);
@@ -428,7 +422,6 @@ public class DistributedSqlTest extends AbstractStreamTest
     /**
      * Check the correctness of the fields returned from a select * query with field in predicate not belonging
      * to selectStarFields
-     * @throws Exception
      */
     @Test
     public void distributedSearch_selectStarQueryWithPredicates_notDefault_shouldReturnResultsWithDefaultFieldsOnly() throws Exception
@@ -436,31 +429,25 @@ public class DistributedSqlTest extends AbstractStreamTest
         Set<String> selectStarFields = getSelectStarFields();
         selectStarFields.add("cm_author");
 
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
-
         // Query select * with property in predicate not belonging to select * fields
         List<Tuple> tuples = sqlQuery("select * from alfresco where cm_author != '*'", alfrescoJson);
         assertNotNull(tuples);
-        assertEquals(tuples.size(), 4);
+        assertEquals(indexedNodesCount, tuples.size());
         checkFormattedReturnedFields(tuples, selectStarFields);
 
         tuples = sqlQuery("select * from alfresco where `cm:author` != '*'", alfrescoJson);
         assertNotNull(tuples);
-        assertEquals(tuples.size(), 4);
+        assertEquals(indexedNodesCount, tuples.size());
         checkFormattedReturnedFields(tuples, selectStarFields);
     }
 
     /**
      * This test check that queries with field missing in solr index does not fail if they belongs to
-     * default fields.
-     * SEARCH-1446
-     * @throws Exception
+     * default fields (see SEARCH-1446)
      */
     @Test
     public void distributedSearch_queryFieldsMissingInSolrIndex() throws Exception
     {
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
-
         // Query select * with property in predicate not belonging to select * fields
         List<Tuple> tuples = sqlQuery("select cm_lockOwner, count(*) as total from alfresco group by cm_lockOwner", alfrescoJson);
         assertNotNull(tuples);
@@ -470,8 +457,6 @@ public class DistributedSqlTest extends AbstractStreamTest
     @Test
     public void distributedSearch_query_shouldReturnOnlySelectedFields() throws Exception
     {
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
-
         // Query select * with property in predicate belonging to select * fields
         List<Tuple> tuples = sqlQuery("select cm_name from alfresco where cm_name = 'name1'", alfrescoJson);
         assertNotNull(tuples);
@@ -484,7 +469,7 @@ public class DistributedSqlTest extends AbstractStreamTest
 
         tuples = sqlQuery("select `cm:name`, cm_author from alfresco where cm_author != '*'", alfrescoJson);
         assertNotNull(tuples);
-        assertEquals(tuples.size(), 4);
+        assertEquals(indexedNodesCount, tuples.size());
 
         // add cm_author to the list for fields to be returned.
         fieldsToBeReturned.add("cm_author");
@@ -493,7 +478,6 @@ public class DistributedSqlTest extends AbstractStreamTest
 
     private void assertResult(List<Tuple> tuples)
     {
-
         assertEquals(tuples.size(), 2);
         Tuple first = tuples.get(0);
 
@@ -510,22 +494,27 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertEquals("michael", owner2);
         assertEquals("title2", title2);
     }
-    
+
+    /**
+     * Asserts the correctness of a scenario where the query uses a custom date field defined in shared.properties,
+     * in the form "namespace_localName".
+     */
     @Test
     public void distributedSearch_dateCustomModelFieldInSharedProperties_shouldReturnCorrectResults() throws Exception
     {
         Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","expense_Recorded_At"));
         sql = "select cm_name as `Expense Name`, expense_Recorded_At from alfresco";
 
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
-        assertEquals(4, tuples.size());
-        for (Tuple t : tuples)
-        {
-            assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
-        }
+        assertEquals(indexedNodesCount, tuples.size());
+
+        tuples.forEach(tuple ->  assertEquals("Mismatched columns", expectedColumns, tuple.fields.keySet()));
     }
 
+    /**
+     * Asserts the correctness of a scenario where the query uses a custom date field defined in shared.properties,
+     * in the form "namespace:localName".
+     */
     @Test
     public void distributedSearch_dateCustomModelFieldInSharedPropertiesQueryVariant_shouldReturnCorrectResults()
         throws Exception
@@ -533,13 +522,10 @@ public class DistributedSqlTest extends AbstractStreamTest
         Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","expense:Recorded_At"));
         sql = "select cm_name as `Expense Name`, `expense:Recorded_At` from alfresco";
 
-        String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
-        assertEquals(4, tuples.size());
-        for (Tuple t : tuples)
-        {
-            assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
-        }
+        assertEquals(indexedNodesCount, tuples.size());
+
+        tuples.forEach(tuple ->  assertEquals("Mismatched columns", expectedColumns, tuple.fields.keySet()));
     }
 }
 

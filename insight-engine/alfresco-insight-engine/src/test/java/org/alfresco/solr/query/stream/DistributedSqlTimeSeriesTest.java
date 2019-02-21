@@ -77,7 +77,6 @@ public class DistributedSqlTimeSeriesTest extends AbstractStreamTest
         initSolrServers(2, getClassName(), null);
     }
 
-    //TO SPEED UP TESTS: it is recommended the data initialisation is done statically once 
     @Before
     private void loadData() throws Exception
     {

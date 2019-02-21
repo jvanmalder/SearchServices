@@ -25,6 +25,7 @@
  */
 package org.alfresco.solr.query.stream;
 
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
@@ -102,8 +103,9 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     protected static final QName PROP_AUTHOR_FT = QName.createQName("ft", "authorft");
     protected static final QName PROP_CUSTOM_FINANCE_MODEL_EMP  = QName.createQName("Finance", "Emp");
     protected static final QName PROP_CUSTOM_EXPENSE_MODEL_DATE = QName.createQName("http://www.mycompany.com/model/expense/1.0", "Recorded_At");
-    
-    
+
+    protected int indexedNodesCount;
+
     @Before
     public void load() throws Exception
     {
@@ -219,12 +221,14 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         nodeMetaData4.getProperties().put(PROP_CUSTOM_FINANCE_MODEL_EMP, new StringPropertyValue("emp2"));
         nodeMetaData4.getProperties().put(PROP_CUSTOM_EXPENSE_MODEL_DATE, new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, date4)));
 
-        
+        List<Node> nodes = asList(node1, node2, node3, node4);
+        indexedNodesCount = nodes.size();
+
         //Index the transaction, nodes, and nodeMetaDatas.
         //Note that the content is automatically created by the test framework.
         indexTransaction(txn,
-                list(node1, node2, node3, node4),
-                list(nodeMetaData1, nodeMetaData2, nodeMetaData3, nodeMetaData4));
+                nodes,
+                asList(nodeMetaData1, nodeMetaData2, nodeMetaData3, nodeMetaData4));
 
         //Check for the TXN state stamp.
         builder = new BooleanQuery.Builder();
