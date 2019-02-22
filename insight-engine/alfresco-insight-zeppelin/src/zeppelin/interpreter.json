@@ -1,28 +1,101 @@
 {
   "interpreterSettings": {
-    "2CUZK9W4Z": {
-      "id": "2CUZK9W4Z",
+    "alfresco": {
+      "id": "alfresco",
       "name": "alfresco",
       "group": "jdbc",
       "properties": {
-        "zeppelin.jdbc.auth.type": "",
-        "common.max_count": "1000",
-        "zeppelin.jdbc.principal": "",
-        "default.driver": "org.apache.solr.client.solrj.io.sql.InsightEngineDriverImpl",
-        "default.url": "jdbc:alfresco://REPO_HOST:REPO_PORT?collection\u003dalfresco",
-        "zeppelin.jdbc.keytab.location": "",
-        "zeppelin.jdbc.concurrent.use": "true",
-        "zeppelin.jdbc.concurrent.max_connection": "10"
+        "default.url": {
+          "name": "default.url",
+          "value": "jdbc:alfresco://REPO_HOST:REPO_PORT?collection\u003dalfresco",
+          "type": "string"
+        },
+        "default.driver": {
+          "name": "default.driver",
+          "value": "org.apache.solr.client.solrj.io.sql.InsightEngineDriverImpl",
+          "type": "string"
+        },
+        "zeppelin.jdbc.principal": {
+          "name": "zeppelin.jdbc.principal",
+          "value": "",
+          "type": "string"
+        },
+        "default.completer.ttlInSeconds": {
+          "name": "default.completer.ttlInSeconds",
+          "value": "120",
+          "type": "number"
+        },
+        "default.password": {
+          "name": "default.password",
+          "value": "",
+          "type": "password"
+        },
+        "default.completer.schemaFilters": {
+          "name": "default.completer.schemaFilters",
+          "value": "",
+          "type": "textarea"
+        },
+        "default.splitQueries": {
+          "name": "default.splitQueries",
+          "value": false,
+          "type": "checkbox"
+        },
+        "default.user": {
+          "name": "default.user",
+          "value": "",
+          "type": "string"
+        },
+        "zeppelin.jdbc.concurrent.max_connection": {
+          "name": "zeppelin.jdbc.concurrent.max_connection",
+          "value": "10",
+          "type": "string"
+        },
+        "common.max_count": {
+          "name": "common.max_count",
+          "value": "1000",
+          "type": "string"
+        },
+        "default.precode": {
+          "name": "default.precode",
+          "value": "",
+          "type": "textarea"
+        },
+        "zeppelin.jdbc.auth.type": {
+          "name": "zeppelin.jdbc.auth.type",
+          "value": "",
+          "type": "string"
+        },
+        "default.statementPrecode": {
+          "name": "default.statementPrecode",
+          "value": "",
+          "type": "string"
+        },
+        "zeppelin.jdbc.concurrent.use": {
+          "name": "zeppelin.jdbc.concurrent.use",
+          "value": "true",
+          "type": "string"
+        },
+        "zeppelin.jdbc.keytab.location": {
+          "name": "zeppelin.jdbc.keytab.location",
+          "value": "",
+          "type": "string"
+        },
+        "zeppelin.jdbc.interpolation": {
+          "name": "zeppelin.jdbc.interpolation",
+          "value": false,
+          "type": "checkbox"
+        }
       },
       "status": "READY",
       "interpreterGroup": [
         {
           "name": "sql",
           "class": "org.apache.zeppelin.jdbc.JDBCInterpreter",
-          "defaultInterpreter": true,
+          "defaultInterpreter": false,
           "editor": {
             "language": "sql",
-            "editOnDblClick": false
+            "editOnDblClick": false,
+            "completionSupport": true
           }
         }
       ],
@@ -39,16 +112,20 @@
         "perUser": "isolated",
         "isExistingProcess": false,
         "setPermission": false,
-        "users": [],
+        "owners": [],
         "isUserImpersonate": false
       }
     },
-    "2CVAY6EYZ": {
-      "id": "2CVAY6EYZ",
+    "md": {
+      "id": "md",
       "name": "md",
       "group": "md",
       "properties": {
-        "markdown.parser.type": "pegdown"
+        "markdown.parser.type": {
+          "name": "markdown.parser.type",
+          "value": "pegdown",
+          "type": "string"
+        }
       },
       "status": "READY",
       "interpreterGroup": [
@@ -58,7 +135,8 @@
           "defaultInterpreter": false,
           "editor": {
             "language": "markdown",
-            "editOnDblClick": true
+            "editOnDblClick": true,
+            "completionSupport": false
           }
         }
       ],
@@ -70,19 +148,19 @@
         "perUser": "shared",
         "isExistingProcess": false,
         "setPermission": false,
-        "users": [],
+        "owners": [],
         "isUserImpersonate": false
       }
     }
   },
   "interpreterBindings": {
     "2CVRR91J2": [
-      "2CUZK9W4Z",
-      "2CVAY6EYZ"
+      "alfresco",
+      "md"
     ],
     "2DMP8WY2G": [
-      "2CUZK9W4Z",
-      "2CVAY6EYZ"
+      "alfresco",
+      "md"
     ]
   },
   "interpreterRepositories": [
@@ -90,6 +168,23 @@
       "id": "central",
       "type": "default",
       "url": "http://repo1.maven.org/maven2/",
+      "releasePolicy": {
+        "enabled": true,
+        "updatePolicy": "daily",
+        "checksumPolicy": "warn"
+      },
+      "snapshotPolicy": {
+        "enabled": true,
+        "updatePolicy": "daily",
+        "checksumPolicy": "warn"
+      },
+      "mirroredRepositories": [],
+      "repositoryManager": false
+    },
+    {
+      "id": "local",
+      "type": "default",
+      "url": "file:///root/.m2/repository",
       "releasePolicy": {
         "enabled": true,
         "updatePolicy": "daily",
