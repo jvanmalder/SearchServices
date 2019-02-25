@@ -213,7 +213,7 @@ public class SolrSchema extends AbstractSchema
          */
         for (Entry<String, String> fieldAndType : queryFields.entrySet())
         {
-            String fieldType = fieldAndType.getKey();
+            String fieldType = fieldAndType.getValue();
             String formattedFieldName = getFormattedFieldName(fieldAndType,null);
 
             addFieldInfoOriginalNameAndFormatted(fieldInfo, fieldAndType,
