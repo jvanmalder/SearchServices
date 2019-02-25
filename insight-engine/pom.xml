@@ -35,5 +35,6 @@
       <module>alfresco-insight-engine</module>
       <module>packaging</module>
       <module>alfresco-insight-jdbc</module>
+      <module>alfresco-insight-zeppelin</module>
    </modules>
 </project>
