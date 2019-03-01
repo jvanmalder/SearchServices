@@ -20,10 +20,13 @@ package org.alfresco.solr.query.stream;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.apache.lucene.util.LuceneTestCase;
@@ -35,6 +38,9 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import static java.util.Arrays.asList;
+import static java.util.Optional.of;
 
 /**
  * @author Joel
@@ -114,7 +120,7 @@ public class DistributedSqlTest extends AbstractStreamTest
             sql = "SELECT DBID,cm_created FROM alfresco order by cm_fake";
             sqlQuery(sql, alfrescoJson2);
         }
-        catch (IOException e) 
+        catch (Exception e)
         {
             assertNotNull(e);
         }
@@ -316,7 +322,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     @Test 
     public void distributedSearch_customModelFieldInSharedProperties_shouldReturnCorrectResults() throws Exception
     {
-        Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","finance_amount"));
+        Set<String> expectedColumns = new HashSet<>(asList("Expense Name","finance_amount"));
         sql = "select cm_name as `Expense Name`, finance_amount from alfresco";
 
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
@@ -331,7 +337,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     public void distributedSearch_customModelFieldInSharedPropertiesQueryVariant_shouldReturnCorrectResults()
         throws Exception
     {
-        Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","finance:amount"));
+        Set<String> expectedColumns = new HashSet<>(asList("Expense Name","finance:amount"));
         sql = "select cm_name as `Expense Name`, `finance:amount` from alfresco";
 
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
@@ -340,6 +346,38 @@ public class DistributedSqlTest extends AbstractStreamTest
         {
             assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
         }
+    }
+
+    @Test
+    public void fieldsInQueryAreCaseInsensitive() throws Exception
+    {
+        String countQuery = "select count(*) from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType'";
+        long expectedCount = of(sqlQuery(countQuery, alfrescoJson).iterator().next())
+                                .map(tuple -> tuple.getLong("EXPR$0"))
+                                .orElseThrow(() -> new RuntimeException("Unable to get the count of expected results."));
+
+        List<String> queries =
+                asList(
+                    "select cm_name,type from alfresco where type = '{http://www.alfresco.org/test/solrtest}testSuperType'",
+                    "select cm_name,TYPE from alfresco where TyPe = '{http://www.alfresco.org/test/solrtest}testSuperType'",
+                    "select cm_name,TyPe from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType'",
+                    "select cm_name, type from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType'",
+                    "select cm_name, type from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType' order by Type desc",
+                    "select * from alfresco where type = '{http://www.alfresco.org/test/solrtest}testSuperType'",
+                    "select * from alfresco where TyPe = '{http://www.alfresco.org/test/solrtest}testSuperType'",
+                    "select * from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType'",
+                    "select * from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType' order by type desc");
+
+        queries.stream()
+                .map(query -> sqlQuery(query, alfrescoJson))
+                .peek(tuples -> assertEquals("Wrong number of tuples in result", expectedCount, tuples.size()))
+                .flatMap(Collection::stream)
+                .map(tuple -> {
+                    Map<String, Object> caseInsensitiveMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+                    caseInsensitiveMap.putAll(tuple.fields);
+                    return caseInsensitiveMap;})
+                .map(tupleMap -> ((Map<String,Object>)tupleMap).get("TYPE"))
+                .forEach(type -> assertEquals("{http://www.alfresco.org/test/solrtest}testSuperType", type));
     }
 
     @Test 
@@ -502,7 +540,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     @Test
     public void distributedSearch_dateCustomModelFieldInSharedProperties_shouldReturnCorrectResults() throws Exception
     {
-        Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","expense_Recorded_At"));
+        Set<String> expectedColumns = new HashSet<>(asList("Expense Name","expense_Recorded_At"));
         sql = "select cm_name as `Expense Name`, expense_Recorded_At from alfresco";
 
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
@@ -519,7 +557,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     public void distributedSearch_dateCustomModelFieldInSharedPropertiesQueryVariant_shouldReturnCorrectResults()
         throws Exception
     {
-        Set<String> expectedColumns = new HashSet<>(Arrays.asList("Expense Name","expense:Recorded_At"));
+        Set<String> expectedColumns = new HashSet<>(asList("Expense Name","expense:Recorded_At"));
         sql = "select cm_name as `Expense Name`, `expense:Recorded_At` from alfresco";
 
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
