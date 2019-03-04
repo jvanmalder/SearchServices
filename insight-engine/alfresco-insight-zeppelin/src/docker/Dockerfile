@@ -11,20 +11,19 @@ ARG USERID=33007
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 
-RUN echo "$LOG Install packages" && \
+RUN set -x \
+    && useradd \
+          -c "Alfresco ${USERNAME}" \
+          -M \
+          -s "/bin/bash" \
+          -u "${USERID}" \
+          -o \
+          "${USERNAME}" \
+    && echo "$LOG Install packages" && \
     yum update -y && \
     yum install -y unzip && \
     yum install -y nano && \
     yum clean all
-
-RUN set -x \
-   && useradd \
-        -c "Alfresco ${USERNAME}" \
-        -M \
-        -s "/bin/bash" \
-        -u "${USERID}" \
-        -o \
-        "${USERNAME}"
 
 COPY ${ZEPPELIN_DISTRIBUTION} .
 RUN echo "$LOG Extract Zeppelin" && \
@@ -36,9 +35,9 @@ RUN echo "$LOG Update substituter.sh to start zeppelin.sh" && \
     echo "bash -c \"\$@\"" >> ${ZEPPELIN_HOME}/bin/substituter.sh
 
 EXPOSE ${zeppelin.port}
-USER ${USERNAME}
 
 ENTRYPOINT [ "/tini", "--" ]
 WORKDIR ${ZEPPELIN_HOME}
+USER ${USERNAME}
 
 CMD ${ZEPPELIN_HOME}/bin/substituter.sh ${ZEPPELIN_HOME}/bin/zeppelin.sh
