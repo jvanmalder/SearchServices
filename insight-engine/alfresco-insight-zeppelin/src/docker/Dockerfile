@@ -36,6 +36,7 @@ RUN echo "$LOG Update substituter.sh to start zeppelin.sh" && \
     echo "bash -c \"\$@\"" >> ${ZEPPELIN_HOME}/bin/substituter.sh
 
 EXPOSE ${zeppelin.port}
+USER ${USERNAME}
 
 ENTRYPOINT [ "/tini", "--" ]
 WORKDIR ${ZEPPELIN_HOME}
