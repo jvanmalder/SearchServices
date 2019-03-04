@@ -18,17 +18,21 @@
  */
 package org.alfresco.solr.query.stream;
 
-import java.io.IOException;
-import java.util.Arrays;
+import static java.util.Arrays.asList;
+import static java.util.Optional.of;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.range;
+
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.apache.calcite.util.Pair;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
@@ -38,9 +42,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import static java.util.Arrays.asList;
-import static java.util.Optional.of;
 
 /**
  * @author Joel
@@ -349,35 +350,134 @@ public class DistributedSqlTest extends AbstractStreamTest
     }
 
     @Test
-    public void fieldsInQueryAreCaseInsensitive() throws Exception
+    public void selectStarDefaultFieldsInPredicateAreCaseInsensitive()
     {
-        String countQuery = "select count(*) from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType'";
-        long expectedCount = of(sqlQuery(countQuery, alfrescoJson).iterator().next())
-                                .map(tuple -> tuple.getLong("EXPR$0"))
-                                .orElseThrow(() -> new RuntimeException("Unable to get the count of expected results."));
+        long expectedCount = expectedCount("TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType'");
 
         List<String> queries =
                 asList(
-                    "select cm_name,type from alfresco where type = '{http://www.alfresco.org/test/solrtest}testSuperType'",
-                    "select cm_name,TYPE from alfresco where TyPe = '{http://www.alfresco.org/test/solrtest}testSuperType'",
-                    "select cm_name,TyPe from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType'",
-                    "select cm_name, type from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType'",
-                    "select cm_name, type from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType' order by Type desc",
-                    "select * from alfresco where type = '{http://www.alfresco.org/test/solrtest}testSuperType'",
-                    "select * from alfresco where TyPe = '{http://www.alfresco.org/test/solrtest}testSuperType'",
-                    "select * from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType'",
-                    "select * from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType' order by type desc");
+                        "select cm_name,TYPE from alfresco where type = '{http://www.alfresco.org/test/solrtest}testSuperType'",
+                        "select TYPE from alfresco where TyPe = '{http://www.alfresco.org/test/solrtest}testSuperType'",
+                        "select * from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType'");
 
         queries.stream()
                 .map(query -> sqlQuery(query, alfrescoJson))
                 .peek(tuples -> assertEquals("Wrong number of tuples in result", expectedCount, tuples.size()))
                 .flatMap(Collection::stream)
-                .map(tuple -> {
-                    Map<String, Object> caseInsensitiveMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-                    caseInsensitiveMap.putAll(tuple.fields);
-                    return caseInsensitiveMap;})
-                .map(tupleMap -> ((Map<String,Object>)tupleMap).get("TYPE"))
+                .map(tuple -> tuple.getString("TYPE"))
                 .forEach(type -> assertEquals("{http://www.alfresco.org/test/solrtest}testSuperType", type));
+    }
+
+    @Test
+    public void defaultModelFieldsInPredicateAreCaseInsensitive()
+    {
+        long expectedCount = expectedCount("cm_creator = 'creator1'");
+
+        List<String> queries =
+                asList(
+                        "select cm_creator from alfresco where cm_creator = 'creator1'",
+                        "select cm_creator,TYPE from alfresco where CM_CREATOR = 'creator1'",
+                        "select * from alfresco where cM_CrEAtOR = 'creator1'");
+
+        queries.stream()
+                .map(query -> sqlQuery(query, alfrescoJson))
+                .peek(tuples -> assertEquals("Wrong number of tuples in result", expectedCount, tuples.size()))
+                .flatMap(Collection::stream)
+                .map(tuple -> tuple.getString("cm_creator"))
+                .forEach(type -> assertEquals("creator1", type));
+    }
+
+    @Test
+    public void customFieldsInPredicateAreCaseInsensitive()
+    {
+        long expectedCount = expectedCount("finance_Emp = 'emp1'");
+
+        List<String> queries =
+                asList(
+                        "select finance_Emp from alfresco where finance_Emp = 'emp1'",
+                        "select finance_Emp,TYPE from alfresco where FINANCE_EMP = 'emp1'",
+                        "select * from alfresco where FiNaNcE_eMP = 'emp1'");
+
+        queries.stream()
+                .map(query -> sqlQuery(query, alfrescoJson))
+                .peek(tuples -> assertEquals("Wrong number of tuples in result", expectedCount, tuples.size()))
+                .flatMap(Collection::stream)
+                .map(tuple -> tuple.getString("finance_Emp"))
+                .forEach(type -> assertEquals("emp1", type));
+    }
+
+    @Test
+    public void fieldsInSelectListAreCaseSensitive()
+    {
+        List<String> selectLists = asList("CM_creator,TYPE,Finance_Emp", "cm_creator,TyPe,finance_Emp", "Cm_CrEaTor,type,FINANCE_EMP");
+
+        String whereCondition = "TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType' AND cm_creator='creator1'";
+        long expectedCount = expectedCount(whereCondition);
+
+        List<String> queries =
+                selectLists.stream()
+                        .map(fields -> "select " + fields + " from alfresco where " + whereCondition)
+                        .collect(toList());
+
+        range(0, queries.size())
+                .mapToObj(index -> Pair.of(index, queries.get(index)))
+                .map(indexAndQuery -> Pair.of(indexAndQuery.left, sqlQuery(indexAndQuery.right, alfrescoJson)))
+                .peek(indexAndTuples -> assertEquals("Wrong number of tuples in result", expectedCount, indexAndTuples.right.size()))
+                .forEach(indexAndTuples -> {
+                    final String [] selectFields = selectLists.get(indexAndTuples.left).split(",");
+                    indexAndTuples.right
+                            .forEach(tuple -> {
+                                assertEquals("creator1", tuple.getString(selectFields[0]));
+                                assertEquals("{http://www.alfresco.org/test/solrtest}testSuperType", tuple.getString(selectFields[1]));
+                                assertEquals("emp1", tuple.getString(selectFields[2]));
+                            });
+                });
+    }
+
+    @Test
+    public void fieldsInSortExpressionAreCaseInsensitive()
+    {
+        String whereCondition = "TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType'";
+        long expectedCount = expectedCount(whereCondition);
+
+        List<String> queriesInDescOrder =
+                asList(
+                        "select cm_name, TYPE, DBID from alfresco where " + whereCondition + " order by dbid desc",
+                        "select * from alfresco where " + whereCondition + " order by DBID desc");
+
+        List<List<String>> descendingResults =
+                queriesInDescOrder.stream()
+                    .map(query -> sqlQuery(query, alfrescoJson))
+                    .peek(tuples -> assertEquals("Wrong number of tuples in result", expectedCount, tuples.size()))
+                    .map(tuples -> tuples.stream().map(tuple -> tuple.getString("DBID")).collect(toList()))
+                    .collect(toList());
+
+
+        descendingResults.forEach(values -> {
+            List<String> expected = new ArrayList<>(values);
+            expected.sort(Comparator.reverseOrder());
+
+            assertEquals(expected, values);
+        });
+
+        List<String> queriesInAscOrder =
+                asList(
+                        "select cm_name, TYPE, DBID from alfresco where " + whereCondition + " order by dbid asc",
+                        "select * from alfresco where " + whereCondition + " order by DBID asc");
+
+        List<List<String>> ascendingResults =
+                queriesInAscOrder.stream()
+                        .map(query -> sqlQuery(query, alfrescoJson))
+                        .peek(tuples -> assertEquals("Wrong number of tuples in result", expectedCount, tuples.size()))
+                        .map(tuples -> tuples.stream().map(tuple -> tuple.getString("DBID")).collect(toList()))
+                        .collect(toList());
+
+        ascendingResults.forEach(values -> {
+            List<String> expected = new ArrayList<>(values);
+            expected.sort(Comparator.naturalOrder());
+
+            assertEquals(expected, values);
+        });
     }
 
     @Test 
@@ -564,6 +664,21 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertEquals(indexedNodesCount, tuples.size());
 
         tuples.forEach(tuple ->  assertEquals("Mismatched columns", expectedColumns, tuple.fields.keySet()));
+    }
+
+    /**
+     * Internal method for getting the count of expected results from a given query.
+     * This is used in tests methods for avoiding to hard-code the expected number of matches.
+     *
+     * @param whereCondition the predicate part of the query that will be used for counting
+     * @return the count of expected results according with the input predicate.
+     */
+    private long expectedCount(String whereCondition)
+    {
+        String countQuery = "select count(*) from alfresco where " + whereCondition;
+        return of(sqlQuery(countQuery, alfrescoJson).iterator().next())
+                .map(tuple -> tuple.getLong("EXPR$0"))
+                .orElseThrow(() -> new RuntimeException("Unable to get the count of expected results."));
     }
 }
 
