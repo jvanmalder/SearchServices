@@ -123,7 +123,7 @@ public class SolrSchema extends AbstractSchema
 
         // Get fields from default fields.
         for (SelectStarDefaultField fieldAndType : SelectStarDefaultField.values())
-                {
+        {
             queryFields.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
         }
 
@@ -131,6 +131,7 @@ public class SolrSchema extends AbstractSchema
         if (!isSelectStarQuery)
         {
             queryFields.putAll(getModelFieldsInfo());
+            queryFields.putAll(getIndexedFieldsInfo());
         }
 
         // Create set of formatted fields. (Useful to check for duplicates)
@@ -366,6 +367,53 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
         }
 
         return map;
+    }
+
+    private Map<String, String> getIndexedFieldsInfo() throws RuntimeException
+    {
+
+        RefCounted<SolrIndexSearcher> refCounted = core.getSearcher();
+        SolrIndexSearcher searcher = null;
+        try {
+            searcher = refCounted.get();
+            LeafReader reader = searcher.getSlowAtomicReader();
+            IndexSchema schema = searcher.getSchema();
+
+            Set<String> fieldNames = new TreeSet<>();
+            for (FieldInfo fieldInfo : reader.getFieldInfos()) {
+                fieldNames.add(fieldInfo.name);
+            }
+            Map<String, String> fieldMap = new HashMap<>();
+            for (String fieldName : fieldNames) {
+                SchemaField sfield = schema.getFieldOrNull(fieldName);
+                FieldType ftype = (sfield == null) ? null : sfield.getType();
+
+                String alfrescoPropertyFromSchemaField = null;
+                try
+                {
+                    alfrescoPropertyFromSchemaField = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
+                }
+                catch (NamespaceException ne)
+                {
+                    //Field name may have been created but now deactivated, e.g custom model.
+                    LOGGER.warn("Unable to resolve field: " + fieldName);
+                }
+
+                if (isNotBlank(alfrescoPropertyFromSchemaField) && ftype != null)
+                {
+                    String className = ftype.getClassArg();
+                    if (isNotBlank(className))
+                    {
+                        // Add the field
+                        fieldMap.put(alfrescoPropertyFromSchemaField, className);
+                    }
+                }
+            }
+
+            return fieldMap;
+        } finally {
+            refCounted.decref();
+        }
     }
 
 }
