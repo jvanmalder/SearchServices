@@ -21,6 +21,7 @@ package org.alfresco.solr.query.stream;
 import static java.util.Arrays.asList;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static java.util.stream.IntStream.range;
 
 import java.util.ArrayList;
@@ -28,8 +29,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.calcite.util.Pair;
@@ -50,6 +54,13 @@ import org.junit.rules.ExpectedException;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedSqlTest extends AbstractStreamTest
 {
+    @SuppressWarnings("unchecked")
+    private Function<Tuple, Map<Object, Object>> toCaseInsensitiveMap = tuple -> {
+        Map<Object, Object> caseInsensitiveMap = new TreeMap(String.CASE_INSENSITIVE_ORDER);
+        caseInsensitiveMap.putAll(tuple.fields);
+        return caseInsensitiveMap;
+    };
+
     @Rule public ExpectedException exceptionRule = ExpectedException.none();
 
     private String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
@@ -432,6 +443,34 @@ public class DistributedSqlTest extends AbstractStreamTest
                                 assertEquals("emp1", tuple.getString(selectFields[2]));
                             });
                 });
+    }
+
+    /**
+     * Although, as this test name says, fields in expressions can be used in a case insensitive way, the same names
+     * (with the same case) needs to be in the select lists so, as reported in {@link #fieldsInSelectListAreCaseSensitive()} test,
+     * the returned tuples will include the requested fields with the *same exact case*.
+     */
+    @Test
+    public void fieldsInExpressionsAreCaseInsensitive() {
+        Set<String> expectedNames = asSet("name1", "name2", "name3");
+
+        List<String> queries =
+                asList(
+                        "select Cm_NaMe,TYPE from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType' group by Cm_NaMe,TYPE",
+                        "select CM_NAME,TYPE from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType' group by CM_NAME,TYPE",
+                        "select cm_name,type from alfresco where TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType' group by cm_name,type");
+
+        List<Set<String>> listOfMatchingNames =
+                queries.stream()
+                    .map(query -> sqlQuery(query, alfrescoJson))
+                    .map(tuples -> tuples.stream().map(toCaseInsensitiveMap).collect(toList()))
+                    .map(tuples -> tuples.stream()
+                                        .map(tuple -> tuple.get("cm_name"))
+                                        .map(String.class::cast)
+                                        .collect(toSet()))
+                    .collect(toList());
+
+        listOfMatchingNames.forEach(names -> assertEquals(expectedNames, names));
     }
 
     @Test
