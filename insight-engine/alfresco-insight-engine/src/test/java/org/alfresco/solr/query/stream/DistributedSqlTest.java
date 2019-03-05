@@ -411,7 +411,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     {
         List<String> selectLists = asList("CM_creator,TYPE,Finance_Emp", "cm_creator,TyPe,finance_Emp", "Cm_CrEaTor,type,FINANCE_EMP");
 
-        String whereCondition = "TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType' AND cm_creator='creator1'";
+        String whereCondition = "TYPE = '{http://www.alfresco.org/test/solrtest}testSuperType' AND cm_creator='creator1' AND finance_Emp='emp1'";
         long expectedCount = expectedCount(whereCondition);
 
         List<String> queries =
