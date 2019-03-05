@@ -352,7 +352,7 @@ public class SolrSchema extends AbstractSchema
                     if (isNotBlank(className))
                     {
                         // Add the field
-                        // fieldMap.put(alfrescoPropertyFromSchemaField, className);
+                        fieldMap.put(alfrescoPropertyFromSchemaField, className);
                     }
                 }
             }
