@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.dictionary.M2Type;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
@@ -140,7 +141,7 @@ public class SolrSchema extends AbstractSchema
         //Add dynamic queryFields not part of the schema such as custom models and aspects.
         if (predicateExists(sql))
         {
-            SolrSchemaUtil.extractPredicates(sql).stream().filter(fieldName ->
+            SolrSchemaUtilq.extractPredicates(sql).stream().filter(fieldName ->
                     !formattedFields.contains(fieldName)).forEach(
                 fieldName -> queryFields.putIfAbsent(fieldName, UNKNOWN_FIELD_DEFAULT_TYPE));
         }
@@ -310,7 +311,12 @@ public class SolrSchema extends AbstractSchema
     }
 
     /**
-     *  Get fields from dataModel.
+     * Get fields and correlated solrType from data model.
+     *
+     * Details:
+     *  Get all the properties from the default dictionary. For each property, a queryable field is taken from dataModel.
+     *  The queryable field is used to search the solrType in the Solr IndexSchema
+     *
      * @return
      * @throws RuntimeException
      */
@@ -332,9 +338,11 @@ public class SolrSchema extends AbstractSchema
             {
 
                 String fieldName = qname.toString();
+
                 List<AlfrescoSolrDataModel.FieldInstance> fields =
                     dataModel.getQueryableFields(qname, null, AlfrescoSolrDataModel.FieldUse.SORT)
                         .getFields();
+
                 if (!fields.isEmpty())
                 {
                     String queryableField = fields.get(0).getField();
@@ -369,6 +377,12 @@ public class SolrSchema extends AbstractSchema
         return map;
     }
 
+    /**
+     * Get indexed fields in Solr.
+     * The list of fields might be not complete in a sharded environment.
+     * @return
+     * @throws RuntimeException
+     */
     private Map<String, String> getIndexedFieldsInfo() throws RuntimeException
     {
 
