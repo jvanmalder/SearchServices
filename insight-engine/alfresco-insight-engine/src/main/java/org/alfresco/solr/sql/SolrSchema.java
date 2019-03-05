@@ -141,7 +141,7 @@ public class SolrSchema extends AbstractSchema
         //Add dynamic queryFields not part of the schema such as custom models and aspects.
         if (predicateExists(sql))
         {
-            SolrSchemaUtilq.extractPredicates(sql).stream().filter(fieldName ->
+            SolrSchemaUtil.extractPredicates(sql).stream().filter(fieldName ->
                     !formattedFields.contains(fieldName)).forEach(
                 fieldName -> queryFields.putIfAbsent(fieldName, UNKNOWN_FIELD_DEFAULT_TYPE));
         }
