@@ -65,8 +65,6 @@ public class SolrSchema extends AbstractSchema
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SolrSchema.class);
 
-
-
     /**
      * The default type we assign to queryFields not explicitly declared (i.e. defined in shared.properties or hard coded in select star queryFields).
      * Using the StrField as default type allows the SQL processor to manage them as opaque literals, without any further parsing.
@@ -98,7 +96,8 @@ public class SolrSchema extends AbstractSchema
      */
     final Set<String> formattedFields = new HashSet<>();
 
-    SolrSchema(SolrCore core, Properties properties) {
+    SolrSchema(SolrCore core, Properties properties)
+    {
         super();
         this.core = core;
         this.properties = properties;
@@ -117,7 +116,6 @@ public class SolrSchema extends AbstractSchema
      */
     private void initFieldsFromConfiguration(Properties properties)
     {
-
         // Get fields from configuration.
         queryFields.putAll(SolrSchemaUtil.fetchCustomFieldsFromSharedProperties());
 
@@ -152,13 +150,14 @@ public class SolrSchema extends AbstractSchema
     {
         return (sql != null && sql.toLowerCase().contains(" where "));
     }
-    
+
     @Override
-  protected Map<String, Table> getTableMap() {
-    Map<String, Table> map = new HashMap<String, Table>();
-    map.put("alfresco", new SolrTable(this, "alfresco"));
-    return map;
-  }
+    protected Map<String, Table> getTableMap()
+    {
+        Map<String, Table> map = new HashMap<>();
+        map.put("alfresco", new SolrTable(this, "alfresco"));
+        return map;
+    }
 
     private RelDataType resolveType(String ltype, RelDataTypeFactory typeFactory)
     {
@@ -243,26 +242,27 @@ public class SolrSchema extends AbstractSchema
         return RelDataTypeImpl.proto(fieldInfo.build());
     }
 
-  /**
-   * Checks if the field already exists in the virtual schema.
-   * @param entry
-   * @return
-   */
-  public static boolean lockOwnerFieldExists(String entry)
-  {
-      if(null != entry)
-      {
-          return "cm_lockOwner".contentEquals(entry)|| "cm:lockOwner".contentEquals(entry);
-      }
-      return false;
-  }
-
-private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type) {
-    for(String postfix : postfixes)
+    /**
+     * Checks if the field already exists in the virtual schema.
+     * @param entry
+     * @return
+     */
+    public static boolean lockOwnerFieldExists(String entry)
     {
-        addFieldInfoOriginalNameAndFormatted(fieldInfo, entry, type, postfix, null);
+        if(null != entry)
+        {
+            return "cm_lockOwner".contentEquals(entry)|| "cm:lockOwner".contentEquals(entry);
+        }
+        return false;
     }
-}
+
+    private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type)
+    {
+        for(String postfix : postfixes)
+        {
+            addFieldInfoOriginalNameAndFormatted(fieldInfo, entry, type, postfix, null);
+        }
+    }
 
     private void addFieldInfoOriginalNameAndFormatted(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Entry<String, String> entry, RelDataType type, String postfix, String formattedFieldName)
     {
@@ -302,19 +302,19 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
 
     private String getPostfix(String postfix)
     {
-    if(postfix != null) {
-      return postfix;
-    } else {
-      return "";
+        if(postfix != null) {
+            return postfix;
+        } else {
+            return "";
+        }
     }
-  }
 
     /**
      *  Get fields from dataModel.
      * @return
      * @throws RuntimeException
      */
-    private Map<String, String> getModelFieldsInfo() throws  RuntimeException
+    private Map<String, String> getModelFieldsInfo() throws RuntimeException
     {
         Map<String, String> map = new HashMap<>();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
@@ -373,7 +373,7 @@ private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.En
     {
 
         RefCounted<SolrIndexSearcher> refCounted = core.getSearcher();
-        SolrIndexSearcher searcher = null;
+        SolrIndexSearcher searcher;
         try {
             searcher = refCounted.get();
             LeafReader reader = searcher.getSlowAtomicReader();
