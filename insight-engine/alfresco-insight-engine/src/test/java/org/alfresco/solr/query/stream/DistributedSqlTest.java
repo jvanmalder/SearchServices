@@ -106,14 +106,12 @@ public class DistributedSqlTest extends AbstractStreamTest
     @Test
     public void testSearch() throws Exception
     {
-        /*
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertEquals(4, tuples.size());
         assertNodes(tuples, node1, node2, node3, node4);
         assertFieldNotNull(tuples, "LID");
-*/
         String alfrescoJson2 = "{ \"authorities\": [ \"joel\" ], \"tenants\": [ \"\" ] }";
-/*
+
         tuples = sqlQuery(sql, alfrescoJson2);
         assertEquals(2, tuples.size());
         assertNodes(tuples, node1, node2);
@@ -241,9 +239,9 @@ public class DistributedSqlTest extends AbstractStreamTest
         sql = "select DBID from alfresco where `cm:content.size` = '[1 TO *]'";
         tuples = sqlQuery(sql, alfrescoJson);
         assertEquals(1, tuples.size());
-*/
+
         sql = "select cm_creator, cm_name, `exif:manufacturer`, audio_trackNumber from alfresco order by `audio:trackNumber` asc";
-        List<Tuple> tuples = sqlQuery(sql, alfrescoJson2);
+        tuples = sqlQuery(sql, alfrescoJson2);
         assertEquals(2, tuples.size());
 
         for(Tuple tuple : tuples)
