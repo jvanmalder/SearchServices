@@ -30,11 +30,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.calcite.util.Pair;
@@ -55,13 +52,6 @@ import org.junit.rules.ExpectedException;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedSqlTest extends AbstractStreamTest
 {
-    @SuppressWarnings("unchecked")
-    private Function<Tuple, Map<Object, Object>> toCaseInsensitiveMap = tuple -> {
-        Map<Object, Object> caseInsensitiveMap = new TreeMap(String.CASE_INSENSITIVE_ORDER);
-        caseInsensitiveMap.putAll(tuple.fields);
-        return caseInsensitiveMap;
-    };
-
     @Rule public ExpectedException exceptionRule = ExpectedException.none();
 
     private String sql = "select DBID, LID from alfresco where cm_content = 'world' order by DBID limit 10 ";
