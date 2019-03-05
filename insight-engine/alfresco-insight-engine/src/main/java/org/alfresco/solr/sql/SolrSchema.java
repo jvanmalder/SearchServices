@@ -61,13 +61,6 @@ public class SolrSchema extends AbstractSchema
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SolrSchema.class);
 
-    /**
-     * The default type we assign to queryFields not explicitly declared (i.e. defined in shared.properties or hard coded in select star queryFields).
-     * Using the StrField as default type allows the SQL processor to manage them as opaque literals, without any further parsing.
-     * In this way the (String) literal processing is moved completely on Solr side.
-     */
-    public static final String UNKNOWN_FIELD_DEFAULT_TYPE = "solr.StrField";
-
     final Properties properties;
     final SolrCore core;
 
@@ -86,11 +79,6 @@ public class SolrSchema extends AbstractSchema
 
     final boolean isSelectStarQuery;
     final Map<String, String> queryFields = new HashMap<>();
-
-    /**
-     * formattedFileds is used to check if a queryFields is already inserted in queryFields.
-     */
-    final Set<String> formattedFields = new HashSet<>();
 
     SolrSchema(SolrCore core, Properties properties)
     {
@@ -123,16 +111,17 @@ public class SolrSchema extends AbstractSchema
 
 
         Map<String, String> modelAndIndexedFields = getIndexedFieldsInfo();
-        modelAndIndexedFields.putAll(modelAndIndexedFields);
+        modelAndIndexedFields.putAll(getModelFieldsInfo());
+
+        String sql = properties.getProperty("stmt", "");
 
         // Get fields from solr index.
         if (!isSelectStarQuery)
         {
             queryFields.putAll(modelAndIndexedFields);
         }
-        else
+        else if (predicateExists(sql))
         {
-
             // Create set of formatted fields. (Useful to check for duplicates)
             // SEARCH-1491: queryFields is the list of fields used later (see RelProtoDataType#getRelDataType) for
             // populating the FieldInfo which is the source where Calcite picks up fields definitions.
@@ -147,31 +136,27 @@ public class SolrSchema extends AbstractSchema
                 .map(this::getFormattedFieldName)
                 .collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
 
-
-            // This map is used to
-            final Map<String, String> formattedFieldsFromModelAndInsex = modelAndIndexedFields.entrySet().stream()
+            // This map is used to get the right type for the properties extracted from the predicate in select * queries.
+            final Map<String, String> formattedFieldsFromModelAndInsex = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            formattedFieldsFromModelAndInsex.putAll(modelAndIndexedFields.entrySet().stream()
                 .collect(Collectors.toMap((entry)-> getFormattedFieldName(entry.getKey()),
-            (entry) -> entry.getValue()));
-
-
-            String sql = properties.getProperty("stmt", "");
+            (entry) -> entry.getValue())));
 
             SolrSchemaUtil.extractPredicates(sql).stream()
                 .filter(predicateField -> !formattedFieldsInserted.contains(predicateField))
                 .forEach(fieldName ->
-                    queryFields.putIfAbsent(fieldName,
-                        formattedFieldsFromModelAndInsex.get(getFormattedFieldName(fieldName))));
-
-        }
-
-
-
-
-
-        //Add dynamic queryFields not part of the schema such as custom models and aspects.
-        if (predicateExists(sql))
-        {
-
+                    {
+                        String type = getFormattedFieldName(fieldName);
+                        if (type != null)
+                        {
+                            queryFields.putIfAbsent(fieldName,
+                                formattedFieldsFromModelAndInsex.get(type));
+                        }
+                        else
+                        {
+                            LOGGER.warn("Unable to resolve type for fieldName: " + fieldName);
+                        }
+                    });
         }
     }
 
@@ -378,39 +363,38 @@ public class SolrSchema extends AbstractSchema
                 .getAllProperties(null)
                 .stream()
                 .forEach(qname ->
-            {
+                    {
+                        String fieldName = qname.toString();
+                        List<AlfrescoSolrDataModel.FieldInstance> fields =
+                            dataModel.getQueryableFields(qname, null, AlfrescoSolrDataModel.FieldUse.SORT)
+                                .getFields();
 
-                String fieldName = qname.toString();
+                        if (!fields.isEmpty())
+                        {
+                            String queryableField = fields.get(0).getField();
+                            if (!queryableField.equals("_dummy_")){
+                                SchemaField sfield = schema.getFieldOrNull(queryableField);
+                                FieldType ftype = (sfield == null) ? null : sfield.getType();
 
-                List<AlfrescoSolrDataModel.FieldInstance> fields =
-                    dataModel.getQueryableFields(qname, null, AlfrescoSolrDataModel.FieldUse.SORT)
-                        .getFields();
-
-                if (!fields.isEmpty())
-                {
-                    String queryableField = fields.get(0).getField();
-                    if (!queryableField.equals("_dummy_")){
-                        SchemaField sfield = schema.getFieldOrNull(queryableField);
-                        FieldType ftype = (sfield == null) ? null : sfield.getType();
-
-                        if (ftype != null){
-                            try
-                            {
-                                String alfrescoPropertyFromSchemaField = dataModel.getAlfrescoPropertyFromSchemaField(queryableField);
-                                String type = ftype.getClassArg();
-                                if (isNotBlank(type)){
-                                    map.put(alfrescoPropertyFromSchemaField, type);
+                                if (ftype != null){
+                                    try
+                                    {
+                                        String alfrescoPropertyFromSchemaField =
+                                            dataModel.getAlfrescoPropertyFromSchemaField(queryableField);
+                                        String type = ftype.getClassArg();
+                                        if (isNotBlank(type)){
+                                            map.put(alfrescoPropertyFromSchemaField, type);
+                                        }
+                                    }
+                                    catch (NamespaceException ne)
+                                    {
+                                        //Field name may have been created but now deactivated, e.g custom model.
+                                        LOGGER.warn("Unable to resolve field: " + fieldName);
+                                    }
                                 }
                             }
-                            catch (NamespaceException ne)
-                            {
-                                //Field name may have been created but now deactivated, e.g custom model.
-                                LOGGER.warn("Unable to resolve field: " + fieldName);
-                            }
-                        }
-                    }
-                 }
-            });
+                         }
+                    });
         }
         finally
         {
