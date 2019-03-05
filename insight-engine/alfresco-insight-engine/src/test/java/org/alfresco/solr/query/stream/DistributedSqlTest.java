@@ -487,8 +487,8 @@ public class DistributedSqlTest extends AbstractStreamTest
 
         List<String> queriesInDescOrder =
                 asList(
-                   //     "select cm_name, TYPE, DBID from alfresco where " + whereCondition + " order by dbid desc",
-                        "select *     from alfresco where " + whereCondition + " order by DBID desc");
+                        "select cm_name, TYPE, DBID from alfresco where " + whereCondition + " order by dbid desc",
+                        "select * from alfresco where " + whereCondition + " order by DBID desc");
 
         List<List<String>> descendingResults =
                 queriesInDescOrder.stream()
