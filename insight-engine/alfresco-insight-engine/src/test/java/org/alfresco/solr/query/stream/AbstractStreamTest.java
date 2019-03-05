@@ -316,36 +316,40 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     }
 
     /**
-     * Build a sql query with alfresco user authentication and parses the response
-     * back into tuples.
+     * Build a sql query with alfresco user authentication and parses the response back into tuples.
+     *
      * @param sql SQL query to post
      * @param alfrescoJson 
      * @return List<Tuple>
-     * @throws IOException if error
      */
-
-    public List<Tuple> sqlQuery(String sql, String alfrescoJson) throws IOException 
+    public List<Tuple> sqlQuery(String sql, String alfrescoJson)
     {
         return sqlQuery(sql, alfrescoJson, "UTC", 0);
     }
 
-    public List<Tuple> sqlQuery(String sql, String alfrescoJson, String timezone, long now) throws IOException
+    public List<Tuple> sqlQuery(String sql, String alfrescoJson, String timezone, long now)
     {
-        System.out.println("######### AFRESCO SQL #######");
-        System.out.println(sql);
-        List<SolrClient> clusterClients = getShardedClients();
-        String shards = getShardsString();
-        System.out.println("###########:"+shards);
+        try {
+            System.out.println("######### AFRESCO SQL #######");
+            System.out.println(sql);
+            List<SolrClient> clusterClients = getShardedClients();
+            String shards = getShardsString();
+            System.out.println("###########:" + shards);
 
-        SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards, "timeZone", timezone);
+            SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards, "timeZone", timezone);
 
-        if(now > 0) {
-           ((ModifiableSolrParams)params).set("time", Long.toString(now));
+            if (now > 0) {
+                ((ModifiableSolrParams) params).set("time", Long.toString(now));
+            }
+
+            AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
+            tupleStream.setJson(alfrescoJson);
+            return getTuples(tupleStream);
         }
-
-        AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient) clusterClients.get(0)).getBaseURL(), params);
-        tupleStream.setJson(alfrescoJson);
-        return getTuples(tupleStream);
+        catch (IOException exception)
+        {
+            throw new RuntimeException(exception);
+        }
     }
 }
 
