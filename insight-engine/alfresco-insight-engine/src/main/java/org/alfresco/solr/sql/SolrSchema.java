@@ -18,10 +18,12 @@ package org.alfresco.solr.sql;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,6 +41,7 @@ import org.apache.calcite.rel.type.RelProtoDataType;
 import org.apache.calcite.schema.Table;
 import org.apache.calcite.schema.impl.AbstractSchema;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
+import org.apache.commons.collections.keyvalue.DefaultMapEntry;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.LeafReader;
 import org.apache.solr.core.SolrCore;
@@ -118,35 +121,57 @@ public class SolrSchema extends AbstractSchema
             queryFields.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
         }
 
+
+        Map<String, String> modelAndIndexedFields = getIndexedFieldsInfo();
+        modelAndIndexedFields.putAll(modelAndIndexedFields);
+
         // Get fields from solr index.
         if (!isSelectStarQuery)
         {
-            queryFields.putAll(getModelFieldsInfo());
-            queryFields.putAll(getIndexedFieldsInfo());
+            queryFields.putAll(modelAndIndexedFields);
         }
+        else
+        {
 
-        // Create set of formatted fields. (Useful to check for duplicates)
-        // SEARCH-1491: queryFields is the list of fields used later (see RelProtoDataType#getRelDataType) for
-        // populating the FieldInfo which is the source where Calcite picks up fields definitions.
-        // Unfortunately, the case insensitive mode (which is set by default) produces a weird behaviour when
-        // the same field is in this list with a different case: the first one is retrieved, even if that doesn't
-        // correspond (from case perspective) to the field as it is declared in Solr.
-        // This "double" addition could happen when a field is declared in two different places (e.g. SelectStarDefaultField
-        // collection and the predicate list in the query).
-        // The formattedFields list uses a case insensitive comparator in order to make sure a field, regardless its case,
-        // is added only once to the fields catalog.
-        final Set<String> formattedFields = queryFields.keySet().stream()
+            // Create set of formatted fields. (Useful to check for duplicates)
+            // SEARCH-1491: queryFields is the list of fields used later (see RelProtoDataType#getRelDataType) for
+            // populating the FieldInfo which is the source where Calcite picks up fields definitions.
+            // Unfortunately, the case insensitive mode (which is set by default) produces a weird behaviour when
+            // the same field is in this list with a different case: the first one is retrieved, even if that doesn't
+            // correspond (from case perspective) to the field as it is declared in Solr.
+            // This "double" addition could happen when a field is declared in two different places (e.g. SelectStarDefaultField
+            // collection and the predicate list in the query).
+            // The formattedFields list uses a case insensitive comparator in order to make sure a field, regardless its case,
+            // is added only once to the fields catalog.
+            final Set<String> formattedFieldsInserted = queryFields.keySet().stream()
                 .map(this::getFormattedFieldName)
                 .collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
 
-        String sql = properties.getProperty("stmt", "");
+
+            // This map is used to
+            final Map<String, String> formattedFieldsFromModelAndInsex = modelAndIndexedFields.entrySet().stream()
+                .collect(Collectors.toMap((entry)-> getFormattedFieldName(entry.getKey()),
+            (entry) -> entry.getValue()));
+
+
+            String sql = properties.getProperty("stmt", "");
+
+            SolrSchemaUtil.extractPredicates(sql).stream()
+                .filter(predicateField -> !formattedFieldsInserted.contains(predicateField))
+                .forEach(fieldName ->
+                    queryFields.putIfAbsent(fieldName,
+                        formattedFieldsFromModelAndInsex.get(getFormattedFieldName(fieldName))));
+
+        }
+
+
+
+
 
         //Add dynamic queryFields not part of the schema such as custom models and aspects.
         if (predicateExists(sql))
         {
-            SolrSchemaUtil.extractPredicates(sql).stream()
-                    .filter(predicateField -> !formattedFields.contains(predicateField))
-                    .forEach(fieldName -> queryFields.putIfAbsent(fieldName, UNKNOWN_FIELD_DEFAULT_TYPE));
+
         }
     }
 
