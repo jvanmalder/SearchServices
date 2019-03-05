@@ -20,7 +20,6 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.util.HashMap;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.TreeSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -57,8 +56,6 @@ public class SolrSchema extends AbstractSchema
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SolrSchema.class);
 
-
-
     /**
      * The default type we assign to queryFields not explicitly declared (i.e. defined in shared.properties or hard coded in select star queryFields).
      * Using the StrField as default type allows the SQL processor to manage them as opaque literals, without any further parsing.
@@ -85,7 +82,8 @@ public class SolrSchema extends AbstractSchema
     final boolean isSelectStarQuery;
     final Map<String, String> queryFields = new HashMap<>();
 
-    SolrSchema(SolrCore core, Properties properties) {
+    SolrSchema(SolrCore core, Properties properties)
+    {
         super();
         this.core = core;
         this.properties = properties;
@@ -150,11 +148,12 @@ public class SolrSchema extends AbstractSchema
     }
     
     @Override
-  protected Map<String, Table> getTableMap() {
-    Map<String, Table> map = new HashMap<String, Table>();
-    map.put("alfresco", new SolrTable(this, "alfresco"));
-    return map;
-  }
+    protected Map<String, Table> getTableMap()
+    {
+        Map<String, Table> map = new HashMap<>();
+        map.put("alfresco", new SolrTable(this, "alfresco"));
+        return map;
+    }
 
     private RelDataType resolveType(String ltype, RelDataTypeFactory typeFactory)
     {
@@ -213,7 +212,7 @@ public class SolrSchema extends AbstractSchema
         final RelDataTypeFactory.FieldInfoBuilder fieldInfo = typeFactory.builder();
 
 
-        /**
+        /*
          * Load query fields
          */
         for (Entry<String, String> fieldAndType : queryFields.entrySet())
@@ -237,26 +236,22 @@ public class SolrSchema extends AbstractSchema
         return RelDataTypeImpl.proto(fieldInfo.build());
     }
 
-  /**
-   * Checks if the field already exists in the virtual schema.
-   * @param entry
-   * @return
-   */
-  public static boolean lockOwnerFieldExists(String entry)
-  {
-      if(null != entry)
-      {
-          return "cm_lockOwner".contentEquals(entry)|| "cm:lockOwner".contentEquals(entry);
-      }
-      return false;
-  }
-
-    private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type) {
-    for(String postfix : postfixes)
+    public static boolean lockOwnerFieldExists(String entry)
     {
-        addFieldInfoOriginalNameAndFormatted(fieldInfo, entry, type, postfix, null);
+        if(null != entry)
+        {
+            return "cm_lockOwner".contentEquals(entry)|| "cm:lockOwner".contentEquals(entry);
+        }
+        return false;
     }
-}
+
+    private void addTimeFields(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Map.Entry<String, String> entry, RelDataType type)
+    {
+        for(String postfix : postfixes)
+        {
+            addFieldInfoOriginalNameAndFormatted(fieldInfo, entry, type, postfix, null);
+        }
+    }
 
     private void addFieldInfoOriginalNameAndFormatted(RelDataTypeFactory.FieldInfoBuilder fieldInfo, Entry<String, String> entry, RelDataType type, String postfix, String formattedFieldName)
     {
@@ -306,7 +301,8 @@ public class SolrSchema extends AbstractSchema
             {
                 return prefixNamespaceAndLocalName[0] + "_" + prefixNamespaceAndLocalName[1] + getPostfix(postfix);
             }
-        } catch (NamespaceException ignore) {
+        }
+        catch (NamespaceException ignore) {
             //ignore invalid qnames
         }
         return fieldName;
@@ -314,56 +310,57 @@ public class SolrSchema extends AbstractSchema
 
     private String getPostfix(String postfix)
     {
-    if(postfix != null) {
-      return postfix;
-    } else {
-      return "";
+        return postfix != null ? postfix : "";
     }
-  }
 
-  private Map<String, String> getIndexedFieldsInfo() throws RuntimeException {
-
-    RefCounted<SolrIndexSearcher> refCounted = core.getSearcher();
-    SolrIndexSearcher searcher = null;
-    try {
-      searcher = refCounted.get();
-      LeafReader reader = searcher.getSlowAtomicReader();
-      IndexSchema schema = searcher.getSchema();
-
-      Set<String> fieldNames = new TreeSet<>();
-      for (FieldInfo fieldInfo : reader.getFieldInfos()) {
-        fieldNames.add(fieldInfo.name);
-      }
-      Map<String, String> fieldMap = new HashMap<>();
-      for (String fieldName : fieldNames) {
-        SchemaField sfield = schema.getFieldOrNull(fieldName);
-        FieldType ftype = (sfield == null) ? null : sfield.getType();
-
-        String alfrescoPropertyFromSchemaField = null;
+    private Map<String, String> getIndexedFieldsInfo() throws RuntimeException
+    {
+        RefCounted<SolrIndexSearcher> refCounted = core.getSearcher();
+        SolrIndexSearcher searcher = null;
         try
         {
-            alfrescoPropertyFromSchemaField = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
-        }
-        catch (NamespaceException ne)
-        {
-              //Field name may have been created but now deactivated, e.g custom model.
-              LOGGER.warn("Unable to resolve field: " + fieldName);
-        }
+            searcher = refCounted.get();
+            LeafReader reader = searcher.getSlowAtomicReader();
+            IndexSchema schema = searcher.getSchema();
 
-        if (isNotBlank(alfrescoPropertyFromSchemaField) && ftype != null)
-        {
-            String className = ftype.getClassArg();
-            if (isNotBlank(className))
+            Set<String> fieldNames = new TreeSet<>();
+            for (FieldInfo fieldInfo : reader.getFieldInfos())
             {
-                // Add the field
-                fieldMap.put(alfrescoPropertyFromSchemaField, className);
+                fieldNames.add(fieldInfo.name);
             }
-        }
-      }
 
-      return fieldMap;
-    } finally {
-      refCounted.decref();
+            Map<String, String> fieldMap = new HashMap<>();
+            for (String fieldName : fieldNames)
+            {
+                SchemaField sfield = schema.getFieldOrNull(fieldName);
+                FieldType ftype = (sfield == null) ? null : sfield.getType();
+
+                String alfrescoPropertyFromSchemaField = null;
+                try
+                {
+                    alfrescoPropertyFromSchemaField = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
+                }
+                catch (NamespaceException ne)
+                {
+                    //Field name may have been created but now deactivated, e.g custom model.
+                    LOGGER.warn("Unable to resolve field: " + fieldName);
+                }
+
+                if (isNotBlank(alfrescoPropertyFromSchemaField) && ftype != null)
+                {
+                    String className = ftype.getClassArg();
+                    if (isNotBlank(className))
+                    {
+                        // Add the field
+                        // fieldMap.put(alfrescoPropertyFromSchemaField, className);
+                    }
+                }
+            }
+            return fieldMap;
+        }
+        finally
+        {
+            refCounted.decref();
+        }
     }
-  }
 }
