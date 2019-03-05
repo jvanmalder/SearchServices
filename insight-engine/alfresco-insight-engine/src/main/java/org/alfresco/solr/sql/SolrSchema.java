@@ -137,20 +137,19 @@ public class SolrSchema extends AbstractSchema
                 .collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
 
             // This map is used to get the right type for the properties extracted from the predicate in select * queries.
-            final Map<String, String> formattedFieldsFromModelAndInsex = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-            formattedFieldsFromModelAndInsex.putAll(modelAndIndexedFields.entrySet().stream()
+            final Map<String, String> formattedFieldsFromModelAndInsex = modelAndIndexedFields.entrySet().stream()
                 .collect(Collectors.toMap((entry)-> getFormattedFieldName(entry.getKey()),
-            (entry) -> entry.getValue())));
+            (entry) -> entry.getValue(), (u,v) -> u, () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
 
             SolrSchemaUtil.extractPredicates(sql).stream()
                 .filter(predicateField -> !formattedFieldsInserted.contains(predicateField))
                 .forEach(fieldName ->
                     {
-                        String type = getFormattedFieldName(fieldName);
+                        String type = formattedFieldsFromModelAndInsex.get(getFormattedFieldName(fieldName));
                         if (type != null)
                         {
                             queryFields.putIfAbsent(fieldName,
-                                formattedFieldsFromModelAndInsex.get(type));
+                                type);
                         }
                         else
                         {
