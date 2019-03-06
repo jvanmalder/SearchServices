@@ -123,7 +123,7 @@ public class SolrSchema extends AbstractSchema
         else if (predicateExists(sql))
         {
             // Create set of formatted fields. (Useful to check for duplicates)
-            // SEARCH-1491: queryFields is the list of fields used later (see RelProtoDataType#getRelDataType) for
+            // SEARCH-1491: queryFields is the list of fields used later (see RelProtoDataType#getRelDataType) forin
             // populating the FieldInfo which is the source where Calcite picks up fields definitions.
             // Unfortunately, the case insensitive mode (which is set by default) produces a weird behaviour when
             // the same field is in this list with a different case: the first one is retrieved, even if that doesn't
@@ -137,7 +137,7 @@ public class SolrSchema extends AbstractSchema
                 .collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
 
             // This map is used to get the right type for the properties extracted from the predicate in select * queries.
-            final Map<String, String> formattedFieldsFromModelAndInsex = modelAndIndexedFields.entrySet().stream()
+            final Map<String, String> formattedFieldsFromModelAndIndex = modelAndIndexedFields.entrySet().stream()
                 .collect(Collectors.toMap((entry)-> getFormattedFieldName(entry.getKey()),
             (entry) -> entry.getValue(), (u,v) -> u, () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
 
@@ -145,7 +145,7 @@ public class SolrSchema extends AbstractSchema
                 .filter(predicateField -> !formattedFieldsInserted.contains(predicateField))
                 .forEach(fieldName ->
                     {
-                        String type = formattedFieldsFromModelAndInsex.get(getFormattedFieldName(fieldName));
+                        String type = formattedFieldsFromModelAndIndex.get(getFormattedFieldName(fieldName));
                         if (type != null)
                         {
                             queryFields.putIfAbsent(fieldName,
@@ -286,11 +286,12 @@ public class SolrSchema extends AbstractSchema
 
         fieldInfo.add(entry.getKey() + getPostfix(postfix), type).nullable(true);
 
-        if (!formattedFieldName.contentEquals(entry.getKey() + getPostfix(postfix)))
+        if (!formattedFieldName.contentEquals(entry.getKey() + getPostfix(postfix)) && !formattedFieldName.contentEquals(entry.getKey()))
         {
             fieldInfo.add(formattedFieldName, type).nullable(true);
         }
     }
+
 
     /**
      * Returns a formatted version of the field name in input.
