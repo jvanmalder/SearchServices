@@ -16,20 +16,6 @@
  */
 package org.alfresco.solr.sql;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel;
@@ -41,7 +27,6 @@ import org.apache.calcite.rel.type.RelProtoDataType;
 import org.apache.calcite.schema.Table;
 import org.apache.calcite.schema.impl.AbstractSchema;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
-import org.apache.commons.collections.keyvalue.DefaultMapEntry;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.LeafReader;
 import org.apache.solr.core.SolrCore;
@@ -53,6 +38,18 @@ import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.RefCounted;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 /*
 * The SolrSchema class creates the "alfresco" table and populates the queryFields from the index.
@@ -211,7 +208,6 @@ public class SolrSchema extends AbstractSchema
         }
         return type;
     }
-
 
 
     /**
