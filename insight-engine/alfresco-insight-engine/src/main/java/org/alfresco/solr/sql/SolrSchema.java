@@ -348,7 +348,7 @@ public class SolrSchema extends AbstractSchema
      * @return
      * @throws RuntimeException
      */
-    private Map<String, String> getModelFieldsInfo() throws RuntimeException
+    private Map<String, String> getModelFieldsInfo()
     {
         Map<String, String> map = new HashMap<>();
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
@@ -361,7 +361,6 @@ public class SolrSchema extends AbstractSchema
             dataModel
                 .getDictionaryService(null)
                 .getAllProperties(null)
-                .stream()
                 .forEach(qname ->
                     {
                         String fieldName = qname.toString();
@@ -372,17 +371,20 @@ public class SolrSchema extends AbstractSchema
                         if (!fields.isEmpty())
                         {
                             String queryableField = fields.get(0).getField();
-                            if (!queryableField.equals("_dummy_")){
+                            if (!queryableField.equals("_dummy_"))
+                            {
                                 SchemaField sfield = schema.getFieldOrNull(queryableField);
                                 FieldType ftype = (sfield == null) ? null : sfield.getType();
 
-                                if (ftype != null){
+                                if (ftype != null)
+                                {
                                     try
                                     {
                                         String alfrescoPropertyFromSchemaField =
                                             dataModel.getAlfrescoPropertyFromSchemaField(queryableField);
                                         String type = ftype.getClassArg();
-                                        if (isNotBlank(type)){
+                                        if (isNotBlank(type))
+                                        {
                                             map.put(alfrescoPropertyFromSchemaField, type);
                                         }
                                     }
@@ -410,7 +412,7 @@ public class SolrSchema extends AbstractSchema
      * @return
      * @throws RuntimeException
      */
-    private Map<String, String> getIndexedFieldsInfo() throws RuntimeException
+    private Map<String, String> getIndexedFieldsInfo()
     {
 
         RefCounted<SolrIndexSearcher> refCounted = core.getSearcher();
@@ -421,11 +423,13 @@ public class SolrSchema extends AbstractSchema
             IndexSchema schema = searcher.getSchema();
 
             Set<String> fieldNames = new TreeSet<>();
-            for (FieldInfo fieldInfo : reader.getFieldInfos()) {
+            for (FieldInfo fieldInfo : reader.getFieldInfos())
+            {
                 fieldNames.add(fieldInfo.name);
             }
             Map<String, String> fieldMap = new HashMap<>();
-            for (String fieldName : fieldNames) {
+            for (String fieldName : fieldNames)
+            {
                 SchemaField sfield = schema.getFieldOrNull(fieldName);
                 FieldType ftype = (sfield == null) ? null : sfield.getType();
 
@@ -452,7 +456,9 @@ public class SolrSchema extends AbstractSchema
             }
 
             return fieldMap;
-        } finally {
+        }
+        finally
+        {
             refCounted.decref();
         }
     }
