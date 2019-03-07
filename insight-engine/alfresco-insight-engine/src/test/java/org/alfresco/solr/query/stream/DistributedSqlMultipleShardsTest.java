@@ -41,6 +41,12 @@ public class DistributedSqlMultipleShardsTest extends AbstractStreamTest
 
     private String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
+    /**
+     * The following tests should verify the correctness of query executed on a shard where the requested fields are not actually indexed.
+     * For this reason, the environment is started with 4 shards, in order to possibly have one node indexed on each shard.
+     *
+     * @throws Throwable
+     */
     @BeforeClass
     public static void initData() throws Throwable
     {
@@ -58,7 +64,7 @@ public class DistributedSqlMultipleShardsTest extends AbstractStreamTest
     /**
      * SEARCH-903
      * It search on multiple shards for custom properties. The search is performed on one shard where
-     * or at least one filed between finance:Title and finance:Location is not set.
+     * or at least one field between finance:Title and finance:Location is not set.
      * @throws Exception
      */
     @Test
