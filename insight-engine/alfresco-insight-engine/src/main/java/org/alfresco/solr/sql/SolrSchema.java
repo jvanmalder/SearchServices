@@ -16,15 +16,9 @@
  */
 package org.alfresco.solr.sql;
 
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
-
-import java.util.HashMap;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
@@ -49,19 +43,22 @@ import org.apache.solr.util.RefCounted;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+
 /*
-* The SolrSchema class creates the "alfresco" table and populates the queryFields from the index.
+* The SolrSchema class creates the "alfresco" table and populates the fieldsCatalog from the index.
 */
 public class SolrSchema extends AbstractSchema
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SolrSchema.class);
-
-    /**
-     * The default type we assign to queryFields not explicitly declared (i.e. defined in shared.properties or hard coded in select star queryFields).
-     * Using the StrField as default type allows the SQL processor to manage them as opaque literals, without any further parsing.
-     * In this way the (String) literal processing is moved completely on Solr side.
-     */
-    public static final String UNKNOWN_FIELD_DEFAULT_TYPE = "solr.StrField";
 
     final Properties properties;
     final SolrCore core;
@@ -80,7 +77,7 @@ public class SolrSchema extends AbstractSchema
     final String[] postfixes = { "_day", "_month", "_year" };
 
     final boolean isSelectStarQuery;
-    final Map<String, String> queryFields = new HashMap<>();
+    final Map<String, String> fieldsCatalog;
 
     SolrSchema(SolrCore core, Properties properties)
     {
@@ -89,64 +86,16 @@ public class SolrSchema extends AbstractSchema
         this.properties = properties;
         this.isSelectStarQuery = Boolean.parseBoolean(properties.getProperty(AlfrescoSQLHandler.IS_SELECT_STAR));
 
-        initFieldsFromConfiguration(properties);
-    }
-
-    /**
-     * Init a map of field-> type from :
-     * - configurations defined in the shared properties
-     * - hard coded list of select star queryFields
-     * - queryFields from the sql predicates
-     *
-     * @param properties
-     */
-    private void initFieldsFromConfiguration(Properties properties)
-    {
-        // Get fields from configuration.
-        queryFields.putAll(SolrSchemaUtil.fetchCustomFieldsFromSharedProperties());
-
-        // Get fields from default fields.
-        for (SelectStarDefaultField fieldAndType : SelectStarDefaultField.values())
-        {
-            queryFields.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
-        }
-
-        // Get fields from solr index.
-        if (!isSelectStarQuery)
-        {
-            queryFields.putAll(getIndexedFieldsInfo());
-        }
-
-        // Create set of formatted fields. (Useful to check for duplicates)
-        // SEARCH-1491: queryFields is the list of fields used later (see RelProtoDataType#getRelDataType) for
-        // populating the FieldInfo which is the source where Calcite picks up fields definitions.
-        // Unfortunately, the case insensitive mode (which is set by default) produces a weird behaviour when
-        // the same field is in this list with a different case: the first one is retrieved, even if that doesn't
-        // correspond (from case perspective) to the field as it is declared in Solr.
-        // This "double" addition could happen when a field is declared in two different places (e.g. SelectStarDefaultField
-        // collection and the predicate list in the query).
-        // The formattedFields list uses a case insensitive comparator in order to make sure a field, regardless its case,
-        // is added only once to the fields catalog.
-        final Set<String> formattedFields = queryFields.keySet().stream()
-                .map(this::getFormattedFieldName)
-                .collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
-
         String sql = properties.getProperty("stmt", "");
 
-        //Add dynamic queryFields not part of the schema such as custom models and aspects.
-        if (predicateExists(sql))
-        {
-            SolrSchemaUtil.extractPredicates(sql).stream()
-                    .filter(predicateField -> !formattedFields.contains(predicateField))
-                    .forEach(fieldName -> queryFields.putIfAbsent(fieldName, UNKNOWN_FIELD_DEFAULT_TYPE));
-        }
+        fieldsCatalog =  new FieldsCatalogBuilder()
+            .withFieldsFromSharedProperties()
+            .withDefaultSelectStarFields()
+            .withFieldsFromSolrAndAlfrecoModels(isSelectStarQuery)
+            .withFieldsFromSqlPredicate(sql, isSelectStarQuery).build();
+
     }
 
-    public boolean predicateExists(String sql)
-    {
-        return (sql != null && sql.toLowerCase().contains(" where "));
-    }
-    
     @Override
     protected Map<String, Table> getTableMap()
     {
@@ -195,6 +144,7 @@ public class SolrSchema extends AbstractSchema
         return type;
     }
 
+
     /**
      * Returns the prototype factory used for further defining the data types associated with this schema.
      * Each field in the index is associated with a {@link RelDataType} which in turns maps a Java type. That will drive
@@ -215,7 +165,7 @@ public class SolrSchema extends AbstractSchema
         /*
          * Load query fields
          */
-        for (Entry<String, String> fieldAndType : queryFields.entrySet())
+        for (Entry<String, String> fieldAndType : fieldsCatalog.entrySet())
         {
             String fieldType = fieldAndType.getValue();
             String formattedFieldName = getFormattedFieldName(fieldAndType.getKey(),null);
@@ -236,6 +186,11 @@ public class SolrSchema extends AbstractSchema
         return RelDataTypeImpl.proto(fieldInfo.build());
     }
 
+    /**
+     * Checks if the field already exists in the virtual schema.
+     * @param entry
+     * @return
+     */
     public static boolean lockOwnerFieldExists(String entry)
     {
         if(null != entry)
@@ -262,11 +217,12 @@ public class SolrSchema extends AbstractSchema
 
         fieldInfo.add(entry.getKey() + getPostfix(postfix), type).nullable(true);
 
-        if (!formattedFieldName.contentEquals(entry.getKey() + getPostfix(postfix)))
+        if (!formattedFieldName.contentEquals(entry.getKey() + getPostfix(postfix)) && !formattedFieldName.contentEquals(entry.getKey()))
         {
             fieldInfo.add(formattedFieldName, type).nullable(true);
         }
     }
+
 
     /**
      * Returns a formatted version of the field name in input.
@@ -313,54 +269,231 @@ public class SolrSchema extends AbstractSchema
         return postfix != null ? postfix : "";
     }
 
-    private Map<String, String> getIndexedFieldsInfo() throws RuntimeException
-    {
-        RefCounted<SolrIndexSearcher> refCounted = core.getSearcher();
-        SolrIndexSearcher searcher = null;
-        try
-        {
-            searcher = refCounted.get();
-            LeafReader reader = searcher.getSlowAtomicReader();
-            IndexSchema schema = searcher.getSchema();
 
-            Set<String> fieldNames = new TreeSet<>();
-            for (FieldInfo fieldInfo : reader.getFieldInfos())
+    private class FieldsCatalogBuilder
+    {
+        private final Map<String, String> catalog;
+
+        public FieldsCatalogBuilder()
+        {
+            catalog = new HashMap<>();
+        }
+
+        public FieldsCatalogBuilder withFieldsFromSharedProperties()
+        {
+            catalog.putAll(SolrSchemaUtil.fetchCustomFieldsFromSharedProperties());
+            return this;
+        }
+
+        public FieldsCatalogBuilder withDefaultSelectStarFields()
+        {
+            for (SelectStarDefaultField fieldAndType : SelectStarDefaultField.values())
             {
-                fieldNames.add(fieldInfo.name);
+                catalog.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
             }
 
-            Map<String, String> fieldMap = new HashMap<>();
-            for (String fieldName : fieldNames)
+            return this;
+        }
+
+        public FieldsCatalogBuilder withFieldsFromSolrAndAlfrecoModels(boolean isSelectStar)
+        {
+            if (!isSelectStar)
             {
-                SchemaField sfield = schema.getFieldOrNull(fieldName);
-                FieldType ftype = (sfield == null) ? null : sfield.getType();
+                addIndexedFieldsInfo(catalog);
+                addModelFieldsInfo(catalog);
+            }
+            return this;
+        }
 
-                String alfrescoPropertyFromSchemaField = null;
-                try
-                {
-                    alfrescoPropertyFromSchemaField = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
-                }
-                catch (NamespaceException ne)
-                {
-                    //Field name may have been created but now deactivated, e.g custom model.
-                    LOGGER.warn("Unable to resolve field: " + fieldName);
-                }
+        public FieldsCatalogBuilder withFieldsFromSqlPredicate(String sql, boolean isSelectStar)
+        {
+            if (isSelectStar && predicateExists(sql))
+            {
+                // Create set of formatted fields. (Useful to check for duplicates)
+                // SEARCH-1491: fieldsCatalog is the list of fields used later (see RelProtoDataType#getRelDataType) forin
+                // populating the FieldInfo which is the source where Calcite picks up fields definitions.
+                // Unfortunately, the case insensitive mode (which is set by default) produces a weird behaviour when
+                // the same field is in this list with a different case: the first one is retrieved, even if that doesn't
+                // correspond (from case perspective) to the field as it is declared in Solr.
+                // This "double" addition could happen when a field is declared in two different places (e.g. SelectStarDefaultField
+                // collection and the predicate list in the query).
+                // The formattedFields list uses a case insensitive comparator in order to make sure a field, regardless its case,
+                // is added only once to the fields catalog.
+                Set<String> formattedFieldsInserted = getFormattedFieldsFromCatalog();
 
-                if (isNotBlank(alfrescoPropertyFromSchemaField) && ftype != null)
-                {
-                    String className = ftype.getClassArg();
-                    if (isNotBlank(className))
+                Map<String, String> formattedFieldsFromModelAndIndex = getFormattedFieldsFromSolrAndAlfrescoModel();
+
+                SolrSchemaUtil.extractPredicates(sql).stream()
+                    .filter(predicateField -> !formattedFieldsInserted.contains(predicateField))
+                    .forEach(fieldName ->
                     {
-                        // Add the field
-                        fieldMap.put(alfrescoPropertyFromSchemaField, className);
+                        String type = formattedFieldsFromModelAndIndex.get(getFormattedFieldName(fieldName));
+                        if (type != null)
+                        {
+                            catalog.putIfAbsent(fieldName,
+                                type);
+                        }
+                        else
+                        {
+                            LOGGER.warn("Unable to find fieldName " + fieldName + " in the fields extracted from alfresco models and solr index." );
+                        }
+                    });
+            }
+
+            return this;
+        }
+
+        public Map<String, String> build()
+        {
+            return catalog;
+        }
+
+        private Set<String> getFormattedFieldsFromCatalog()
+        {
+            return catalog.keySet().stream()
+                    .map(SolrSchema.this::getFormattedFieldName)
+                    .collect(toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
+        }
+
+        private Map<String, String> getFormattedFieldsFromSolrAndAlfrescoModel()
+        {
+            // This map is used to get the right type for the properties extracted from the predicate in select * queries.
+            Map<String, String> modelAndIndexedFields = addIndexedFieldsInfo(addModelFieldsInfo(new HashMap<>()));
+
+            Map<String, String> formattedFieldsFromModelAndIndex = modelAndIndexedFields.entrySet().stream()
+                .collect(toMap(
+                    entry-> getFormattedFieldName(entry.getKey()),
+                    Entry::getValue,
+                    (existingEntry, newEntry) -> existingEntry,
+                    () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
+
+            return formattedFieldsFromModelAndIndex;
+        }
+
+
+        /**
+         * Add indexed fields from Solr in fieldMap.
+         * The list of fields might be not complete in a sharded environment.
+         */
+        private Map<String, String> addIndexedFieldsInfo(Map<String, String > fieldMap)
+        {
+
+            RefCounted<SolrIndexSearcher> refCounted = core.getSearcher();
+            SolrIndexSearcher searcher;
+            try {
+                searcher = refCounted.get();
+                LeafReader reader = searcher.getSlowAtomicReader();
+                IndexSchema schema = searcher.getSchema();
+
+                Set<String> fieldNames = new TreeSet<>();
+                for (FieldInfo fieldInfo : reader.getFieldInfos())
+                {
+                    fieldNames.add(fieldInfo.name);
+                }
+                for (String fieldName : fieldNames)
+                {
+                    SchemaField sfield = schema.getFieldOrNull(fieldName);
+                    FieldType ftype = (sfield == null) ? null : sfield.getType();
+
+                    String alfrescoPropertyFromSchemaField = null;
+                    try
+                    {
+                        alfrescoPropertyFromSchemaField = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
+                    }
+                    catch (NamespaceException ne)
+                    {
+                        //Field name may have been created but now deactivated, e.g custom model.
+                        LOGGER.warn("Unable to resolve field: " + fieldName);
+                    }
+
+                    if (isNotBlank(alfrescoPropertyFromSchemaField) && ftype != null)
+                    {
+                        String className = ftype.getClassArg();
+                        if (isNotBlank(className))
+                        {
+                            // Add the field
+                            fieldMap.put(alfrescoPropertyFromSchemaField, className);
+                        }
                     }
                 }
+
+                return fieldMap;
             }
-            return fieldMap;
+            finally
+            {
+                refCounted.decref();
+            }
         }
-        finally
+
+        /**
+         * Get fields and correlated solrType from data model.
+         *
+         * Details:
+         *  Add all the properties from the default dictionary in the fieldMap. For each property, a queryable field is taken from dataModel.
+         *  The queryable field is used to search the solrType in the Solr IndexSchema
+         *
+         */
+        private Map<String, String> addModelFieldsInfo(Map<String, String> fieldMap)
         {
-            refCounted.decref();
+            AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+            RefCounted<SolrIndexSearcher> refCounted = core.getSearcher();
+            try
+            {
+                SolrIndexSearcher searcher = refCounted.get();
+                IndexSchema schema = searcher.getSchema();
+
+                dataModel
+                    .getDictionaryService(null)
+                    .getAllProperties(null)
+                    .forEach(qname ->
+                    {
+                        String fieldName = qname.toString();
+                        List<AlfrescoSolrDataModel.FieldInstance> fields =
+                            dataModel.getQueryableFields(qname, null, AlfrescoSolrDataModel.FieldUse.SORT)
+                                .getFields();
+
+                        if (!fields.isEmpty())
+                        {
+                            String queryableField = fields.get(0).getField();
+                            if (!queryableField.equals("_dummy_"))
+                            {
+                                SchemaField sfield = schema.getFieldOrNull(queryableField);
+                                FieldType ftype = (sfield == null) ? null : sfield.getType();
+
+                                if (ftype != null)
+                                {
+                                    try
+                                    {
+                                        String alfrescoPropertyFromSchemaField =
+                                            dataModel.getAlfrescoPropertyFromSchemaField(queryableField);
+                                        String type = ftype.getClassArg();
+                                        if (isNotBlank(type))
+                                        {
+                                            fieldMap.put(alfrescoPropertyFromSchemaField, type);
+                                        }
+                                    }
+                                    catch (NamespaceException ne)
+                                    {
+                                        //Field name may have been created but now deactivated, e.g custom model.
+                                        LOGGER.warn("Unable to resolve field: " + fieldName);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                return fieldMap;
+            }
+            finally
+            {
+                refCounted.decref();
+            }
+
+        }
+
+        private boolean predicateExists(String sql)
+        {
+            return (sql != null && sql.toLowerCase().contains(" where "));
         }
     }
+
 }
