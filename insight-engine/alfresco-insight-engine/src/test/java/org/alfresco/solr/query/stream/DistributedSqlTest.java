@@ -531,6 +531,36 @@ public class DistributedSqlTest extends AbstractStreamTest
         assertEquals(2, tuples.size());
     }
 
+    /**
+     * Check if select * queries work when a custom field is given in predicate with wrong case.
+     * "finance:location' instead of 'finance:Location'
+     */
+    @Test
+    public void distributedSearch_selectStarQueries_PredicatesWithCaseInsensitiveFieldNames()
+        throws Exception
+    {
+        sql = "select * from alfresco where finance:location = 'London'";
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+        assertEquals(1, tuples.size());
+    }
+
+    /**
+     * Check if select * queries work when a custom field is given in predicate with wrong case.
+     * "finance_location' instead of 'finance_Location'
+     */
+    @Test
+    public void distributedSearch_selectStarQueries_PredicatesWithCaseInsensitiveFieldNames_formattedField()
+        throws Exception
+    {
+        sql = "select * from alfresco where finance_location = 'London'";
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+        assertEquals(1, tuples.size());
+    }
+
+    /**
+     * #distributedSearch_selectStarQueries_PredicatesWithCaseInsensitiveFieldNames_formattedField
+     *
+     */
     @Test 
     public void distributedSearch_groupingOnCustomFieldDefinedInSharedPropertiesVariant_shouldReturnCorrectResults()
         throws Exception
