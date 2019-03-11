@@ -539,7 +539,7 @@ public class DistributedSqlTest extends AbstractStreamTest
     public void distributedSearch_selectStarQueries_PredicatesWithCaseInsensitiveFieldNames()
         throws Exception
     {
-        sql = "select * from alfresco where finance:location = 'London'";
+        sql = "select * from alfresco where `finance:location` = 'London'";
         List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
         assertEquals(1, tuples.size());
     }
