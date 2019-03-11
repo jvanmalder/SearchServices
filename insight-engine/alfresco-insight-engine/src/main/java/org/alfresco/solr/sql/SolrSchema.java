@@ -51,7 +51,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
+import java.util.function.Function;
 
 /*
 * The SolrSchema class creates the "alfresco" table and populates the fieldsCatalog from the index.
@@ -321,17 +321,17 @@ public class SolrSchema extends AbstractSchema
                 // is added only once to the fields catalog.
                 Set<String> formattedFieldsInserted = getFormattedFieldsFromCatalog();
 
-                Map<String, String> formattedFieldsFromModelAndIndex = getFormattedFieldsFromSolrAndAlfrescoModel();
+                Map<String, Entry<String, String>> formattedFieldsFromModelAndIndex = getFormattedFieldsFromSolrAndAlfrescoModel();
 
                 SolrSchemaUtil.extractPredicates(sql).stream()
                     .filter(predicateField -> !formattedFieldsInserted.contains(predicateField))
                     .forEach(fieldName ->
                     {
-                        String type = formattedFieldsFromModelAndIndex.get(getFormattedFieldName(fieldName));
-                        if (type != null)
+
+                        Entry<String, String> nameAndType = formattedFieldsFromModelAndIndex.get(getFormattedFieldName(fieldName));
+                        if (nameAndType != null)
                         {
-                            catalog.putIfAbsent(fieldName,
-                                type);
+                            catalog.putIfAbsent(nameAndType.getKey(), nameAndType.getValue());
                         }
                         else
                         {
@@ -355,15 +355,16 @@ public class SolrSchema extends AbstractSchema
                     .collect(toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
         }
 
-        private Map<String, String> getFormattedFieldsFromSolrAndAlfrescoModel()
+
+        private Map<String, Entry<String, String>> getFormattedFieldsFromSolrAndAlfrescoModel()
         {
             // This map is used to get the right type for the properties extracted from the predicate in select * queries.
             Map<String, String> modelAndIndexedFields = addIndexedFieldsInfo(addModelFieldsInfo(new HashMap<>()));
 
-            Map<String, String> formattedFieldsFromModelAndIndex = modelAndIndexedFields.entrySet().stream()
+            Map<String, Entry<String, String>> formattedFieldsFromModelAndIndex = modelAndIndexedFields.entrySet().stream()
                 .collect(toMap(
                     entry-> getFormattedFieldName(entry.getKey()),
-                    Entry::getValue,
+                    Function.identity(),
                     (existingEntry, newEntry) -> existingEntry,
                     () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
 
