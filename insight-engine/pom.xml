@@ -26,8 +26,8 @@
       </snapshotRepository>
    </distributionManagement>
    <scm>
-      <connection>scm:git:git@git.alfresco.com:search_discovery/InsightEngine.git</connection>
-      <developerConnection>scm:git:git@git.alfresco.com:search_discovery/InsightEngine.git</developerConnection>
+      <connection>scm:git:https://git.alfresco.com/search_discovery/InsightEngine.git</connection>
+      <developerConnection>scm:git:https://git.alfresco.com/search_discovery/InsightEngine.git</developerConnection>
       <url>https://git.alfresco.com/search_discovery/InsightEngine.git</url>
       <tag>HEAD</tag>
    </scm>
