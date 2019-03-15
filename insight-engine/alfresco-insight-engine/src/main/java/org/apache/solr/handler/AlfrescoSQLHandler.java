@@ -19,6 +19,7 @@ package org.apache.solr.handler;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.solr.query.AbstractQParser;
 import org.alfresco.solr.sql.AlfrescoCalciteSolrDriver;
+import org.alfresco.solr.sql.SqlUtil;
 import org.alfresco.solr.stream.AlfrescoExceptionStream;
 import org.apache.calcite.config.Lex;
 import org.apache.solr.client.solrj.io.Tuple;
@@ -132,7 +133,7 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
         properties.put(AbstractQParser.ALFRESCO_JSON, json);
       }
 
-      properties.setProperty(IS_SELECT_STAR, Boolean.toString(isSelectStar(sql)));
+      properties.setProperty(IS_SELECT_STAR, Boolean.toString(SqlUtil.isSelectStar(sql)));
 
       sql = adjustSQL(sql);
 
@@ -163,15 +164,6 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
   private String adjustSQL(String sql) {
       return sql.replace("!=", "<>");
   }
-
-    private boolean isSelectStar(String sql) {
-        String s = sql.toLowerCase();
-        if(s.contains("select *") && s.contains(" * from")) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
   public String getDescription() {
     return "SQLHandler";

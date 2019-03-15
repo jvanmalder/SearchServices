@@ -144,7 +144,6 @@ public class SolrSchema extends AbstractSchema
         return type;
     }
 
-
     /**
      * Returns the prototype factory used for further defining the data types associated with this schema.
      * Each field in the index is associated with a {@link RelDataType} which in turns maps a Java type. That will drive
@@ -222,7 +221,6 @@ public class SolrSchema extends AbstractSchema
             fieldInfo.add(formattedFieldName, type).nullable(true);
         }
     }
-
 
     /**
      * Returns a formatted version of the field name in input.
@@ -355,7 +353,6 @@ public class SolrSchema extends AbstractSchema
                     .collect(toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
         }
 
-
         private Map<String, Entry<String, String>> getFormattedFieldsFromSolrAndAlfrescoModel()
         {
             // This map is used to get the right type for the properties extracted from the predicate in select * queries.
@@ -370,7 +367,6 @@ public class SolrSchema extends AbstractSchema
 
             return formattedFieldsFromModelAndIndex;
         }
-
 
         /**
          * Add indexed fields from Solr in fieldMap.
