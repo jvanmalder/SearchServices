@@ -321,7 +321,7 @@ public class SolrSchema extends AbstractSchema
 
                 Map<String, Entry<String, String>> formattedFieldsFromModelAndIndex = getFormattedFieldsFromSolrAndAlfrescoModel();
 
-                SolrSchemaUtil.extractPredicates(sql).stream()
+                SqlUtil.extractPredicates(sql).stream()
                     .filter(predicateField -> !formattedFieldsInserted.contains(predicateField))
                     .forEach(fieldName ->
                     {

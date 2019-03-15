@@ -18,64 +18,27 @@
  */
 package org.alfresco.solr.sql;
 
-
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.Collections;
 import java.util.HashMap;
 
 import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Util class for all Solr schema related functions.
- * @author Michael Suzuki
  *
+ * @author Michael Suzuki
  */
 public class SolrSchemaUtil 
 {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(SolrSchema.class);
 
     /**
      * Regex for retrieving custom fields definitions (i.e. name and type) from shared.properties
      */
     private static final String SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP = "solr\\.sql\\.alfresco\\.fieldname\\..*";
-
-    /**
-     * Extract predicates of dynamic properties, such as custom model, to help
-     *  build a complete table when select start is used.
-     * 
-     * @param sql String query
-     * @return {@link Set} of predicates
-     */
-    public static Set<String> extractPredicates(String sql)
-    {
-        if(!StringUtils.isEmpty(sql))
-        {
-            if(sql.toLowerCase().contains("where"))
-            {
-                Set<String> predicates = new HashSet<String>();
-                //Strip NOT,not and Not and split on WHERE,where and Where.
-                String[] sqlpred = sql.replaceAll(" (?i)not ", " ").split(" (?i)where ");
-                String[] conjunctionAndDisjunction = sqlpred[1].split("(?i)and | or");
-                for(int i = 0; i < conjunctionAndDisjunction.length; i++)
-                {
-                    String predic = conjunctionAndDisjunction[i].split("[><!~]=?|<>|=| (?i)in | (?i)between ")[0].trim();
-                    if(!predic.startsWith("'"))
-                    {
-                        predicates.add(predic.replaceAll("`", ""));
-                    }
-                }
-                return predicates;
-            }
-        }
-        return Collections.emptySet();
-    }
 
     /**
      * This methods extracts a set of custom fields (including type) from the shared properties.

@@ -16,6 +16,8 @@
  */
 package org.alfresco.solr.sql;
 
+import static java.util.Optional.of;
+
 import org.apache.calcite.sql.SqlDialect;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlNode;
@@ -25,13 +27,15 @@ import org.apache.calcite.sql.SqlSelect;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.validate.SqlConformanceEnum;
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.handler.AlfrescoSQLHandler;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
-
-import static java.util.Optional.of;
 
 /**
  * Booch utility for hosting all SQL queries shared functions.
@@ -94,6 +98,38 @@ public abstract class SqlUtil
             default:
                 return Optional.empty();
         }
+    }
+
+    /**
+     * Extract predicates of dynamic properties, such as custom model, to help
+     * build a complete table when select star is used.
+     *
+     * @param sql the SQL query
+     * @return a {@link Set} of fields extracted from the query predicate.
+     */
+    public static Set<String> extractPredicates(String sql)
+    {
+        if(!StringUtils.isEmpty(sql))
+        {
+            if(sql.toLowerCase().contains("where"))
+            {
+                Set<String> predicates = new HashSet<>();
+
+                //Strip NOT,not and Not and split on WHERE,where and Where.
+                String[] sqlpred = sql.replaceAll("\\s(?i)not\\s", " ").split("\\s(?i)where\\s");
+                String[] conjunctionAndDisjunction = sqlpred[1].split("(?i)and\\s|\\sor");
+                for(int i = 0; i < conjunctionAndDisjunction.length; i++)
+                {
+                    String predic = conjunctionAndDisjunction[i].split("[><!~]=?|<>|=|\\s(?i)in\\s|\\s(?i)between\\s")[0].trim();
+                    if(!predic.startsWith("'"))
+                    {
+                        predicates.add(predic.replace("`", ""));
+                    }
+                }
+                return predicates;
+            }
+        }
+        return Collections.emptySet();
     }
 
     /**
