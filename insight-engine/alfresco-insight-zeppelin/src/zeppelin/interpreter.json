@@ -101,7 +101,7 @@
       ],
       "dependencies": [
         {
-          "groupArtifactVersion": "../alfresco/${alfresco-insight-jdbc.name}-${alfresco-insight-jdbc.version}.jar",
+          "groupArtifactVersion": "../alfresco/alfresco-insight-jdbc-${project.version}.jar",
           "local": false
         }
       ],
