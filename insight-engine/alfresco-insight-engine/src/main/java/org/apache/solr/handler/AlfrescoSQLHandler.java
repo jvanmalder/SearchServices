@@ -52,13 +52,15 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
-public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAware, PermissionNameProvider {
+public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAware, PermissionNameProvider
+{
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static String defaultZkhost = null;
   private static String defaultWorkerCollection = null;
   public static final String IS_SELECT_STAR = "SELECT_STAR";
+  public static final Lex CALCITE_LEX_IN_USE = Lex.MYSQL;
 
   private boolean isCloud = false;
   private String localCore;
@@ -117,7 +119,7 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
       }
 
       // Set these last to ensure that they are set properly
-      properties.setProperty("lex", Lex.MYSQL.toString());
+      properties.setProperty("lex", CALCITE_LEX_IN_USE.toString());
       if(defaultZkhost != null) {
         properties.setProperty("zk", defaultZkhost);
       }

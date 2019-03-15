@@ -24,6 +24,8 @@ import org.apache.calcite.sql.SqlOrderBy;
 import org.apache.calcite.sql.SqlSelect;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
+import org.apache.calcite.sql.validate.SqlConformanceEnum;
+import org.apache.solr.handler.AlfrescoSQLHandler;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -39,6 +41,12 @@ import static java.util.Optional.of;
  */
 public abstract class SqlUtil
 {
+    private final static SqlParser.Config SQL_PARSER_CONFIG =
+            SqlParser.configBuilder()
+                    .setLex(AlfrescoSQLHandler.CALCITE_LEX_IN_USE)
+                    .setConformance(SqlConformanceEnum.ORACLE_12) // allows "bang equal" (!=)
+                    .build();
+
     private final static Predicate<SqlNode> IS_SELECT = node -> node.getKind() == SqlKind.SELECT;
     private final static Predicate<SqlNode> IS_WILD_CARD = node ->
             node.getKind() == SqlKind.IDENTIFIER
@@ -53,7 +61,7 @@ public abstract class SqlUtil
      */
     public static boolean isSelectStar(String sql) throws SqlParseException
     {
-        return of(SqlParser.create(sql).parseQuery())
+        return of(parser(sql).parseQuery())
                 .flatMap(SqlUtil::extractSelectStatement)
                 .map(SqlSelect::getSelectList)
                 .map(SqlNodeList::getList)
@@ -86,5 +94,17 @@ public abstract class SqlUtil
             default:
                 return Optional.empty();
         }
+    }
+
+    /**
+     * Creates the Calcite SQL parser.
+     * This is done here, in a dedicated method with default visibility because it is internally used by unit tests.
+     *
+     * @param sql the SQL query.
+     * @return a Calcite {@link SqlParser} instance.
+     */
+    static SqlParser parser(String sql)
+    {
+        return SqlParser.create(sql, SQL_PARSER_CONFIG);
     }
 }
