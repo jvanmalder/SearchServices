@@ -44,9 +44,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -438,6 +440,7 @@ public class SolrSchema extends AbstractSchema
         {
             AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
             RefCounted<SolrIndexSearcher> refCounted = core.getSearcher();
+
             try
             {
                 SolrIndexSearcher searcher = refCounted.get();
@@ -450,34 +453,32 @@ public class SolrSchema extends AbstractSchema
                     {
                         String fieldName = qname.toString();
                         List<AlfrescoSolrDataModel.FieldInstance> fields =
-                            dataModel.getQueryableFields(qname, null, AlfrescoSolrDataModel.FieldUse.SORT)
+                            dataModel.getIndexedFieldNamesForProperty(qname)
                                 .getFields();
 
                         if (!fields.isEmpty())
                         {
                             String queryableField = fields.get(0).getField();
-                            if (!queryableField.equals("_dummy_"))
-                            {
-                                SchemaField sfield = schema.getFieldOrNull(queryableField);
-                                FieldType ftype = (sfield == null) ? null : sfield.getType();
 
-                                if (ftype != null)
+                            SchemaField sfield = schema.getFieldOrNull(queryableField);
+                            FieldType ftype = (sfield == null) ? null : sfield.getType();
+
+                            if (ftype != null)
+                            {
+                                try
                                 {
-                                    try
+                                    String alfrescoPropertyFromSchemaField =
+                                        dataModel.getAlfrescoPropertyFromSchemaField(queryableField);
+                                    String type = ftype.getClassArg();
+                                    if (isNotBlank(type))
                                     {
-                                        String alfrescoPropertyFromSchemaField =
-                                            dataModel.getAlfrescoPropertyFromSchemaField(queryableField);
-                                        String type = ftype.getClassArg();
-                                        if (isNotBlank(type))
-                                        {
-                                            fieldMap.put(alfrescoPropertyFromSchemaField, type);
-                                        }
+                                        fieldMap.put(alfrescoPropertyFromSchemaField, type);
                                     }
-                                    catch (NamespaceException ne)
-                                    {
-                                        //Field name may have been created but now deactivated, e.g custom model.
-                                        LOGGER.warn("Unable to resolve field: " + fieldName);
-                                    }
+                                }
+                                catch (NamespaceException ne)
+                                {
+                                    //Field name may have been created but now deactivated, e.g custom model.
+                                    LOGGER.warn("Unable to resolve field: " + fieldName);
                                 }
                             }
                         }
