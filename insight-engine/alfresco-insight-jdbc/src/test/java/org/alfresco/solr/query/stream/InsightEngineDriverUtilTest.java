@@ -49,26 +49,34 @@ public class InsightEngineDriverUtilTest
     }
     
     @Test
-    public void buildJsonAndEscapeProblemChars()
+    public void whiteSpaceCharsAreReplacedWithBlankSpaces()
     {
-        String sql = "select SITE, CM_OWNER\n from alfresco group by SITE,CM_OWNER";
-        String sql2 = "select SITE, CM_OWNER\n from alfresco group by\n SITE,CM_OWNER";
-        String sql3 = "select SITE, CM_OWNER\n from alfresco\r group by\n SITE,CM_OWNER";
-        String sql4 = "select SITE, CM_OWNER\n\n from alfresco\r group by\n SITE,CM_OWNER";
-        String expected = "select SITE, CM_OWNER from alfresco group by SITE,CM_OWNER";
+        Assert.assertEquals(
+                "select SITE, CM_OWNER  from alfresco group by SITE,CM_OWNER",
+                formatSQL("select SITE, CM_OWNER\n from alfresco group by SITE,CM_OWNER"));
 
-        Assert.assertEquals(expected, formatSQL(sql));
-        Assert.assertEquals(expected, formatSQL(sql2));
-        Assert.assertEquals(expected, formatSQL(sql3));
-        Assert.assertEquals(expected, formatSQL(sql4));
-        
-        String sql5 = "select  *  from alfresco\r order by \n  SITE , CM_OWNER ";
-        String sql6 = " select   \r\n *       \n\r        from alfresco\r      order by SITE   \n, CM_OWNER \n\r ";
-        String sql7 = "select  *  from alfresco\rorder by \nSITE , CM_OWNER ";
-        String noDoubleSpaceExpected = "select * from alfresco order by SITE , CM_OWNER";
+        Assert.assertEquals(
+                "select SITE, CM_OWNER  from alfresco group by  SITE,CM_OWNER",
+                formatSQL("select SITE, CM_OWNER\n from alfresco group by\n SITE,CM_OWNER"));
 
-        Assert.assertEquals(noDoubleSpaceExpected, formatSQL(sql5));
-        Assert.assertEquals(noDoubleSpaceExpected, formatSQL(sql6));
-        Assert.assertEquals(noDoubleSpaceExpected, formatSQL(sql7));
+        Assert.assertEquals(
+                "select SITE, CM_OWNER  from alfresco  group by  SITE,CM_OWNER",
+                formatSQL("select SITE, CM_OWNER\n from alfresco\r group by\n SITE,CM_OWNER"));
+
+        Assert.assertEquals(
+                "select SITE, CM_OWNER   from alfresco  group by  SITE,CM_OWNER",
+                formatSQL("select SITE, CM_OWNER\n\n from alfresco\r group by\n SITE,CM_OWNER"));
+
+        Assert.assertEquals(
+                "select  *  from alfresco  order by    SITE , CM_OWNER ",
+                formatSQL("select  *  from alfresco\r order by \n  SITE , CM_OWNER "));
+
+        Assert.assertEquals(
+                "select  *  from alfresco  order by    SITE , CM_OWNER ",
+                formatSQL("select  *  from alfresco\r order by \n  SITE , CM_OWNER "));
+
+        Assert.assertEquals(
+                " select      *                 from alfresco       order by SITE    , CM_OWNER    ",
+                formatSQL(" select   \r\n *       \n\r        from alfresco\r      order by SITE   \n, CM_OWNER \n\r "));
     }
 }
