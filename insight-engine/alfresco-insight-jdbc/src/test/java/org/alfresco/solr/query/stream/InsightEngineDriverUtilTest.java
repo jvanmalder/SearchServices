@@ -51,21 +51,21 @@ public class InsightEngineDriverUtilTest
     @Test
     public void whiteSpaceCharsAreReplacedWithBlankSpaces()
     {
-        String sql = "select SITE, CM_OWNER\n from alfresco group by SITE,CM_OWNER";
-        String sql2 = "select SITE, CM_OWNER\n from alfresco group by\n SITE,CM_OWNER";
-        String sql3 = "select SITE, CM_OWNER\n from alfresco\r group by\n SITE,CM_OWNER";
-        String expected = "select SITE, CM_OWNER from alfresco group by SITE,CM_OWNER";
+        Assert.assertEquals(
+                "select SITE, CM_OWNER  from alfresco group by SITE,CM_OWNER",
+                formatSQL("select SITE, CM_OWNER\n from alfresco group by SITE,CM_OWNER"));
 
-        Assert.assertEquals(expected, formatSQL(sql));
-        Assert.assertEquals(expected, formatSQL(sql2));
-        Assert.assertEquals(expected, formatSQL(sql3));
+        Assert.assertEquals(
+                "select SITE, CM_OWNER  from alfresco group by  SITE,CM_OWNER",
+                formatSQL("select SITE, CM_OWNER\n from alfresco group by\n SITE,CM_OWNER"));
 
-        String sql4 = "select SITE, CM_OWNER\n\n from alfresco\r group by\n SITE,CM_OWNER";
+        Assert.assertEquals(
+                "select SITE, CM_OWNER  from alfresco  group by  SITE,CM_OWNER",
+                formatSQL("select SITE, CM_OWNER\n from alfresco\r group by\n SITE,CM_OWNER"));
 
         Assert.assertEquals(
                 "select SITE, CM_OWNER   from alfresco  group by  SITE,CM_OWNER",
                 formatSQL("select SITE, CM_OWNER\n\n from alfresco\r group by\n SITE,CM_OWNER"));
-
 
         Assert.assertEquals(
                 "select  *  from alfresco  order by    SITE , CM_OWNER ",
