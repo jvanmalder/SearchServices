@@ -141,7 +141,7 @@ public class DistributedSqlMultipleShardsTest extends AbstractStreamTest
      * @throws Exception
      */
     @Test
-    public void distributedSearch_() throws Exception
+    public void distributedSearch_fieldsFromIndexOnly() throws Exception
     {
         String sql = "select ACLID, DBID, cm_content from alfresco";
         sqlQueryAllShards(sql, alfrescoJson, 2);
