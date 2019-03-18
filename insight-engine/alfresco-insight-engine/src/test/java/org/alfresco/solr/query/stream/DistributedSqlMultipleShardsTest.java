@@ -61,7 +61,7 @@ public class DistributedSqlMultipleShardsTest extends AbstractStreamTest
                 AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient) client).getBaseURL(), params);
                 tupleStream.setJson(alfrescoJson);
                 List<Tuple> tuples = getTuples(tupleStream);
-                Assert.assertEquals(tuples.size(), expectedResults);
+                Assert.assertEquals(expectedResults, tuples.size());
             }
 
         }
@@ -143,8 +143,8 @@ public class DistributedSqlMultipleShardsTest extends AbstractStreamTest
     @Test
     public void distributedSearch_fieldsFromIndexOnly() throws Exception
     {
-        String sql = "select ACLID, DBID, cm_content from alfresco";
-        sqlQueryAllShards(sql, alfrescoJson, 2);
+        String sql = "select ACLID, DBID, `cm:content` from alfresco where `cm:content` = '*' ";
+        sqlQueryAllShards(sql, alfrescoJson,  indexedNodesCount);
     }
 
 
