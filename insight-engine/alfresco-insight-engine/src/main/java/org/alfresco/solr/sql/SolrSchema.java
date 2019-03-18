@@ -16,6 +16,7 @@
  */
 package org.alfresco.solr.sql;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
@@ -52,6 +53,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /*
 * The SolrSchema class creates the "alfresco" table and populates the fieldsCatalog from the index.
@@ -59,6 +62,7 @@ import java.util.function.Function;
 public class SolrSchema extends AbstractSchema
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SolrSchema.class);
+    private static final Pattern WHERE_MATCHER_PATTERN = Pattern.compile("\\bwhere\\b");
 
     final Properties properties;
     final SolrCore core;
@@ -88,12 +92,11 @@ public class SolrSchema extends AbstractSchema
 
         String sql = properties.getProperty("stmt", "");
 
-        fieldsCatalog =  new FieldsCatalogBuilder()
+        fieldsCatalog = new FieldsCatalogBuilder()
             .withFieldsFromSharedProperties()
             .withDefaultSelectStarFields()
             .withFieldsFromSolrAndAlfrecoModels(isSelectStarQuery)
             .withFieldsFromSqlPredicate(sql, isSelectStarQuery).build();
-
     }
 
     @Override
@@ -143,7 +146,6 @@ public class SolrSchema extends AbstractSchema
         }
         return type;
     }
-
 
     /**
      * Returns the prototype factory used for further defining the data types associated with this schema.
@@ -222,7 +224,6 @@ public class SolrSchema extends AbstractSchema
             fieldInfo.add(formattedFieldName, type).nullable(true);
         }
     }
-
 
     /**
      * Returns a formatted version of the field name in input.
@@ -323,12 +324,12 @@ public class SolrSchema extends AbstractSchema
 
                 Map<String, Entry<String, String>> formattedFieldsFromModelAndIndex = getFormattedFieldsFromSolrAndAlfrescoModel();
 
-                SolrSchemaUtil.extractPredicates(sql).stream()
+                SqlUtil.extractPredicates(sql).stream()
+                    .map(SolrSchema.this::getFormattedFieldName)
                     .filter(predicateField -> !formattedFieldsInserted.contains(predicateField))
                     .forEach(fieldName ->
                     {
-
-                        Entry<String, String> nameAndType = formattedFieldsFromModelAndIndex.get(getFormattedFieldName(fieldName));
+                        Entry<String, String> nameAndType = formattedFieldsFromModelAndIndex.get(fieldName);
                         if (nameAndType != null)
                         {
                             catalog.putIfAbsent(nameAndType.getKey(), nameAndType.getValue());
@@ -355,7 +356,6 @@ public class SolrSchema extends AbstractSchema
                     .collect(toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
         }
 
-
         private Map<String, Entry<String, String>> getFormattedFieldsFromSolrAndAlfrescoModel()
         {
             // This map is used to get the right type for the properties extracted from the predicate in select * queries.
@@ -370,7 +370,6 @@ public class SolrSchema extends AbstractSchema
 
             return formattedFieldsFromModelAndIndex;
         }
-
 
         /**
          * Add indexed fields from Solr in fieldMap.
@@ -488,13 +487,14 @@ public class SolrSchema extends AbstractSchema
             {
                 refCounted.decref();
             }
-
         }
 
         private boolean predicateExists(String sql)
         {
-            return (sql != null && sql.toLowerCase().contains(" where "));
+            return ofNullable(sql)
+                    .map(WHERE_MATCHER_PATTERN::matcher)
+                    .map(Matcher::find)
+                    .orElse(false);
         }
     }
-
 }

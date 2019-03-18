@@ -61,15 +61,13 @@ public class InsightEngineDriverUtil extends DriverImpl
     }
     /**
      * Strip illegal characters.
-     * @param sql
-     * @return
+     *
+     * @param sql the SQL query
+     * @return the input SQL query where all whitespace chars have been replaced with blank spaces.
      */
     public static String formatSQL(String sql)
     {
-        return sql.replaceAll("\\r\\n|\\r|\\n", " ").trim()
-                .replaceAll("   |  ", " ")
-                .replaceAll("   ", " ")
-                .replaceAll("  ", " ");
+        return sql.replaceAll("\\s", " ");
     }
     
     private static String buildLocales(String[] locales)

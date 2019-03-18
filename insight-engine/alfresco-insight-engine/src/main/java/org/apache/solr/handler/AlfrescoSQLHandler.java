@@ -19,6 +19,7 @@ package org.apache.solr.handler;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.solr.query.AbstractQParser;
 import org.alfresco.solr.sql.AlfrescoCalciteSolrDriver;
+import org.alfresco.solr.sql.SqlUtil;
 import org.alfresco.solr.stream.AlfrescoExceptionStream;
 import org.apache.calcite.config.Lex;
 import org.apache.solr.client.solrj.io.Tuple;
@@ -51,13 +52,15 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
-public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAware, PermissionNameProvider {
+public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAware, PermissionNameProvider
+{
 
   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static String defaultZkhost = null;
   private static String defaultWorkerCollection = null;
   public static final String IS_SELECT_STAR = "SELECT_STAR";
+  public static final Lex CALCITE_LEX_IN_USE = Lex.MYSQL;
 
   private boolean isCloud = false;
   private String localCore;
@@ -116,7 +119,7 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
       }
 
       // Set these last to ensure that they are set properly
-      properties.setProperty("lex", Lex.MYSQL.toString());
+      properties.setProperty("lex", CALCITE_LEX_IN_USE.toString());
       if(defaultZkhost != null) {
         properties.setProperty("zk", defaultZkhost);
       }
@@ -132,7 +135,7 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
         properties.put(AbstractQParser.ALFRESCO_JSON, json);
       }
 
-      properties.setProperty(IS_SELECT_STAR, Boolean.toString(isSelectStar(sql)));
+      properties.setProperty(IS_SELECT_STAR, Boolean.toString(SqlUtil.isSelectStar(sql)));
 
       sql = adjustSQL(sql);
 
@@ -163,15 +166,6 @@ public class AlfrescoSQLHandler extends RequestHandlerBase implements SolrCoreAw
   private String adjustSQL(String sql) {
       return sql.replace("!=", "<>");
   }
-
-    private boolean isSelectStar(String sql) {
-        String s = sql.toLowerCase();
-        if(s.contains("select *") && s.contains(" * from")) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
   public String getDescription() {
     return "SQLHandler";
