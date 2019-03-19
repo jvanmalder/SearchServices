@@ -459,7 +459,7 @@ public class SolrSchema extends AbstractSchema
                             .map(AlfrescoSolrDataModel.IndexedField::getFields)
                             .orElse(emptyList());
 
-                        if (fieldInstances.isEmpty())
+                        if (!fieldInstances.isEmpty())
                         {
                             String indexedField = fieldInstances.get(0).getField();
 
