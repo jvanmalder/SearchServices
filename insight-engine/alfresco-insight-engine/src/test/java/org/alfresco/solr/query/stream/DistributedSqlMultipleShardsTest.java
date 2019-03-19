@@ -18,14 +18,20 @@
  */
 package org.alfresco.solr.query.stream;
 
+import org.alfresco.solr.stream.AlfrescoSolrStream;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.embedded.JettySolrRunner;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.io.Tuple;
+import org.apache.solr.common.params.SolrParams;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -39,18 +45,45 @@ import java.util.Set;
 public class DistributedSqlMultipleShardsTest extends AbstractStreamTest
 {
 
+    /**
+     * Perform the query over all the shards using all the solrClients.
+     * This is useful to show what happens when the query is performed in each core.
+     */
+    private void sqlQueryAllShards(String sql, String alfrescoJson, int expectedResults)
+    {
+        try {
+            List<SolrClient> clusterClients = getShardedClients();
+            String shards = getShardsString();
+            SolrParams params = params("stmt", sql, "qt", "/sql", "alfresco.shards", shards);
+
+            for (SolrClient client : clusterClients)
+            {
+                AlfrescoSolrStream tupleStream = new AlfrescoSolrStream(((HttpSolrClient) client).getBaseURL(), params);
+                tupleStream.setJson(alfrescoJson);
+                List<Tuple> tuples = getTuples(tupleStream);
+                Assert.assertEquals(expectedResults, tuples.size());
+            }
+
+        }
+        catch (IOException exception)
+        {
+            throw new RuntimeException(exception);
+        }
+    }
+
+
     private String alfrescoJson = "{ \"authorities\": [ \"jim\", \"joel\" ], \"tenants\": [ \"\" ] }";
 
     /**
      * The following tests should verify the correctness of query executed on a shard where the requested fields are not actually indexed.
-     * For this reason, the environment is started with 4 shards, in order to possibly have one node indexed on each shard.
+     * For this reason, the environment is started with 5 shards, in order to possibly have one node indexed on each shard and at least one empty shard.
      *
      * @throws Throwable
      */
     @BeforeClass
     public static void initData() throws Throwable
     {
-        initSolrServers(4, getClassName(), null);
+        initSolrServers(5, getClassName(), null);
         JettySolrRunner localJetty = jettyContainers.values().iterator().next();
         System.setProperty("solr.solr.home", localJetty.getSolrHome());
     }
@@ -78,6 +111,8 @@ public class DistributedSqlMultipleShardsTest extends AbstractStreamTest
         {
             assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
         }
+
+        sqlQueryAllShards(sql, alfrescoJson, indexedNodesCount);
     }
 
     /**
@@ -96,6 +131,36 @@ public class DistributedSqlMultipleShardsTest extends AbstractStreamTest
         {
             assertEquals("Mismatched columns", expectedColumns, t.fields.keySet());
         }
+
+        sqlQueryAllShards(sql, alfrescoJson, indexedNodesCount);
+    }
+
+    /**
+     * cm_content should be found in datamodel.
+     * ACLID and DBID should be found in solrIndex even in case of empty index.
+     * @throws Exception
+     */
+    @Test
+    public void distributedSearch_fieldsFromIndexOnly() throws Exception
+    {
+        String sql = "select ACLID, DBID, `cm:content` from alfresco where `cm:content` = '*' ";
+        sqlQueryAllShards(sql, alfrescoJson,  indexedNodesCount);
+    }
+
+
+    @Test
+    public void distributedSearch_selectStar() throws Exception
+    {
+        String sql = "select * from alfresco";
+        sqlQueryAllShards(sql, alfrescoJson, indexedNodesCount);
+    }
+
+
+    @Test
+    public void distributedSearch_selectContend() throws Exception
+    {
+        String sql = "select cm_content from alfresco";
+        sqlQueryAllShards(sql, alfrescoJson, indexedNodesCount);
     }
 
 }
