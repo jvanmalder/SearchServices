@@ -296,12 +296,10 @@ public class SolrSchema extends AbstractSchema
                 Set<String> sharedPropertiesFieldsName = SolrSchemaUtil.fetchCustomFieldsFromSharedProperties();
                 if (!sharedPropertiesFieldsName.isEmpty()){
 
-                    Set<String> formattedFieldsInserted = getFormattedFieldsFromCatalog();
                     Map<String, Entry<String, String>> formattedFieldsFromModelAndIndex = getFormattedFieldsFromSolrAndAlfrescoModel();
 
                     sharedPropertiesFieldsName.stream()
                         .map(SolrSchema.this::getFormattedFieldName)
-                        .filter(predicateField -> !formattedFieldsInserted.contains(predicateField))
                         .forEach(fieldName -> {
                         Entry<String, String> nameAndType = formattedFieldsFromModelAndIndex.get(fieldName);
                         if (nameAndType != null)
@@ -355,23 +353,10 @@ public class SolrSchema extends AbstractSchema
         {
             if (isSelectStar && predicateExists(sql))
             {
-                // Create set of formatted fields. (Useful to check for duplicates)
-                // SEARCH-1491: fieldsCatalog is the list of fields used later (see RelProtoDataType#getRelDataType) forin
-                // populating the FieldInfo which is the source where Calcite picks up fields definitions.
-                // Unfortunately, the case insensitive mode (which is set by default) produces a weird behaviour when
-                // the same field is in this list with a different case: the first one is retrieved, even if that doesn't
-                // correspond (from case perspective) to the field as it is declared in Solr.
-                // This "double" addition could happen when a field is declared in two different places (e.g. SelectStarDefaultField
-                // collection and the predicate list in the query).
-                // The formattedFields list uses a case insensitive comparator in order to make sure a field, regardless its case,
-                // is added only once to the fields catalog.
-                Set<String> formattedFieldsInserted = getFormattedFieldsFromCatalog();
-
                 Map<String, Entry<String, String>> formattedFieldsFromModelAndIndex = getFormattedFieldsFromSolrAndAlfrescoModel();
 
                 SqlUtil.extractPredicates(sql).stream()
                     .map(SolrSchema.this::getFormattedFieldName)
-                    .filter(predicateField -> !formattedFieldsInserted.contains(predicateField))
                     .forEach(fieldName ->
                     {
                         Entry<String, String> nameAndType = formattedFieldsFromModelAndIndex.get(fieldName);
@@ -392,13 +377,6 @@ public class SolrSchema extends AbstractSchema
         Map<String, String> build()
         {
             return catalog;
-        }
-
-        private Set<String> getFormattedFieldsFromCatalog()
-        {
-            return catalog.keySet().stream()
-                    .map(SolrSchema.this::getFormattedFieldName)
-                    .collect(toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
         }
 
         /**
