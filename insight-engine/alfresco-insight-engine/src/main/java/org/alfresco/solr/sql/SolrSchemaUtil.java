@@ -38,7 +38,7 @@ public class SolrSchemaUtil
     /**
      * Regex for retrieving custom fields definitions (i.e. name and type) from shared.properties
      */
-    private static final String SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP = "solr\\.sql\\.alfresco\\.fieldname\\..*";
+    private static final String SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP = "solr\\.sql\\.alfresco\\.fieldnames.*";
 
     /**
      * This methods extracts a set of custom fields (including type) from the shared properties.
@@ -53,8 +53,10 @@ public class SolrSchemaUtil
             //Match on solr.sql.tablename.field.name=nameValue
             if (label.matches(SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP))
             {
-                String val = label.replace("fieldname", "fieldtype");
-                collection.add(fieldValue);
+                for (String fieldName : fieldValue.replaceAll("\\s+","").split(","))
+                {
+                    collection.add(fieldName);
+                }
             }
         });
         return collection;
