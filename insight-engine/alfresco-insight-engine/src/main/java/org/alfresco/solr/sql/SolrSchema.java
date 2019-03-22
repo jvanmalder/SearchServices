@@ -95,11 +95,11 @@ public class SolrSchema extends AbstractSchema
 
         String sql = properties.getProperty("stmt", "");
 
-        fieldsCatalog = new FieldsCatalogBuilder()
-            .withFieldsFromSharedProperties(isSelectStarQuery)
+        fieldsCatalog = new FieldsCatalogBuilder(isSelectStarQuery)
+            .withFieldsFromSharedProperties()
             .withDefaultSelectStarFields()
-            .withFieldsFromSolrAndAlfrecoModels(isSelectStarQuery)
-            .withFieldsFromSqlPredicate(sql, isSelectStarQuery).build();
+            .withFieldsFromSolrAndAlfrecoModels()
+            .withFieldsFromSqlPredicate(sql).build();
     }
 
     @Override
@@ -277,14 +277,19 @@ public class SolrSchema extends AbstractSchema
     private class FieldsCatalogBuilder
     {
         private final Map<String, String> catalog;
+        private boolean isSelectStar;
         private Map<String, Entry<String, String>> supportFieldsFromSolrAndModel = null;
 
-        FieldsCatalogBuilder()
+        FieldsCatalogBuilder(boolean isSelectStar)
         {
+            this.isSelectStar = isSelectStar;
             catalog = new HashMap<>();
         }
 
-        FieldsCatalogBuilder withFieldsFromSharedProperties(boolean isSelectStar)
+        /**
+         * Add to catalog fields specified in shared.properties
+         */
+        FieldsCatalogBuilder withFieldsFromSharedProperties()
         {
             if (isSelectStar){
 
@@ -315,17 +320,25 @@ public class SolrSchema extends AbstractSchema
             return this;
         }
 
+        /**
+         * Add to catalog the default select star fields.
+         */
         FieldsCatalogBuilder withDefaultSelectStarFields()
         {
-            for (SelectStarDefaultField fieldAndType : SelectStarDefaultField.values())
-            {
-                catalog.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
+            if (isSelectStar){
+                for (SelectStarDefaultField fieldAndType : SelectStarDefaultField.values())
+                {
+                    catalog.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
+                }
             }
 
             return this;
         }
 
-        FieldsCatalogBuilder withFieldsFromSolrAndAlfrecoModels(boolean isSelectStar)
+        /**
+         * Add to catalog all the fields found in solr index and alfresco data model.
+         */
+        FieldsCatalogBuilder withFieldsFromSolrAndAlfrecoModels()
         {
             if (!isSelectStar)
             {
@@ -335,7 +348,10 @@ public class SolrSchema extends AbstractSchema
             return this;
         }
 
-        FieldsCatalogBuilder withFieldsFromSqlPredicate(String sql, boolean isSelectStar)
+        /**
+         * Add to catalog the fields extracted from predicate.
+         */
+        FieldsCatalogBuilder withFieldsFromSqlPredicate(String sql)
         {
             if (isSelectStar && predicateExists(sql))
             {
@@ -385,6 +401,10 @@ public class SolrSchema extends AbstractSchema
                     .collect(toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
         }
 
+        /**
+         * Get fields from solr index and alfresco model.
+         * This map is lazy loaded only when necessary.
+         */
         private Map<String, Entry<String, String>> getFormattedFieldsFromSolrAndAlfrescoModel()
         {
 
