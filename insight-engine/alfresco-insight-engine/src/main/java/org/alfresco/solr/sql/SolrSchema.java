@@ -17,7 +17,6 @@
 package org.alfresco.solr.sql;
 
 import static java.util.Collections.emptyList;
-import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;
@@ -47,13 +46,10 @@ import org.apache.solr.util.RefCounted;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -100,7 +96,7 @@ public class SolrSchema extends AbstractSchema
         String sql = properties.getProperty("stmt", "");
 
         fieldsCatalog = new FieldsCatalogBuilder()
-            .withFieldsFromSharedProperties()
+            .withFieldsFromSharedProperties(isSelectStarQuery)
             .withDefaultSelectStarFields()
             .withFieldsFromSolrAndAlfrecoModels(isSelectStarQuery)
             .withFieldsFromSqlPredicate(sql, isSelectStarQuery).build();
@@ -281,19 +277,45 @@ public class SolrSchema extends AbstractSchema
     private class FieldsCatalogBuilder
     {
         private final Map<String, String> catalog;
+        private Map<String, Entry<String, String>> supportFieldsFromSolrAndModel = null;
 
-        public FieldsCatalogBuilder()
+        FieldsCatalogBuilder()
         {
             catalog = new HashMap<>();
         }
 
-        public FieldsCatalogBuilder withFieldsFromSharedProperties()
+        FieldsCatalogBuilder withFieldsFromSharedProperties(boolean isSelectStar)
         {
-            catalog.putAll(SolrSchemaUtil.fetchCustomFieldsFromSharedProperties());
+            if (isSelectStar){
+
+                Set<String> sharedPropertiesFieldsName = SolrSchemaUtil.fetchCustomFieldsFromSharedProperties();
+                if (!sharedPropertiesFieldsName.isEmpty()){
+
+                    Set<String> formattedFieldsInserted = getFormattedFieldsFromCatalog();
+                    Map<String, Entry<String, String>> formattedFieldsFromModelAndIndex = getFormattedFieldsFromSolrAndAlfrescoModel();
+
+                    sharedPropertiesFieldsName.stream()
+                        .map(SolrSchema.this::getFormattedFieldName)
+                        .filter(predicateField -> !formattedFieldsInserted.contains(predicateField))
+                        .forEach(fieldName -> {
+                        Entry<String, String> nameAndType = formattedFieldsFromModelAndIndex.get(fieldName);
+                        if (nameAndType != null)
+                            if (nameAndType != null)
+                            {
+                                catalog.putIfAbsent(nameAndType.getKey(), nameAndType.getValue());
+                            }
+                            else
+                            {
+                                LOGGER.warn("Unable to find fieldName " + fieldName + " (from shared.properties) in the fields extracted from alfresco models and solr index." );
+                            }
+                    });
+                }
+            }
+
             return this;
         }
 
-        public FieldsCatalogBuilder withDefaultSelectStarFields()
+        FieldsCatalogBuilder withDefaultSelectStarFields()
         {
             for (SelectStarDefaultField fieldAndType : SelectStarDefaultField.values())
             {
@@ -303,7 +325,7 @@ public class SolrSchema extends AbstractSchema
             return this;
         }
 
-        public FieldsCatalogBuilder withFieldsFromSolrAndAlfrecoModels(boolean isSelectStar)
+        FieldsCatalogBuilder withFieldsFromSolrAndAlfrecoModels(boolean isSelectStar)
         {
             if (!isSelectStar)
             {
@@ -313,7 +335,7 @@ public class SolrSchema extends AbstractSchema
             return this;
         }
 
-        public FieldsCatalogBuilder withFieldsFromSqlPredicate(String sql, boolean isSelectStar)
+        FieldsCatalogBuilder withFieldsFromSqlPredicate(String sql, boolean isSelectStar)
         {
             if (isSelectStar && predicateExists(sql))
             {
@@ -351,7 +373,7 @@ public class SolrSchema extends AbstractSchema
             return this;
         }
 
-        public Map<String, String> build()
+        Map<String, String> build()
         {
             return catalog;
         }
@@ -365,18 +387,22 @@ public class SolrSchema extends AbstractSchema
 
         private Map<String, Entry<String, String>> getFormattedFieldsFromSolrAndAlfrescoModel()
         {
-            // This map is used to get the right type for the properties extracted from the predicate in select * queries.
-            Map<String, String> modelAndIndexedFields = addIndexedFieldsInfo(addModelFieldsInfo(new HashMap<>()));
 
-            Map<String, Entry<String, String>> formattedFieldsFromModelAndIndex = modelAndIndexedFields.entrySet().stream()
-                .collect(toMap(
-                    entry-> getFormattedFieldName(entry.getKey()),
-                    Function.identity(),
-                    (existingEntry, newEntry) -> existingEntry,
-                    () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
+            if (supportFieldsFromSolrAndModel == null){
 
-            return formattedFieldsFromModelAndIndex;
+                // This map is used to get the right type for the properties extracted from the predicate in select * queries.
+                Map<String, String> modelAndIndexedFields = addIndexedFieldsInfo(addModelFieldsInfo(new HashMap<>()));
+                supportFieldsFromSolrAndModel = modelAndIndexedFields.entrySet().stream()
+                    .collect(toMap(
+                        entry-> getFormattedFieldName(entry.getKey()),
+                        Function.identity(),
+                        (existingEntry, newEntry) -> existingEntry,
+                        () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
+            }
+
+            return supportFieldsFromSolrAndModel;
         }
+
 
         /**
          * Add indexed fields from Solr in fieldMap.

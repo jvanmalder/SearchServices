@@ -294,7 +294,7 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         /* Set containing the hard coded select * fields and the fields taken from shared.properties.
          */
         return Stream.concat(
-                SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().keySet().stream(),
+                SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().stream(),
                 stream(SelectStarDefaultField.values()).map(s -> s.getFieldName()))
                 .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
     }

@@ -18,13 +18,13 @@
  */
 package org.alfresco.solr.sql;
 
-import java.util.Map;
-import java.util.Properties;
-import java.util.HashMap;
-
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Util class for all Solr schema related functions.
@@ -43,9 +43,9 @@ public class SolrSchemaUtil
     /**
      * This methods extracts a set of custom fields (including type) from the shared properties.
      */
-    public static Map<String, String> fetchCustomFieldsFromSharedProperties()
+    public static Set<String> fetchCustomFieldsFromSharedProperties()
     {
-        Map<String, String> collection = new HashMap<>();
+        Set<String> collection = new HashSet<>();
         Properties properties = AlfrescoSolrDataModel.getCommonConfig();
         properties.forEach((key, value) -> {
             String label = (String) key;
@@ -54,15 +54,7 @@ public class SolrSchemaUtil
             if (label.matches(SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP))
             {
                 String val = label.replace("fieldname", "fieldtype");
-                String type = (String) properties.get(val);
-                if (type == null)
-                {
-                    LOGGER.error("Type definition: " + val + " not found in the shared.properties");
-                }
-                else
-                {
-                    collection.put(fieldValue, type);
-                }
+                collection.add(fieldValue);
             }
         });
         return collection;
