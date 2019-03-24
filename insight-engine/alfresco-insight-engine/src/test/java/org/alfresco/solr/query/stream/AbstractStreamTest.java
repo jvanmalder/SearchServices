@@ -70,6 +70,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import java.io.IOException;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.Date;
 import java.util.Set;
@@ -296,7 +297,8 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         return Stream.concat(
                 SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().stream(),
                 stream(SelectStarDefaultField.values()).map(s -> s.getFieldName()))
-                .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
+                .map(s -> s.replaceFirst(":","_"))
+                .collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
     }
 
 
