@@ -311,10 +311,9 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     {
         for(Tuple t:tuples){
             Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(
-                    s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
+                    s -> s.replaceFirst(":", "_")).collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
             assertEquals(fields, tupleFields);
         }
-
     }
 
     /**

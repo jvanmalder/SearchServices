@@ -603,14 +603,10 @@ public class DistributedSqlTest extends AbstractStreamTest
 
         Set<String> selectStarFields = getSelectStarFields();
 
-        for(Tuple t:tuples){
-            /* Apparently for the hard coded list of fields, there are two copies in the response tuples, except for date fields or integers*
-             * I recommend to investigate this as I am not sure why you would like to return duplicate columns to the user : SEARCH-1363
-             */
-            Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(
-                    s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
-            assertEquals(selectStarFields, tupleFields);
-        }
+        /* Apparently for the hard coded list of fields, there are two copies in the response tuples, except for date fields or integers*
+         * I recommend to investigate this as I am not sure why you would like to return duplicate columns to the user : SEARCH-1363
+         */
+        checkFormattedReturnedFields(tuples, selectStarFields);
     }
 
     @Test
