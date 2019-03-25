@@ -36,7 +36,7 @@ public class SolrSchemaUtil
     private static final Logger LOGGER = LoggerFactory.getLogger(SolrSchema.class);
 
     /**
-     * Custom fields definitionfrom shared.properties
+     * Custom fields definition from shared.properties
      */
     private static final String SOLR_SQL_ALFRESCO_FIELDNAME = "solr.sql.alfresco.fieldnames";
 
