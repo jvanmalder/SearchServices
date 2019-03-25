@@ -36,9 +36,9 @@ public class SolrSchemaUtil
     private static final Logger LOGGER = LoggerFactory.getLogger(SolrSchema.class);
 
     /**
-     * Regex for retrieving custom fields definitions (i.e. name and type) from shared.properties
+     * Custom fields definitionfrom shared.properties
      */
-    private static final String SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP = "solr\\.sql\\.alfresco\\.fieldnames.*";
+    private static final String SOLR_SQL_ALFRESCO_FIELDNAME = "solr.sql.alfresco.fieldnames";
 
     /**
      * This methods extracts a set of custom fields (including type) from the shared properties.
@@ -51,7 +51,7 @@ public class SolrSchemaUtil
             String label = (String) key;
             String fieldValue = (String) value;
             //Match on solr.sql.tablename.field.name=nameValue
-            if (label.matches(SOLR_SQL_ALFRESCO_FIELDNAME_REGEXP))
+            if (label.equals(SOLR_SQL_ALFRESCO_FIELDNAME))
             {
                 for (String fieldName : fieldValue.replaceAll("\\s+","").split(","))
                 {
