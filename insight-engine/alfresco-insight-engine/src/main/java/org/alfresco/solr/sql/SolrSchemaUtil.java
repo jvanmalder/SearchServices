@@ -50,7 +50,6 @@ public class SolrSchemaUtil
         properties.forEach((key, value) -> {
             String label = (String) key;
             String fieldValue = (String) value;
-            //Match on solr.sql.tablename.field.name=nameValue
             if (label.equals(SOLR_SQL_ALFRESCO_FIELDNAME))
             {
                 for (String fieldName : fieldValue.replaceAll("\\s+","").split(","))
