@@ -17,7 +17,6 @@
 package org.alfresco.solr.sql;
 
 import static java.util.Collections.emptyList;
-import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;
@@ -47,13 +46,10 @@ import org.apache.solr.util.RefCounted;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -99,11 +95,11 @@ public class SolrSchema extends AbstractSchema
 
         String sql = properties.getProperty("stmt", "");
 
-        fieldsCatalog = new FieldsCatalogBuilder()
+        fieldsCatalog = new FieldsCatalogBuilder(isSelectStarQuery)
             .withFieldsFromSharedProperties()
             .withDefaultSelectStarFields()
-            .withFieldsFromSolrAndAlfrecoModels(isSelectStarQuery)
-            .withFieldsFromSqlPredicate(sql, isSelectStarQuery).build();
+            .withFieldsFromSolrAndAlfrecoModels()
+            .withFieldsFromSqlPredicate(sql).build();
     }
 
     @Override
@@ -281,29 +277,66 @@ public class SolrSchema extends AbstractSchema
     private class FieldsCatalogBuilder
     {
         private final Map<String, String> catalog;
+        private boolean isSelectStar;
+        private Map<String, Entry<String, String>> supportFieldsFromSolrAndModel = null;
 
-        public FieldsCatalogBuilder()
+        FieldsCatalogBuilder(boolean isSelectStar)
         {
+            this.isSelectStar = isSelectStar;
             catalog = new HashMap<>();
         }
 
-        public FieldsCatalogBuilder withFieldsFromSharedProperties()
+        /**
+         * Add to catalog fields specified in shared.properties
+         */
+        FieldsCatalogBuilder withFieldsFromSharedProperties()
         {
-            catalog.putAll(SolrSchemaUtil.fetchCustomFieldsFromSharedProperties());
-            return this;
-        }
+            if (isSelectStar){
 
-        public FieldsCatalogBuilder withDefaultSelectStarFields()
-        {
-            for (SelectStarDefaultField fieldAndType : SelectStarDefaultField.values())
-            {
-                catalog.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
+                Set<String> sharedPropertiesFieldsName = SolrSchemaUtil.fetchCustomFieldsFromSharedProperties();
+                if (!sharedPropertiesFieldsName.isEmpty()){
+
+                    Map<String, Entry<String, String>> formattedFieldsFromModelAndIndex = getFormattedFieldsFromSolrAndAlfrescoModel();
+
+                    sharedPropertiesFieldsName.stream()
+                        .map(SolrSchema.this::getFormattedFieldName)
+                        .forEach(fieldName -> {
+                        Entry<String, String> nameAndType = formattedFieldsFromModelAndIndex.get(fieldName);
+                        if (nameAndType != null)
+                            if (nameAndType != null)
+                            {
+                                catalog.putIfAbsent(nameAndType.getKey(), nameAndType.getValue());
+                            }
+                            else
+                            {
+                                LOGGER.warn("Unable to find fieldName " + fieldName + " (from shared.properties) in the fields extracted from alfresco models and solr index." );
+                            }
+                    });
+                }
             }
 
             return this;
         }
 
-        public FieldsCatalogBuilder withFieldsFromSolrAndAlfrecoModels(boolean isSelectStar)
+        /**
+         * Add to catalog the default select star fields.
+         */
+        FieldsCatalogBuilder withDefaultSelectStarFields()
+        {
+            if (isSelectStar){
+                for (SelectStarDefaultField fieldAndType : SelectStarDefaultField.values())
+                {
+                    catalog.putIfAbsent(fieldAndType.getFieldName(), fieldAndType.getFieldType());
+                }
+            }
+
+            return this;
+        }
+
+        /**
+         * Add to catalog all the fields found in solr index and alfresco data model.
+         */
+        FieldsCatalogBuilder withFieldsFromSolrAndAlfrecoModels()
         {
             if (!isSelectStar)
             {
@@ -313,27 +346,17 @@ public class SolrSchema extends AbstractSchema
             return this;
         }
 
-        public FieldsCatalogBuilder withFieldsFromSqlPredicate(String sql, boolean isSelectStar)
+        /**
+         * Add to catalog the fields extracted from predicate.
+         */
+        FieldsCatalogBuilder withFieldsFromSqlPredicate(String sql)
         {
             if (isSelectStar && predicateExists(sql))
             {
-                // Create set of formatted fields. (Useful to check for duplicates)
-                // SEARCH-1491: fieldsCatalog is the list of fields used later (see RelProtoDataType#getRelDataType) forin
-                // populating the FieldInfo which is the source where Calcite picks up fields definitions.
-                // Unfortunately, the case insensitive mode (which is set by default) produces a weird behaviour when
-                // the same field is in this list with a different case: the first one is retrieved, even if that doesn't
-                // correspond (from case perspective) to the field as it is declared in Solr.
-                // This "double" addition could happen when a field is declared in two different places (e.g. SelectStarDefaultField
-                // collection and the predicate list in the query).
-                // The formattedFields list uses a case insensitive comparator in order to make sure a field, regardless its case,
-                // is added only once to the fields catalog.
-                Set<String> formattedFieldsInserted = getFormattedFieldsFromCatalog();
-
                 Map<String, Entry<String, String>> formattedFieldsFromModelAndIndex = getFormattedFieldsFromSolrAndAlfrescoModel();
 
                 SqlUtil.extractPredicates(sql).stream()
                     .map(SolrSchema.this::getFormattedFieldName)
-                    .filter(predicateField -> !formattedFieldsInserted.contains(predicateField))
                     .forEach(fieldName ->
                     {
                         Entry<String, String> nameAndType = formattedFieldsFromModelAndIndex.get(fieldName);
@@ -351,32 +374,33 @@ public class SolrSchema extends AbstractSchema
             return this;
         }
 
-        public Map<String, String> build()
+        Map<String, String> build()
         {
             return catalog;
         }
 
-        private Set<String> getFormattedFieldsFromCatalog()
-        {
-            return catalog.keySet().stream()
-                    .map(SolrSchema.this::getFormattedFieldName)
-                    .collect(toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
-        }
-
+        /**
+         * Get fields from solr index and alfresco model.
+         * This map is lazy loaded only when necessary.
+         */
         private Map<String, Entry<String, String>> getFormattedFieldsFromSolrAndAlfrescoModel()
         {
-            // This map is used to get the right type for the properties extracted from the predicate in select * queries.
-            Map<String, String> modelAndIndexedFields = addIndexedFieldsInfo(addModelFieldsInfo(new HashMap<>()));
 
-            Map<String, Entry<String, String>> formattedFieldsFromModelAndIndex = modelAndIndexedFields.entrySet().stream()
-                .collect(toMap(
-                    entry-> getFormattedFieldName(entry.getKey()),
-                    Function.identity(),
-                    (existingEntry, newEntry) -> existingEntry,
-                    () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
+            if (supportFieldsFromSolrAndModel == null){
 
-            return formattedFieldsFromModelAndIndex;
+                // This map is used to get the right type for the properties extracted from the predicate in select * queries.
+                Map<String, String> modelAndIndexedFields = addIndexedFieldsInfo(addModelFieldsInfo(new HashMap<>()));
+                supportFieldsFromSolrAndModel = modelAndIndexedFields.entrySet().stream()
+                    .collect(toMap(
+                        entry-> getFormattedFieldName(entry.getKey()),
+                        Function.identity(),
+                        (existingEntry, newEntry) -> existingEntry,
+                        () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
+            }
+
+            return supportFieldsFromSolrAndModel;
         }
+
 
         /**
          * Add indexed fields from Solr in fieldMap.

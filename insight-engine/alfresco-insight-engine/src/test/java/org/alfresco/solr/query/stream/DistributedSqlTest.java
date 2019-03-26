@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Sets;
 import org.apache.calcite.util.Pair;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
@@ -602,13 +603,28 @@ public class DistributedSqlTest extends AbstractStreamTest
 
         Set<String> selectStarFields = getSelectStarFields();
 
+        /* Apparently for the hard coded list of fields, there are two copies in the response tuples, except for date fields or integers*
+         * I recommend to investigate this as I am not sure why you would like to return duplicate columns to the user : SEARCH-1363
+         */
+        checkFormattedReturnedFields(tuples, selectStarFields);
+    }
+
+    @Test
+    public void distributedSearch_selectStarQuery_shouldContainFieldsFromSharedProperties() throws Exception
+    {
+        sql = "select * from alfresco";
+        List<Tuple> tuples = sqlQuery(sql, alfrescoJson);
+        assertEquals(indexedNodesCount, tuples.size());
+        assertNotNull(tuples);
+
         for(Tuple t:tuples){
             /* Apparently for the hard coded list of fields, there are two copies in the response tuples, except for date fields or integers*
              * I recommend to investigate this as I am not sure why you would like to return duplicate columns to the user : SEARCH-1363
              */
             Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(
-                    s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
-            assertEquals(selectStarFields, tupleFields);
+                s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
+            assertTrue("fields from share properties have not been returned", tupleFields.containsAll(
+                Sets.newHashSet("finance_amount", "finance_Emp", "expense_Recorded_At")));
         }
     }
 

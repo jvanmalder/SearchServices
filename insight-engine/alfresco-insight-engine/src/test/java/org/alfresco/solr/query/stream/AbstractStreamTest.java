@@ -70,6 +70,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import java.io.IOException;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.Date;
 import java.util.Set;
@@ -294,9 +295,10 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
         /* Set containing the hard coded select * fields and the fields taken from shared.properties.
          */
         return Stream.concat(
-                SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().keySet().stream(),
+                SolrSchemaUtil.fetchCustomFieldsFromSharedProperties().stream(),
                 stream(SelectStarDefaultField.values()).map(s -> s.getFieldName()))
-                .map(s -> s.replaceFirst(":","_")).collect(Collectors.toSet());
+                .map(s -> s.replaceFirst(":","_"))
+                .collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
     }
 
 
@@ -309,10 +311,9 @@ public abstract class AbstractStreamTest extends AbstractAlfrescoDistributedTest
     {
         for(Tuple t:tuples){
             Set<String> tupleFields = ((Set<String>) t.fields.keySet()).stream().map(
-                    s -> s.replaceFirst(":", "_")).collect(Collectors.toSet());
+                    s -> s.replaceFirst(":", "_")).collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
             assertEquals(fields, tupleFields);
         }
-
     }
 
     /**
