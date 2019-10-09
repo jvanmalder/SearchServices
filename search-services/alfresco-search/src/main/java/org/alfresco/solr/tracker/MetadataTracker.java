@@ -354,7 +354,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
                     gnp.setShardProperty(shardProperty);
 
-                    List<Node> nodes = client.getNodes(gnp, (int) info.getUpdates());
+                    List<Node> nodes = client.getNodesWithAncestorsAndDescendants(gnp, (int) info.getUpdates());
                     for (Node node : nodes)
                     {
                         docCount++;
@@ -446,7 +446,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                     gnp.setTransactionIds(txs);
                     gnp.setStoreProtocol(storeRef.getProtocol());
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
-                    List<Node> nodes = client.getNodes(gnp, (int) info.getUpdates());
+                    List<Node> nodes = client.getNodesWithAncestorsAndDescendants(gnp, (int) info.getUpdates());
                     for (Node node : nodes)
                     {
                         docCount++;
@@ -854,9 +854,11 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         gnp.setStoreProtocol(storeRef.getProtocol());
         gnp.setStoreIdentifier(storeRef.getIdentifier());
         gnp.setShardProperty(shardProperty);
-        List<Node> nodes = client.getNodes(gnp, Integer.MAX_VALUE);
+        List<Node> nodes = client.getNodesWithAncestorsAndDescendants(gnp, Integer.MAX_VALUE);
         
         ArrayList<Node> nodeBatch = new ArrayList<>();
+        log.info("Starting work to index {} nodes", nodes.size());
+        int numBatches = 0;
         for (Node node : nodes)
         {
             if (log.isDebugEnabled())
@@ -870,6 +872,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 NodeIndexWorkerRunnable niwr = new NodeIndexWorkerRunnable(this.threadHandler, nodeBatch, this.infoSrv);
                 this.threadHandler.scheduleTask(niwr);
                 nodeBatch = new ArrayList<>();
+                numBatches++;
             }
         }
         
@@ -879,7 +882,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             NodeIndexWorkerRunnable niwr = new NodeIndexWorkerRunnable(this.threadHandler, nodeBatch, this.infoSrv);
             this.threadHandler.scheduleTask(niwr);
             nodeBatch = new ArrayList<>();
+            numBatches++;
         }
+        log.info("Started {} batches for {} nodes", numBatches, nodeCount);
         return nodeCount;
     }
 
@@ -897,12 +902,15 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
         @Override
         protected void doWork() throws IOException, AuthenticationException, JSONException
-        { 
+        {
+            long startTime = System.currentTimeMillis();
             List<Node> filteredNodes = filterNodes(nodes);
             if(filteredNodes.size() > 0)
             {
                 this.infoServer.indexNodes(filteredNodes, true, false);
             }
+            log.info("{} finished work in {} ms", toString(),
+                    System.currentTimeMillis() - startTime);
         }
         
         @Override
@@ -1027,7 +1035,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             gnp.setTransactionIds(txs);
             gnp.setStoreProtocol(storeRef.getProtocol());
             gnp.setStoreIdentifier(storeRef.getIdentifier());
-            return client.getNodes(gnp, Integer.MAX_VALUE);
+            return client.getNodesWithAncestorsAndDescendants(gnp, Integer.MAX_VALUE);
         }
         catch (IOException e)
         {

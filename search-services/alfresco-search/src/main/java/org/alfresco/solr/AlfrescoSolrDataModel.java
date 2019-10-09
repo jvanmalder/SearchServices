@@ -35,7 +35,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISAbstractDictionaryService;
@@ -98,7 +97,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.LegacyNumericUtils;
-import org.apache.lucene.util.NumericUtils;
 import org.apache.lucene.util.Version;
 import org.apache.solr.core.CoreDescriptorDecorator;
 import org.apache.solr.core.SolrResourceLoader;
@@ -653,7 +651,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
             builder.append(dataTypeDefinition.getName().getLocalName());
             builder.append('@');
             // TODO wher we support multi value propertis correctly .... builder.append(propertyDefinition.isMultiValued() ? "m" : "s");
-            builder.append('s');
+            builder.append(propertyDefinition.isMultiValued() ? "m" : "s");
             builder.append("_");
             builder.append('_');
             switch (type)
@@ -1315,7 +1313,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     public boolean removeModel(QName modelQName)
     {
-    	modelErrors.remove(modelQName);
+    	modelErrors.remove(modelQName.toString());
     	dictionaryDAO.removeModel(modelQName); 
     	return true;
     }

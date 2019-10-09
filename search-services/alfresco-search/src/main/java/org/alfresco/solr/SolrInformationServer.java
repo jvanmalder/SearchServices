@@ -95,7 +95,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import java.util.stream.Collectors;
 import com.carrotsearch.hppc.IntArrayList;
 
 import com.carrotsearch.hppc.LongHashSet;
@@ -897,7 +897,21 @@ public class SolrInformationServer implements InformationServer
                 //Save the indexVersion so we know when we can clean out this entry
                 cleanContentCache.put(l, txnTime);
             }
-
+//            Map<Long, TenantAclIdDbId> dbIds = docIds
+//                .stream().collect(Collectors.toMap(docId -> docId.dbId, docId -> docId));
+//            Map<Long, Set<Long>> ancestorIds = this.repositoryClient.getAncestors(dbIds.keySet());
+//            ancestorIds.forEach((key, value) -> {
+//              value.forEach(ancestorId -> {
+//                if(!dbIds.containsKey(ancestorId)) {
+//                  TenantAclIdDbId docId = new TenantAclIdDbId();
+//                  docId.dbId = ancestorId;
+//                  docId.alcId = dbIds.get(key).alcId;
+//                  docId.tenant = dbIds.get(key).tenant;
+//                  docIds.add(docId);
+//                  dbIds.put(ancestorId, docId);
+//                }
+//              });
+//            });
             return docIds;
         }
         finally
@@ -1864,7 +1878,7 @@ public class SolrInformationServer implements InformationServer
                 }
                 else
                 {
-                    nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
+                    nodeMetaDatas = repositoryClient.getNodesMetaDataCombined(nmdp, Integer.MAX_VALUE);
                 }
                 
                 NodeMetaData nodeMetaData = null;
@@ -1918,7 +1932,7 @@ public class SolrInformationServer implements InformationServer
             		nmdp.setFromNodeId(node.getId());
             		nmdp.setToNodeId(node.getId());
 
-            		List<NodeMetaData> nodeMetaDatas =  repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
+                        List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaDataCombined(nmdp, Integer.MAX_VALUE);
 
             		AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
             		addDocCmd.overwrite = overwrite;
@@ -1946,9 +1960,22 @@ public class SolrInformationServer implements InformationServer
             			if ((node.getStatus() == SolrApiNodeStatus.UPDATED) || (node.getStatus() == SolrApiNodeStatus.UNKNOWN)) {
             				// check index control
             				Map<QName, PropertyValue> properties = nodeMetaData.getProperties();
-            				StringPropertyValue pValue = (StringPropertyValue) properties.get(ContentModel.PROP_IS_INDEXED);
-            				if (pValue != null) {
-            					Boolean isIndexed = Boolean.valueOf(pValue.getValue());
+            				PropertyValue pValue = properties.get(ContentModel.PROP_IS_INDEXED);
+            				StringPropertyValue spValue = null;
+                            if (pValue != null && pValue instanceof MultiPropertyValue)
+                            {
+                                List<PropertyValue> pValues = ((MultiPropertyValue) pValue).getValues();
+                                if (!pValues.isEmpty() && pValues.get(0) instanceof StringPropertyValue)
+                                {
+                                    spValue = (StringPropertyValue) pValues.get(0);
+                                }
+                            }
+                            else if (pValue != null && pValue instanceof StringPropertyValue)
+                            {
+                                spValue = (StringPropertyValue) pValue;
+                            }
+                            if (spValue != null) {
+                                Boolean isIndexed = Boolean.valueOf(spValue.getValue());
             					if (!isIndexed.booleanValue()) {
             						if (log.isDebugEnabled()) {
             							log.debug(".. clearing unindexed");
@@ -2212,7 +2239,7 @@ public class SolrInformationServer implements InformationServer
             searcher.search(booleanQuery, collector);
             docList = collector.getDocs();
             int size = docList.size();
-            Set set = new HashSet();
+            Set<String> set = new HashSet<>();
             set.add(FIELD_SOLR4_ID);
 
             for(int i=0; i<size; i++)
@@ -2509,7 +2536,7 @@ public class SolrInformationServer implements InformationServer
                 {
                     NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
                     nmdp.setNodeIds(unknownNodeIds);
-                    nodeMetaDatas.addAll(repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE));
+                    nodeMetaDatas.addAll(repositoryClient.getNodesMetaDataCombined(nmdp, Integer.MAX_VALUE));
                 }
 
                 for (NodeMetaData nodeMetaData : nodeMetaDatas)
@@ -2561,7 +2588,7 @@ public class SolrInformationServer implements InformationServer
                 nmdp.setNodeIds(nodeIds);
 
                 // Fetches bulk metadata
-                List<NodeMetaData> nodeMetaDatas =  repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
+                List<NodeMetaData> nodeMetaDatas =  repositoryClient.getNodesMetaDataCombined(nmdp, Integer.MAX_VALUE);
 
                 NEXT_NODE: for (NodeMetaData nodeMetaData : nodeMetaDatas)
                 {
@@ -2600,14 +2627,24 @@ public class SolrInformationServer implements InformationServer
 
                         // check index control
                         Map<QName, PropertyValue> properties = nodeMetaData.getProperties();
-                        StringPropertyValue pValue = (StringPropertyValue) properties.get(ContentModel.PROP_IS_INDEXED);
-                        if (pValue != null)
+                        PropertyValue pValue = properties.get(ContentModel.PROP_IS_INDEXED);
+                        StringPropertyValue spValue = null;
+                        if (pValue != null && pValue instanceof MultiPropertyValue)
                         {
-                            Boolean isIndexed = Boolean.valueOf(pValue.getValue());
-                            if (!isIndexed.booleanValue())
+                            List<PropertyValue> pValues = ((MultiPropertyValue) pValue).getValues();
+                            if (!pValues.isEmpty() && pValues.get(0) instanceof StringPropertyValue)
                             {
-                                if(log.isDebugEnabled())
-                                {
+                                spValue = (StringPropertyValue) pValues.get(0);
+                            }
+                        }
+                        else if (pValue != null && pValue instanceof StringPropertyValue)
+                        {
+                            spValue = (StringPropertyValue) pValue;
+                        }
+                        if (spValue != null) {
+                            Boolean isIndexed = Boolean.valueOf(spValue.getValue());
+                            if (!isIndexed.booleanValue()) {
+                                if (log.isDebugEnabled()) {
                                     log.debug(".. clearing unindexed");
                                 }
                                 deleteNode(processor, request, node);
@@ -2728,8 +2765,37 @@ public class SolrInformationServer implements InformationServer
             doc.addField(FIELD_ASPECT, aspect.toString());
             if(aspect.equals(ContentModel.ASPECT_GEOGRAPHIC))
             {
-            	StringPropertyValue latProp = ((StringPropertyValue)nodeMetaData.getProperties().get(ContentModel.PROP_LATITUDE));
-            	StringPropertyValue lonProp = ((StringPropertyValue)nodeMetaData.getProperties().get(ContentModel.PROP_LONGITUDE));
+            	StringPropertyValue latProp = null;
+            	StringPropertyValue lonProp = null;
+            	
+            	PropertyValue pLatProp = nodeMetaData.getProperties().get(ContentModel.PROP_LATITUDE);
+            	PropertyValue pLonProp = nodeMetaData.getProperties().get(ContentModel.PROP_LONGITUDE);
+            	
+                if (pLatProp != null && pLatProp instanceof MultiPropertyValue)
+                {
+                    List<PropertyValue> pLatValues = ((MultiPropertyValue) pLatProp).getValues();
+                    if (!pLatValues.isEmpty() && pLatValues.get(0) instanceof StringPropertyValue)
+                    {
+                      latProp = (StringPropertyValue) pLatValues.get(0);
+                    }
+                }
+                else if (pLatProp != null && pLatProp instanceof StringPropertyValue)
+                {
+                  latProp = (StringPropertyValue) pLatProp;
+                }
+                
+                if (pLonProp != null && pLonProp instanceof MultiPropertyValue)
+                {
+                    List<PropertyValue> pLonValues = ((MultiPropertyValue) pLonProp).getValues();
+                    if (!pLonValues.isEmpty() && pLonValues.get(0) instanceof StringPropertyValue)
+                    {
+                      lonProp = (StringPropertyValue) pLonValues.get(0);
+                    }
+                }
+                else if (pLonProp != null && pLonProp instanceof StringPropertyValue)
+                {
+                  lonProp = (StringPropertyValue) pLonProp;
+                }
             	
             	if((latProp != null) && (lonProp != null))
             	{
@@ -3076,11 +3142,23 @@ public class SolrInformationServer implements InformationServer
         boolean isContentIndexed = true;
         if (properties.containsKey(ContentModel.PROP_IS_CONTENT_INDEXED))
         {
-            StringPropertyValue pValue = (StringPropertyValue) properties
-                        .get(ContentModel.PROP_IS_CONTENT_INDEXED);
-            if (pValue != null)
+            PropertyValue pValue = properties.get(ContentModel.PROP_IS_CONTENT_INDEXED);
+            StringPropertyValue spValue = null;
+            if (pValue != null && pValue instanceof MultiPropertyValue)
             {
-                Boolean isIndexed = Boolean.valueOf(pValue.getValue());
+                List<PropertyValue> pValues = ((MultiPropertyValue) pValue).getValues();
+                if (!pValues.isEmpty() && pValues.get(0) instanceof StringPropertyValue)
+                {
+                    spValue = (StringPropertyValue) pValues.get(0);
+                }
+            }
+            else if (pValue != null && pValue instanceof StringPropertyValue)
+            {
+                spValue = (StringPropertyValue) pValue;
+            }
+            if (spValue != null)
+            {
+                Boolean isIndexed = Boolean.valueOf(spValue.getValue());
                 if ((isIndexed != null) && (isIndexed.booleanValue() == false))
                 {
                     isContentIndexed = false;
@@ -3517,8 +3595,21 @@ public class SolrInformationServer implements InformationServer
             PropertyValue localePropertyValue = properties.get(ContentModel.PROP_LOCALE);
             if (localePropertyValue != null)
             {
-                locale = DefaultTypeConverter.INSTANCE.convert(Locale.class,
+                if (localePropertyValue instanceof MultiPropertyValue)
+                {
+                    List<PropertyValue> localeValues = ((MultiPropertyValue) localePropertyValue).getValues();
+                    if (!localeValues.isEmpty() && localeValues.get(0) instanceof StringPropertyValue)
+                    {
+                        locale = DefaultTypeConverter.INSTANCE.convert(Locale.class, 
+                            ((StringPropertyValue) localeValues.get(0)).getValue());
+                    }
+                }
+                else
+                {
+                    locale = DefaultTypeConverter.INSTANCE.convert(Locale.class,
                         ((StringPropertyValue) localePropertyValue).getValue());
+                }
+                        
             }
 
             if (locale == null)

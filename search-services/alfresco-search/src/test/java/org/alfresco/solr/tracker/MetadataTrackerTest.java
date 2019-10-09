@@ -113,6 +113,7 @@ public class MetadataTrackerTest
         Node node = new Node();
         nodes.add(node );
         when(repositoryClient.getNodes(any(GetNodesParameters.class), anyInt())).thenReturn(nodes);
+        when(repositoryClient.getNodesWithAncestorsAndDescendants(any(GetNodesParameters.class), anyInt())).thenReturn(nodes);
         
         this.metadataTracker.doTrack();
 
@@ -192,6 +193,7 @@ public class MetadataTrackerTest
     {
         List<Node> nodes = getNodes();
         when(repositoryClient.getNodes(any(GetNodesParameters.class), anyInt())).thenReturn(nodes);
+        when(repositoryClient.getNodesWithAncestorsAndDescendants(any(GetNodesParameters.class), anyInt())).thenReturn(nodes);
         
         List<Node> nodes4Tx = this.metadataTracker.getFullNodesForDbTransaction(TX_ID);
         

@@ -18,12 +18,10 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.apache.solr.common.util.Hash;
-import org.alfresco.solr.client.Node;
-import org.alfresco.solr.client.Acl;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.Node;
 
 
 /*

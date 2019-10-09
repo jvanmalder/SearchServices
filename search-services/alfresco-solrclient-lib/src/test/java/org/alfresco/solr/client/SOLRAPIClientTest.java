@@ -452,7 +452,7 @@ public class SOLRAPIClientTest extends TestCase
 
         NodeMetaDataParameters metaParams = new NodeMetaDataParameters();
         metaParams.setNodeIds(nodeIds);
-        List<NodeMetaData> metadata = client.getNodesMetaData(metaParams, 3);
+        List<NodeMetaData> metadata = client.getNodesMetaDataCombined(metaParams, 3);
         for (NodeMetaData info : metadata)
         {
             logger.debug(info);

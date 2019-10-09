@@ -18,12 +18,12 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.util.ISO8601DateFormat;
-import org.apache.solr.common.util.Hash;
-import org.alfresco.solr.client.Node;
-import org.alfresco.solr.client.Acl;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.Node;
+import org.alfresco.util.ISO8601DateFormat;
 
 /*
 * @author Joel
@@ -45,8 +45,8 @@ public class DateQuarterRouter implements DocRouter
         Date date = ISO8601DateFormat.parse(ISO8601Date);
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(date);
-        int month = cal.get(cal.MONTH);
-        int year  = cal.get(cal.YEAR);
+        int month = cal.get(Calendar.MONTH);
+        int year  = cal.get(Calendar.YEAR);
         return Math.ceil(((year * 12) + (month+1)) / 3) % numShards == shardInstance;
     }
 }

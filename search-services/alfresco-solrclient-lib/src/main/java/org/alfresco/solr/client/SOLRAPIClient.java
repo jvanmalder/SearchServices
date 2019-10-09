@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AlfrescoHttpClient;
 import org.alfresco.httpclient.AuthenticationException;
@@ -79,7 +78,6 @@ import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.extensions.surf.util.URLEncoder;
-
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -99,8 +97,12 @@ public class SOLRAPIClient
     private static final String GET_ACLS_READERS = "api/solr/aclsReaders";
     private static final String GET_TRANSACTIONS_URL = "api/solr/transactions";
     private static final String GET_METADATA_URL = "api/solr/metadata";
+    private static final String GET_METADATA_COMBINED_URL = "api/solr/metadataCombined";
     private static final String GET_NODES_URL = "api/solr/nodes";
+    private static final String GET_NODES_ANCESTORS_DESCENDANTS = "api/solr/nodesAncestorsDescendants";
     private static final String GET_CONTENT = "api/solr/textContent";
+    private static final String GET_CONTENT_COMBINED = "api/solr/textContentCombined";
+    private static final String GET_NODES_ANCESTORS = "api/solr/nodesAncestors";
     private static final String GET_MODEL = "api/solr/model";
     private static final String GET_MODELS_DIFF = "api/solr/modelsdiff";
 
@@ -549,9 +551,20 @@ public class SOLRAPIClient
         return new Transactions(transactions, maxTxnCommitTime, maxTxnIdOnServer);
     }
     
-    public List<Node> getNodes(GetNodesParameters parameters, int maxResults) throws AuthenticationException, IOException, JSONException
-    {
-        StringBuilder url = new StringBuilder(GET_NODES_URL);
+    public List<Node> getNodesWithAncestorsAndDescendants(GetNodesParameters parameters, int maxResults)
+            throws AuthenticationException, IOException, JSONException {
+        return getNodes(parameters, maxResults, GET_NODES_ANCESTORS_DESCENDANTS);
+    }
+
+    public List<Node> getNodes(GetNodesParameters parameters, int maxResults)
+            throws AuthenticationException, IOException, JSONException {
+        return getNodes(parameters, maxResults, GET_NODES_URL);
+    }
+
+    private List<Node> getNodes(GetNodesParameters parameters, int maxResults, String endPointUrl)
+            throws AuthenticationException, IOException, JSONException {
+        
+        StringBuilder url = new StringBuilder(endPointUrl);
 
         JSONObject body = new JSONObject();
         
@@ -789,11 +802,11 @@ public class SOLRAPIClient
         return ret;
     }
     
-    public List<NodeMetaData> getNodesMetaData(NodeMetaDataParameters params, int maxResults) throws AuthenticationException, IOException, JSONException
+    public List<NodeMetaData> getNodesMetaData(NodeMetaDataParameters params, int maxResults, String endPointUrl) throws AuthenticationException, IOException, JSONException
     {
         List<Long> nodeIds = params.getNodeIds();
         
-        StringBuilder url = new StringBuilder(GET_METADATA_URL);
+        StringBuilder url = new StringBuilder(endPointUrl);
 
         JSONObject body = new JSONObject();
         if(nodeIds != null && nodeIds.size() > 0)
@@ -1069,6 +1082,16 @@ public class SOLRAPIClient
         return nodes;
     }
     
+    public List<NodeMetaData> getNodesMetaDataCombined(NodeMetaDataParameters params, int maxResults) throws AuthenticationException, IOException, JSONException
+    {
+        return getNodesMetaData(params, maxResults, GET_METADATA_COMBINED_URL);
+    }
+
+    public List<NodeMetaData> getNodesMetaData(NodeMetaDataParameters params, int maxResults) throws AuthenticationException, IOException, JSONException
+    {
+        return getNodesMetaData(params, maxResults, GET_METADATA_URL);
+    }
+
     public GetTextContentResponse getTextContent(Long nodeId, QName propertyQName, Long modifiedSince) throws AuthenticationException, IOException
     {
         StringBuilder url = new StringBuilder(128);
@@ -1121,6 +1144,110 @@ public class SOLRAPIClient
 
         return new GetTextContentResponse(response);
     }
+    
+    public Map<Long, Set<Long>> getAncestors(Set<Long> nodeIds) throws AuthenticationException, IOException {
+      StringBuilder url = new StringBuilder(GET_NODES_ANCESTORS);
+
+      JSONObject body = new JSONObject();
+      JSONArray nodeIdsArray = new JSONArray(nodeIds);
+      body.put("nodeIds", nodeIdsArray);
+      
+      PostRequest req = new PostRequest(url.toString(), body.toString(), "application/json");
+
+      Response response = null;
+      JSONObject json = null;
+      try
+      {
+          response = repositoryHttpClient.sendRequest(req);
+          if(response.getStatus() != HttpStatus.SC_OK)
+          {
+              throw new AlfrescoRuntimeException("GetAncestors return status is " + response.getStatus());
+          }
+
+          Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
+          json = new JSONObject(new JSONTokener(reader));
+      }
+      finally
+      {
+          if(response != null)
+          {
+              response.release();
+          }
+      }
+      
+      if(log.isDebugEnabled())
+      {
+          log.debug(json.toString());
+      }
+
+      JSONObject jsonNodes = json.getJSONObject("ancestorIds");
+      Map<Long, Set<Long>> ancestorMap = new HashMap<>(jsonNodes.length());
+      jsonNodes.keys().forEachRemaining(
+          dbId -> {
+            Set<Long> ancestorIds = new HashSet<>();
+            JSONArray ancestorIdArray = jsonNodes.getJSONArray(dbId);
+            for(int i = 0; i < ancestorIdArray.length(); i++) {
+              ancestorIds.add(ancestorIdArray.getLong(i));
+            }
+            ancestorMap.put(Long.valueOf(dbId), ancestorIds);
+          });
+
+      return ancestorMap;
+    }
+    
+    public GetTextContentResponse getTextContentCombined(Long nodeId, QName propertyQName, Long modifiedSince) throws AuthenticationException, IOException
+    {
+        StringBuilder url = new StringBuilder(128);
+        url.append(GET_CONTENT_COMBINED);
+        
+        StringBuilder args = new StringBuilder(128);
+        if(nodeId != null)
+        {
+            args.append("?");
+            args.append("nodeId");
+            args.append("=");
+            args.append(nodeId);            
+        }
+        else
+        {
+            throw new NullPointerException("getTextContent(): nodeId cannot be null.");
+        }
+        if(propertyQName != null)
+        {
+            if(args.length() == 0)
+            {
+                args.append("?");
+            }
+            else
+            {
+                args.append("&");
+            }
+            args.append("propertyQName");
+            args.append("=");
+            args.append(URLEncoder.encode(propertyQName.toString()));
+        }
+        
+        url.append(args);
+        
+        GetRequest req = new GetRequest(url.toString());
+        
+        if(modifiedSince != null)
+        {
+            Map<String, String> headers = new HashMap<String, String>(1, 1.0f);
+            headers.put("If-Modified-Since", String.valueOf(DateUtil.formatDate(new Date(modifiedSince))));
+            req.setHeaders(headers);
+        }
+
+        Response response = repositoryHttpClient.sendRequest(req);
+        
+        if(response.getStatus() != Status.STATUS_NOT_MODIFIED && response.getStatus() != Status.STATUS_NO_CONTENT && response.getStatus() != Status.STATUS_OK)
+        {
+            throw new AlfrescoRuntimeException("GetTextContentResponse return status is " + response.getStatus());
+        }
+
+        return new GetTextContentResponse(response);
+    }
+   
     
     public AlfrescoModel getModel(String coreName, QName modelName) throws AuthenticationException, IOException, JSONException
     {

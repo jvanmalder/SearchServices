@@ -18,12 +18,10 @@
  */
 package org.apache.solr.handler.component;
 
-import org.alfresco.solr.query.AbstractQParser;
 import org.apache.http.client.HttpClient;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.common.util.ContentStreamBase;
 
 public class AlfrescoHttpShardHandler extends HttpShardHandler {
 

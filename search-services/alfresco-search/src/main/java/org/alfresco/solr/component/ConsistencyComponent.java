@@ -25,8 +25,9 @@
  */
 package org.alfresco.solr.component;
 
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
-import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.TrackerState;
 import org.alfresco.solr.tracker.MetadataTracker;
 import org.apache.solr.common.params.ShardParams;
@@ -35,10 +36,6 @@ import org.apache.solr.handler.component.SearchComponent;
 import org.apache.solr.request.SolrQueryRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.util.Date;
 
 /**
  * Adds consitency information to the search results

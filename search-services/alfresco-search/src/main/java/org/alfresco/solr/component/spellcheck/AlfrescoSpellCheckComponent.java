@@ -3,8 +3,6 @@ package org.alfresco.solr.component.spellcheck;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.solr.common.params.ShardParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
