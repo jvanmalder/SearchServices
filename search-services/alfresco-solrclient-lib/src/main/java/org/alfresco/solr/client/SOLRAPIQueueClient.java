@@ -47,14 +47,14 @@ import org.json.JSONException;
 
 public class SOLRAPIQueueClient extends SOLRAPIClient
 {
-    public static List<AclChangeSet> aclChangeSetQueue = Collections.synchronizedList(new ArrayList());
-    public static Map<Long, List<Acl>> aclMap = Collections.synchronizedMap(new HashMap());
-    public static Map<Long, AclReaders> aclReadersMap = Collections.synchronizedMap(new HashMap());
+    public static List<AclChangeSet> aclChangeSetQueue = Collections.synchronizedList(new ArrayList<>());
+    public static Map<Long, List<Acl>> aclMap = Collections.synchronizedMap(new HashMap<>());
+    public static Map<Long, AclReaders> aclReadersMap = Collections.synchronizedMap(new HashMap<>());
 
-    public static List<Transaction> transactionQueue = Collections.synchronizedList(new ArrayList());
-    public static Map<Long, List<Node>> nodeMap = Collections.synchronizedMap(new HashMap());
-    public static Map<Long, NodeMetaData> nodeMetaDataMap = Collections.synchronizedMap(new HashMap());
-    public static Map<Long, String> nodeContentMap =  Collections.synchronizedMap(new HashMap());
+    public static List<Transaction> transactionQueue = Collections.synchronizedList(new ArrayList<>());
+    public static Map<Long, List<Node>> nodeMap = Collections.synchronizedMap(new HashMap<>());
+    public static Map<Long, NodeMetaData> nodeMetaDataMap = Collections.synchronizedMap(new HashMap<>());
+    public static Map<Long, String> nodeContentMap =  Collections.synchronizedMap(new HashMap<>());
 
     private static boolean throwException;
 
@@ -80,7 +80,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
         if(fromCommitTime == null && toCommitTime == null)
         {
-            List<AclChangeSet> aclChangeSetList = new ArrayList();
+            List<AclChangeSet> aclChangeSetList = new ArrayList<>();
             for(int i=0; i<size; i++)
             {
                 AclChangeSet aclChangeSet = aclChangeSetQueue.get(i);
@@ -99,7 +99,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             return new AclChangeSets(aclChangeSetList, maxTime, maxId);
         }
 
-        List<AclChangeSet> aclChangeSetList = new ArrayList();
+        List<AclChangeSet> aclChangeSetList = new ArrayList<>();
 
         for(int i=0; i<size; i++)
         {
@@ -146,10 +146,10 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        List<Acl> allAcls = new ArrayList();
+        List<Acl> allAcls = new ArrayList<>();
         for(AclChangeSet aclChangeSet : aclChangeSets)
         {
-            List aclList = aclMap.get(aclChangeSet.getId());
+            List<Acl> aclList = aclMap.get(aclChangeSet.getId());
             allAcls.addAll(aclList);
         }
         return allAcls;
@@ -167,7 +167,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        List<AclReaders> allAclReaders = new ArrayList();
+        List<AclReaders> allAclReaders = new ArrayList<>();
         for(Acl acl : acls)
         {
             AclReaders aclReaders = aclReadersMap.get(acl.getId());
@@ -182,7 +182,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         if(throwException) {
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
-        return new ArrayList();
+        return new ArrayList<>();
     }
 
 
@@ -217,7 +217,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
         if(fromCommitTime == null && toCommitTime == null)
         {
-            List<Transaction> transactionList = new ArrayList();
+            List<Transaction> transactionList = new ArrayList<>();
 
             for(int i=0; i<size; i++)
             {
@@ -237,7 +237,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             return new Transactions(transactionList, maxTime, maxId);
         }
 
-        List<Transaction> transactionList = new ArrayList();
+        List<Transaction> transactionList = new ArrayList<>();
 
         for(int i=0; i<size; i++)
         {
@@ -275,7 +275,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         }
 
         List<Long> txnIds = parameters.getTransactionIds();
-        List<Node> allNodes = new ArrayList();
+        List<Node> allNodes = new ArrayList<>();
         for(long txnId : txnIds)
         {
             List<Node> nodes = nodeMap.get(txnId);
@@ -291,7 +291,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        List<NodeMetaData> resultNodeMetaDatas = new ArrayList();
+        List<NodeMetaData> resultNodeMetaDatas = new ArrayList<>();
         List<Long> nodeIds = params.getNodeIds();
         if(nodeIds != null) {
             for (long nodeId : nodeIds) {
