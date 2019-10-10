@@ -20,6 +20,7 @@ package org.alfresco.solr.tracker;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -77,6 +78,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     private ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<String>();
     private DocRouter docRouter;
+    /** The string representation of the shard key. */
+    private String shardKey;
+    /** The property to use for determining the shard. */
     private QName shardProperty;
 
     public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
@@ -85,16 +89,24 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         super(p, client, coreName, informationServer, Tracker.Type.MetaData);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
-        String shardKey = p.getProperty("shard.key");
-        if(shardKey != null) {
-            shardProperty = getShardProperty(shardKey);
-        }
-
+        shardKey = p.getProperty(DocRouterFactory.SHARD_KEY_KEY);
+        updateShardProperty();
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
     }
-    
+
+    /**
+     * Set the shard property using the shard key.
+     */
+    private void updateShardProperty()
+    {
+        if(shardProperty == null && shardKey != null)
+        {
+            shardProperty = getShardProperty(shardKey);
+        }
+    }
+
     MetadataTracker()
     {
         super(Tracker.Type.MetaData);
@@ -107,13 +119,16 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     @Override
     protected void doTrack() throws AuthenticationException, IOException, JSONException, EncoderException
     {
-
+        log.debug("### MetadataTracker doTrack ###");
         // MetadataTracker must wait until ModelTracker has run
         ModelTracker modelTracker = this.infoSrv.getAdminHandler().getTrackerRegistry().getModelTracker();
-
         if (modelTracker != null && modelTracker.hasModels())
         {
             trackRepository();
+        }
+        else
+        {
+            invalidateState();
         }
     }
 
@@ -141,6 +156,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
     private void trackRepository() throws IOException, AuthenticationException, JSONException, EncoderException
     {
+        log.debug("####### MetadataTracker trackRepository Start #######");
         checkShutdown();
 
         if(!isMaster && isSlave)
@@ -163,6 +179,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
         // Check we are tracking the correct repository
         TrackerState state = super.getTrackerState();
+        log.debug("####### MetadataTracker check CYCLE #######");
+        log.debug(String.format("%s ### state: %s", coreName, state.toString()));
         if(state.getTrackerCycles() == 0)
         {
             //We have a new tracker state so do the checks.
@@ -215,6 +233,12 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                         .map(Tracker::getTrackerState)
                         .orElse(transactionsTrackerState);
 
+        HashMap<String, String> propertyBag = new HashMap<>();
+        propertyBag.put("coreName", coreName);
+        HashMap<String, String> extendedPropertyBag = new HashMap<>(propertyBag);
+        updateShardProperty();
+        extendedPropertyBag.putAll(docRouter.getProperties(shardProperty));
+        
         return ShardStateBuilder.shardState()
                 .withMaster(isMaster)
                 .withLastUpdated(System.currentTimeMillis())
@@ -222,6 +246,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 .withLastIndexedChangeSetId(changeSetsTrackerState.getLastIndexedChangeSetId())
                 .withLastIndexedTxCommitTime(transactionsTrackerState.getLastIndexedTxCommitTime())
                 .withLastIndexedTxId(transactionsTrackerState.getLastIndexedTxId())
+                .withPropertyBag(extendedPropertyBag)
                 .withShardInstance()
                     .withBaseUrl(infoSrv.getBaseUrl())
                     .withPort(infoSrv.getPort())
@@ -234,6 +259,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                             .withTemplate(shardTemplate)
                             .withHasContent(transformContent)
                             .withShardMethod(ShardMethodEnum.getShardMethod(shardMethod))
+                            .withPropertyBag(propertyBag)
                             .endFloc()
                         .endShard()
                      .endShardInstance()
@@ -256,7 +282,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             state.setCheckedFirstTransactionTime(true);
             log.info("No transactions found - no verification required");
 
-            firstTransactions = client.getTransactions(null, 0L, null, 2000L, 1);
+            firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
             if (!firstTransactions.getTransactions().isEmpty())
             {
                 Transaction firstTransaction = firstTransactions.getTransactions().get(0);
@@ -268,7 +294,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         
         if (!state.isCheckedFirstTransactionTime())
         {
-            firstTransactions = client.getTransactions(null, 0L, null, 2000L, 1);
+            firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
             if (!firstTransactions.getTransactions().isEmpty())
             {
                 Transaction firstTransaction = firstTransactions.getTransactions().get(0);
@@ -301,7 +327,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         {
             if (firstTransactions == null)
             {
-                firstTransactions = client.getTransactions(null, 0L, null, 2000L, 1);
+                firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
             }
             
             setLastTxCommitTimeAndTxIdInTrackerState(firstTransactions, state);
@@ -352,7 +378,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                     gnp.setTransactionIds(txs);
                     gnp.setStoreProtocol(storeRef.getProtocol());
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
+                    updateShardProperty();
                     gnp.setShardProperty(shardProperty);
+                    gnp.setCoreName(coreName);
 
                     List<Node> nodes = client.getNodesWithAncestorsAndDescendants(gnp, (int) info.getUpdates());
                     for (Node node : nodes)
@@ -446,6 +474,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                     gnp.setTransactionIds(txs);
                     gnp.setStoreProtocol(storeRef.getProtocol());
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
+                    gnp.setCoreName(coreName);
                     List<Node> nodes = client.getNodesWithAncestorsAndDescendants(gnp, (int) info.getUpdates());
                     for (Node node : nodes)
                     {
@@ -613,7 +642,20 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         Transactions transactions;
         // step forward in time until we find something or hit the time bound
         // max id unbounded
-        Long startTime = fromCommitTime == null ? Long.valueOf(0L) : fromCommitTime;
+        Long startTime = fromCommitTime == null  ? 0L : fromCommitTime;
+        log.debug(String.format("#### %s MetadataTracker getSomeTransactions start time: %d end: %d",
+                  this.coreName, 
+                  startTime,
+                  endTime));
+        if(startTime == 0)
+        {
+            return client.getTransactions(startTime,
+                                          null,
+                                          startTime + actualTimeStep, 
+                                          null, 
+                                          maxResults, 
+                                          shardstate);
+        }
         do
         {
             transactions = client.getTransactions(startTime, null, startTime + actualTimeStep, null, maxResults, shardstate);
@@ -678,13 +720,16 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 */
 
                 Long fromCommitTime = getTxFromCommitTime(txnsFound, state.getLastGoodTxCommitTimeInIndex());
+                log.debug("#### Check txnsFound : " + txnsFound.size());
+                log.debug("======= fromCommitTime: " + fromCommitTime);
+
+                log.debug("#### Get txn from commit time: " + fromCommitTime);
                 transactions = getSomeTransactions(txnsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, 2000,
                                                    state.getTimeToStopIndexing());
 
-
                 setLastTxCommitTimeAndTxIdInTrackerState(transactions, state);
 
-                log.info("Scanning transactions ...");
+                log.debug("Scanning transactions ...");
                 if (transactions.getTransactions().size() > 0) {
                     log.info(".... from " + transactions.getTransactions().get(0));
                     log.info(".... to " + transactions.getTransactions().get(transactions.getTransactions().size() - 1));
@@ -783,10 +828,11 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             {
                 getWriteLock().release();
             }
+        
         }
         while ((transactions.getTransactions().size() > 0) && (upToDate == false));
 
-        log.info("total number of docs with metadata updated: " + totalUpdatedDocs);
+        log.debug("total number of docs with metadata updated: " + totalUpdatedDocs);
     }
 
     private void setLastTxCommitTimeAndTxIdInTrackerState(Transactions transactions, TrackerState state)
@@ -853,7 +899,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         gnp.setTransactionIds(txIds);
         gnp.setStoreProtocol(storeRef.getProtocol());
         gnp.setStoreIdentifier(storeRef.getIdentifier());
+        updateShardProperty();
         gnp.setShardProperty(shardProperty);
+        gnp.setCoreName(coreName);
         List<Node> nodes = client.getNodesWithAncestorsAndDescendants(gnp, Integer.MAX_VALUE);
         
         ArrayList<Node> nodeBatch = new ArrayList<>();
@@ -1035,6 +1083,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             gnp.setTransactionIds(txs);
             gnp.setStoreProtocol(storeRef.getProtocol());
             gnp.setStoreIdentifier(storeRef.getIdentifier());
+            gnp.setCoreName(coreName);
             return client.getNodesWithAncestorsAndDescendants(gnp, Integer.MAX_VALUE);
         }
         catch (IOException e)
@@ -1056,7 +1105,7 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     {
         // DB TX Count
         long firstTransactionCommitTime = 0;
-        Transactions firstTransactions = client.getTransactions(null, 0L, null, 2000L, 1);
+        Transactions firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
         if(firstTransactions.getTransactions().size() > 0)
         {
             Transaction firstTransaction = firstTransactions.getTransactions().get(0);
@@ -1159,7 +1208,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         this.queriesToReindex.offer(query);
     }
 
-    public static QName getShardProperty(String field) {
+    public static QName getShardProperty(String field)
+    {
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
         DictionaryService dictionaryService = dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT);
@@ -1168,6 +1218,11 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                                                                                   dictionaryService,
                                                                                   field);
 
+        if (propertyDef == null)
+        {
+            log.error("Sharding property not found: {}", field);
+            return null;
+        }
         return propertyDef.getName();
     }
 }

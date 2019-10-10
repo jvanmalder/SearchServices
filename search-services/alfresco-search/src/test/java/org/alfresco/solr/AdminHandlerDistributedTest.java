@@ -30,11 +30,17 @@ import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.response.SolrQueryResponse;
-import org.junit.Rule;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
+
+import java.lang.invoke.MethodHandles;
+import java.util.Properties;
+
+import static org.alfresco.repo.index.shard.ShardMethodEnum.*;
+import static org.alfresco.solr.AlfrescoSolrUtils.*;
 
 /**
  * Tests the custom Alfresco Handler.
@@ -49,10 +55,19 @@ public class AdminHandlerDistributedTest extends AbstractAlfrescoDistributedTest
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     final String JETTY_SERVER_ID = this.getClass().getSimpleName();
     static final String CORE_NAME = "newcoretesting";
+    
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(2, "AdminHandlerDistributedTest", null);
+    }
 
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(JETTY_SERVER_ID, 0, null, null);
-
+    @AfterClass
+    private static void destroyData() throws Throwable
+    {
+        dismissSolrServers();
+    }
+    
     @Test
     public void newCoreUsingAdminHandler() throws Exception
     {

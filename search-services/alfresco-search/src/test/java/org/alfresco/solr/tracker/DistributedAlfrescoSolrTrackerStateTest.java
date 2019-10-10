@@ -49,8 +49,8 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.solr.SolrTestCaseJ4;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
@@ -70,16 +70,19 @@ import java.util.stream.Collectors;
 @SolrTestCaseJ4.SuppressSSL
 public class DistributedAlfrescoSolrTrackerStateTest extends AbstractAlfrescoDistributedTest
 {
-    private int howManyShards = 5;
-
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(howManyShards, this);
-
-    @Before
-    private void initData() throws Throwable
+    @BeforeClass
+    private static void initData() throws Throwable
     {
+        initSolrServers(5, getClassName(),null);
+
         Acl acl = createAndIndexSomeAclData();
         createAndIndexTransactionWithSomeNodes(5, acl, "first");
+    }
+
+    @AfterClass
+    private static void destroyData()
+    {
+        dismissSolrServers();
     }
     
     @Test
@@ -87,7 +90,7 @@ public class DistributedAlfrescoSolrTrackerStateTest extends AbstractAlfrescoDis
     {
         putHandleDefaults();
 
-        getJettyCores(jettyContainers.values()).forEach(core -> {
+        getJettyCores(solrShards).forEach(core -> {
             MetadataTracker tracker =
                     of(coreAdminHandler(core))
                             .map(AlfrescoCoreAdminHandler::getTrackerRegistry)
@@ -126,9 +129,10 @@ public class DistributedAlfrescoSolrTrackerStateTest extends AbstractAlfrescoDis
         });
     }
 
-    private Acl createAndIndexSomeAclData()
+    private static Acl createAndIndexSomeAclData()
     {
         try {
+
             AclChangeSet aclChangeSet = getAclChangeSet(1);
 
             Acl acl = getAcl(aclChangeSet);
@@ -160,7 +164,7 @@ public class DistributedAlfrescoSolrTrackerStateTest extends AbstractAlfrescoDis
      * @param acl the related ACL.
      * @param sampleTextContent a sample text content that will be used to assert nodes have been actually indexed.
      */
-    private void createAndIndexTransactionWithSomeNodes(int howManyTestNodes, Acl acl, String sampleTextContent)
+    private static void createAndIndexTransactionWithSomeNodes(int howManyTestNodes, Acl acl, String sampleTextContent)
     {
         try
         {
@@ -171,7 +175,7 @@ public class DistributedAlfrescoSolrTrackerStateTest extends AbstractAlfrescoDis
 
             BooleanQuery.Builder builder = new BooleanQuery.Builder();
             builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!TX")), BooleanClause.Occur.MUST));
-            builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_TXID, txn.getId(), txn.getId() + 1, true, false), BooleanClause.Occur.MUST));
+            builder.add(new BooleanClause(LongPoint.newExactQuery(QueryConstants.FIELD_S_TXID, txn.getId()), BooleanClause.Occur.MUST));
             BooleanQuery waitForQuery = builder.build();
 
             waitForDocCountAllCores(waitForQuery, 1, MAX_WAIT_TIME);

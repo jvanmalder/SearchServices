@@ -57,7 +57,9 @@ import org.slf4j.LoggerFactory;
 public class SolrContentStore implements ContentStore
 {
     protected final static Logger log = LoggerFactory.getLogger(SolrContentStore.class);
-    private static final String CONTENT_STORE = "contentstore";
+    static final String CONTENT_STORE = "contentstore";
+    static final String SOLR_CONTENT_DIR = "solr.content.dir";
+
     /**
      * Constructor.
      * @param solrHome
@@ -70,13 +72,16 @@ public class SolrContentStore implements ContentStore
         }
 
         File solrHomeFile = new File(SolrResourceLoader.normalizeDir(solrHome));
-        if (!solrHomeFile.exists()) {
+        if (!solrHomeFile.exists())
+        {
             //Its very unlikely that solrHome would not exist so we will log an error
             //but continue because solr.content.dir may be specified, so it keeps working
-            log.error(solrHomeFile.getAbsolutePath()+ " does not exist.");
+            log.error(solrHomeFile.getAbsolutePath() + " does not exist.");
         }
-        String path =  solrHomeFile.getParent()+"/"+CONTENT_STORE;
-        File rootFile = new File(ConfigUtil.locateProperty("solr.content.dir", path));
+        
+        String path = solrHomeFile.getParent()+"/"+CONTENT_STORE;
+        log.warn(path + " will be used as a default path if " + SOLR_CONTENT_DIR + " property is not defined");
+        File rootFile = new File(ConfigUtil.locateProperty(SOLR_CONTENT_DIR, path));
 
         try
         {

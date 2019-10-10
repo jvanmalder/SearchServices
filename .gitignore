@@ -1,0 +1,32 @@
+target
+.settings
+.classpath
+.project
+.idea/
+*.iml
+.metadata
+alf_data_dev
+alfresco.log*
+solr.log*
+alfresco-insight-engine/bin/
+packaging/bin/
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.git-rewrite
+
+#############
+# Test data #
+#############
+tlog
+_DEFAULT_
+.recommenders/
+/packaging/src/docker/alfresco-solr-distribution*.zip
+/packaging/src/docker/alfresco-search-services*.zip
+/packaging/src/docker/banana/banana-dist/
