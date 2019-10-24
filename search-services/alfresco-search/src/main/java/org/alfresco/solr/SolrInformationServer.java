@@ -68,7 +68,6 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXCOM
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TYPE;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSION;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,16 +75,28 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import com.carrotsearch.hppc.IntArrayList;
 
-import com.carrotsearch.hppc.LongHashSet;
-import com.carrotsearch.hppc.cursors.LongCursor;
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
@@ -140,7 +151,19 @@ import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.index.ReaderUtil;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.LeafCollector;
+import org.apache.lucene.search.LegacyNumericRangeQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopFieldCollector;
 import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -176,6 +199,9 @@ import org.apache.solr.util.RefCounted;
 import org.json.JSONException;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.util.FileCopyUtils;
+import com.carrotsearch.hppc.IntArrayList;
+import com.carrotsearch.hppc.LongHashSet;
+import com.carrotsearch.hppc.cursors.LongCursor;
 
 /**
  * This is the Solr4 implementation of the information server (index).
@@ -763,27 +789,36 @@ public class SolrInformationServer implements InformationServer
                 //Save the indexVersion so we know when we can clean out this entry
                 cleanContentCache.put(l, txnTime);
             }
-//            Map<Long, TenantAclIdDbId> dbIds = docIds
-//                .stream().collect(Collectors.toMap(docId -> docId.dbId, docId -> docId));
-//            Map<Long, Set<Long>> ancestorIds = this.repositoryClient.getAncestors(dbIds.keySet());
-//            ancestorIds.forEach((key, value) -> {
-//              value.forEach(ancestorId -> {
-//                if(!dbIds.containsKey(ancestorId)) {
-//                  TenantAclIdDbId docId = new TenantAclIdDbId();
-//                  docId.dbId = ancestorId;
-//                  docId.alcId = dbIds.get(key).alcId;
-//                  docId.tenant = dbIds.get(key).tenant;
-//                  docIds.add(docId);
-//                  dbIds.put(ancestorId, docId);
-//                }
-//              });
-//            });
+
             return docIds;
         }
         finally
         {
             ofNullable(refCounted).ifPresent(RefCounted::decref);
         }
+    }
+
+    public List<TenantAclIdDbId> getDocsWithUncleanContentAndAncestors(int start, int rows) throws IOException {
+        List<TenantAclIdDbId> docIds = getDocsWithUncleanContent(start, rows);
+        if(docIds == null || docIds.isEmpty()) {
+            return docIds;
+        }
+        Map<Long, TenantAclIdDbId> dbIds = docIds
+                .stream().collect(Collectors.toMap(docId -> docId.dbId, docId -> docId));
+        Map<Long, Set<Long>> ancestorIds = this.repositoryClient.getAncestors(dbIds.keySet());
+        ancestorIds.forEach((key, value) -> {
+            value.forEach(ancestorId -> {
+                if(!dbIds.containsKey(ancestorId)) {
+                    TenantAclIdDbId docId = new TenantAclIdDbId();
+                    docId.dbId = ancestorId;
+                    docId.aclId = dbIds.get(key).aclId;
+                    docId.tenant = dbIds.get(key).tenant;
+                    docIds.add(docId);
+                    dbIds.put(ancestorId, docId);
+                }
+            });
+        });
+        return docIds;
     }
 
     @Override
@@ -1809,6 +1844,58 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
+    @Override
+    public void updateContentIncludingFromDescendantsToIndexAndCache(long dbId, String tenant) throws Exception
+    {
+        SolrQueryRequest request = null;
+        UpdateRequestProcessor processor = null;
+        try
+        {
+            lock(dbId);
+
+            request = newSolrQueryRequest();
+            processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
+
+            SolrInputDocument doc = solrContentStore.retrieveDocFromSolrContentStore(tenant, dbId);
+            if (doc == null)
+            {
+                LOGGER.warning("There is no cached doc in the Solr content store with tenant [" + tenant + "] and dbId ["
+                        + dbId + "].\n"
+                        + "This should only happen if the content has been removed from the Solr content store.\n"
+                        + "Recreating cached doc ... ");
+                doc = recreateSolrDoc(dbId, tenant);
+
+                // if we did not build it again it has been deleted
+                // We do the delete here to avoid doing this again if it for some reason persists in teh index
+                // This is a work around for ACE-3228/ACE-3258 and the way stores are expunged when deleting a tenant
+                if(doc == null)
+                {
+                    deleteNode(processor, request, dbId);
+                }
+            }
+
+            if (doc != null)
+            {
+                addContentIncludingFromDescendantsToDoc(doc, dbId);
+                // Marks as clean since the doc's content is now up to date
+                markFTSStatus(doc, FTSStatus.Clean);
+                solrContentStore.storeDocOnSolrContentStore(tenant, dbId, doc);
+
+                // Add to index
+                AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
+                addDocCmd.overwrite = true;
+                addDocCmd.solrDoc = doc;
+                processor.processAdd(addDocCmd);
+            }
+        }
+        finally
+        {
+            unlock(dbId);
+            if(processor != null) {processor.finish();}
+            if(request != null) {request.close();}
+        }
+    }
+
 
     @Override
     public void indexNodes(List<Node> nodes, boolean overwrite, boolean cascade) throws IOException, JSONException
@@ -2541,6 +2628,22 @@ public class SolrInformationServer implements InformationServer
             // Could update multi content but it is broken ....
         }
     }
+
+    private void addContentIncludingFromDescendantsToDoc(SolrInputDocument doc, long dbId) throws AuthenticationException, IOException
+    {
+        Collection<String> fieldNames = doc.deepCopy().getFieldNames();
+        for (String fieldName : fieldNames)
+        {
+            if (fieldName.startsWith(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX))
+            {
+                String locale = String.valueOf(doc.getFieldValue(fieldName));
+                String qNamePart = fieldName.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
+                QName propertyQName = QName.createQName(qNamePart);
+                addContentPropertyToDocUsingAlfrescoRepositoryIncludingFromDescendants(doc, propertyQName, dbId, locale);
+            }
+            // Could update multi content but it is broken ....
+        }
+    }
     
     private void addContentPropertyToDocUsingAlfrescoRepository(SolrInputDocument doc,
                 QName propertyQName, long dbId, String locale) throws AuthenticationException, IOException
@@ -2619,6 +2722,83 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
+    private void addContentPropertyToDocUsingAlfrescoRepositoryIncludingFromDescendants(SolrInputDocument doc,
+                                                                QName propertyQName, long dbId, String locale) throws AuthenticationException, IOException
+    {
+        long start = System.nanoTime();
+
+        // Expensive call to be done with ContentTracker
+        GetTextContentResponse response = repositoryClient.getTextContentIncludingFromDescendants(dbId, propertyQName, null);
+
+        addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_STATUS,
+                response);
+        addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_EXCEPTION,
+                response);
+        addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_TIME,
+                response);
+
+        InputStream ris = response.getContent();
+        String textContent = "";
+        try
+        {
+            if (ris != null)
+            {
+                // Get and copy content
+                byte[] bytes = FileCopyUtils.copyToByteArray(new BoundedInputStream(ris, contentStreamLimit));
+                textContent = new String(bytes, StandardCharsets.UTF_8);
+            }
+        }
+        finally
+        {
+            // release the response only when the content has been read
+            response.release();
+        }
+
+        if(minHash && textContent.length() > 0)
+        {
+            Analyzer analyzer = core.getLatestSchema().getFieldType("min_hash").getIndexAnalyzer();
+            TokenStream ts = analyzer.tokenStream("min_hash", textContent);
+            CharTermAttribute termAttribute = ts.getAttribute(CharTermAttribute.class);
+            ts.reset();
+            while (ts.incrementToken())
+            {
+                StringBuilder tokenBuff = new StringBuilder();
+                char[] buff = termAttribute.buffer();
+
+                for(int i=0; i<termAttribute.length();i++)
+                {
+                    tokenBuff.append(Integer.toHexString(buff[i]));
+                }
+                doc.addField(FINGERPRINT_FIELD, tokenBuff.toString());
+
+            }
+            ts.end();
+            ts.close();
+        }
+
+        long end = System.nanoTime();
+        this.getTrackerStats().addDocTransformationTime(end - start);
+
+        StringBuilder builder = new StringBuilder(textContent.length() + 16);
+        builder.append("\u0000").append(locale).append("\u0000");
+        builder.append(textContent);
+        String localisedText = builder.toString();
+
+        for (FieldInstance field : AlfrescoSolrDataModel.getInstance().getIndexedFieldNamesForProperty(propertyQName).getFields())
+        {
+            doc.removeField(field.getField());
+            if(field.isLocalised())
+            {
+                doc.addField(field.getField(), localisedText);
+            }
+            else
+            {
+                doc.addField(field.getField(), textContent);
+            }
+            addFieldIfNotSet(doc, field);
+        }
+    }
+
     private static void addMLTextPropertyToDoc(SolrInputDocument doc, FieldInstance field, MLTextPropertyValue mlTextPropertyValue)
     {   
         if(field.isLocalised())
@@ -2664,7 +2844,7 @@ public class SolrInformationServer implements InformationServer
         addFieldIfNotSet(doc, field);
     }
     
-    private static void addStringPropertyToDoc(SolrInputDocument doc, FieldInstance field, StringPropertyValue stringPropertyValue, Map<QName, PropertyValue> properties) throws IOException
+    private static void addStringPropertyToDoc(SolrInputDocument doc, FieldInstance field, StringPropertyValue stringPropertyValue, Map<QName, PropertyValue> properties)
     {
         if(field.isLocalised())
         {
@@ -2706,26 +2886,6 @@ public class SolrInformationServer implements InformationServer
             doc.addField(field.getField(), stringPropertyValue.getValue());
         }
         addFieldIfNotSet(doc, field);
-    }
-    
-    private static void  addFieldIfNotSet(SolrInputDocument doc, FieldInstance field)
-    {
-        Collection<Object> values = doc.getFieldValues(FIELD_FIELDS);
-        if(values != null)
-        {
-            for(Object o : values)
-            {
-                if(o instanceof String)
-                {
-                    if( ((String)o).equals(field.getField()))
-                    {
-                        return;
-                    }
-
-                }
-            }
-        }
-        doc.addField(FIELD_FIELDS, field.getField()); 
     }
     
     private boolean mayHaveChildren(NodeMetaData nodeMetaData)
@@ -2915,7 +3075,7 @@ public class SolrInformationServer implements InformationServer
 
             collector = topFieldCollector;
 
-            LegacyNumericRangeQuery q = LegacyNumericRangeQuery.newIntRange(FIELD_CASCADE_FLAG, 1, 1, true, true);
+            LegacyNumericRangeQuery<Integer> q = LegacyNumericRangeQuery.newIntRange(FIELD_CASCADE_FLAG, 1, 1, true, true);
             DelegatingCollector delegatingCollector = new TxnCacheFilter(cleanCascadeCache);
 
             delegatingCollector.setLastDelegate(collector);
@@ -3275,7 +3435,7 @@ public class SolrInformationServer implements InformationServer
     {
         handler.handleRequest(request, response);
 
-        NamedList values = response.getValues();
+        NamedList<?> values = response.getValues();
         return (SolrDocumentList) values.get(RESPONSE_DEFAULT_IDS);
     }
 
@@ -3886,7 +4046,7 @@ public class SolrInformationServer implements InformationServer
         SolrQueryResponse response = newSolrQueryResponse();
         core.getRequestHandler(REQUEST_HANDLER_GET).handleRequest(request, response);
 
-        NamedList values = response.getValues();
+        NamedList<?> values = response.getValues();
         return (SolrDocument)values.get(RESPONSE_DEFAULT_ID);
     }
 
@@ -3933,39 +4093,6 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private static void addStringPropertyToDoc(SolrInputDocument doc, FieldInstance field, StringPropertyValue stringPropertyValue, Map<QName, PropertyValue> properties)
-    {
-        if(field.isLocalised())
-        {
-            Locale locale = null;
-
-            PropertyValue localePropertyValue = properties.get(ContentModel.PROP_LOCALE);
-            if (localePropertyValue != null)
-            {
-                locale = DefaultTypeConverter.INSTANCE.convert(Locale.class,
-                        ((StringPropertyValue) localePropertyValue).getValue());
-            }
-
-            if (locale == null)
-            {
-                locale = I18NUtil.getLocale();
-            }
-
-            StringBuilder builder;
-            builder = new StringBuilder();
-            builder.append("\u0000")
-                    .append(locale.toString())
-                    .append("\u0000")
-                    .append(stringPropertyValue.getValue());
-            doc.addField(field.getField(), builder.toString());
-        }
-        else
-        {
-            doc.addField(field.getField(), stringPropertyValue.getValue());
-        }
-        addFieldIfNotSet(doc, field);
-    }
-
     private static <T> Collection<T> safe(Collection<T> list)
     {
         return list == null ? Collections.emptyList() : list;
@@ -3983,22 +4110,6 @@ public class SolrInformationServer implements InformationServer
         {
             doc.addField(FIELD_FIELDS, field.getField());
         }
-    }
-
-    private boolean mayHaveChildren(NodeMetaData nodeMetaData)
-    {
-        // 1) Does the type support children?
-        TypeDefinition nodeTypeDef = dataModel
-                .getDictionaryService(CMISStrictDictionaryService.DEFAULT).getType(nodeMetaData.getType());
-        if ((nodeTypeDef != null) && (nodeTypeDef.getChildAssociations().size() > 0)) { return true; }
-        // 2) Do any of the applied aspects support children?
-        for (QName aspect : nodeMetaData.getAspects())
-        {
-            AspectDefinition aspectDef = dataModel
-                    .getDictionaryService(CMISStrictDictionaryService.DEFAULT).getAspect(aspect);
-            if ((aspectDef != null) && (aspectDef.getChildAssociations().size() > 0)) { return true; }
-        }
-        return false;
     }
 
     private long getSafeCount(NamedList<Integer> counts, String countType)

@@ -74,7 +74,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
 
                     getWriteLock().acquire();
 
-                    List<TenantAclIdDbId> docs = this.infoSrv.getDocsWithUncleanContent(start, ROWS);
+                    List<TenantAclIdDbId> docs = this.infoSrv.getDocsWithUncleanContentAndAncestors(start, ROWS);
                     //System.out.println("####################### Unclean content: "+docs.size()+" ##############################:"+totalDocs);
                     if (docs.size() == 0) {
                         break;
@@ -151,7 +151,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
         {
             checkShutdown();
             //System.out.println("################ Update doc:"+doc.dbId);
-            this.infoServer.updateContentToIndexAndCache(doc.dbId, doc.tenant);
+            this.infoServer.updateContentIncludingFromDescendantsToIndexAndCache(doc.dbId, doc.tenant);
         }
         
         @Override

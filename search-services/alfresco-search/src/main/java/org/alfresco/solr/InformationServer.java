@@ -150,7 +150,11 @@ public interface InformationServer extends InformationServerCollectionProvider
 
     List<TenantAclIdDbId> getDocsWithUncleanContent(int start, int rows) throws IOException;
 
+    List<TenantAclIdDbId> getDocsWithUncleanContentAndAncestors(int start, int rows) throws IOException;
+
     void updateContentToIndexAndCache(long dbId, String tenant) throws Exception;
+
+    void updateContentIncludingFromDescendantsToIndexAndCache(long dbId, String tenant) throws Exception;
 
     void addCommonNodeReportInfo(NodeReport nodeReport);
 

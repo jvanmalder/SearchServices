@@ -103,7 +103,7 @@ public class SOLRAPIClient
     private static final String GET_NODES_URL = "api/solr/nodes";
     private static final String GET_NODES_ANCESTORS_DESCENDANTS = "api/solr/nodesAncestorsDescendants";
     private static final String GET_CONTENT = "api/solr/textContent";
-    private static final String GET_CONTENT_COMBINED = "api/solr/textContentCombined";
+    private static final String GET_CONTENT_DESCENDANTS = "api/solr/textContentDescendants";
     private static final String GET_NODES_ANCESTORS = "api/solr/nodesAncestors";
     private static final String GET_MODEL = "api/solr/model";
     private static final String GET_MODELS_DIFF = "api/solr/modelsdiff";
@@ -1159,7 +1159,7 @@ public class SOLRAPIClient
         return new GetTextContentResponse(response);
     }
     
-    public Map<Long, Set<Long>> getAncestors(Set<Long> nodeIds) throws AuthenticationException, IOException {
+    public Map<Long, Set<Long>> getAncestors(Set<Long> nodeIds) throws IOException {
       StringBuilder url = new StringBuilder(GET_NODES_ANCESTORS);
 
       JSONObject body = new JSONObject();
@@ -1180,6 +1180,10 @@ public class SOLRAPIClient
 
           Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
           json = new JSONObject(new JSONTokener(reader));
+      }
+      catch(AuthenticationException authExc)
+      {
+          throw new IOException(authExc);
       }
       finally
       {
@@ -1209,10 +1213,10 @@ public class SOLRAPIClient
       return ancestorMap;
     }
     
-    public GetTextContentResponse getTextContentCombined(Long nodeId, QName propertyQName, Long modifiedSince) throws AuthenticationException, IOException
+    public GetTextContentResponse getTextContentIncludingFromDescendants(Long nodeId, QName propertyQName, Long modifiedSince) throws AuthenticationException, IOException
     {
         StringBuilder url = new StringBuilder(128);
-        url.append(GET_CONTENT_COMBINED);
+        url.append(GET_CONTENT_DESCENDANTS);
         
         StringBuilder args = new StringBuilder(128);
         if(nodeId != null)
@@ -1224,7 +1228,7 @@ public class SOLRAPIClient
         }
         else
         {
-            throw new NullPointerException("getTextContent(): nodeId cannot be null.");
+            throw new NullPointerException("getTextContentIncludingFromDescendants(): nodeId cannot be null.");
         }
         if(propertyQName != null)
         {

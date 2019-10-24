@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-search-parent</artifactId>
-        <version>1.4.0</version>
+        <version>1.4.1-CONTENTREPL</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-solrclient-lib</artifactId>
-            <version>1.4.0</version>
+            <version>1.4.1-CONTENTREPL</version>
             <exclusions>
                 <exclusion>
                     <artifactId>servlet-api</artifactId>
@@ -28,14 +28,21 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
-            <version>${solr.version}</version>
+            <version>${solr.base.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>${solr.base.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
-            <version>${solr.version}</version>
+            <version>${solr.base.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -48,14 +55,14 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-analysis-extras</artifactId>
-            <version>${solr.version}</version>
+            <version>${solr.base.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-langid</artifactId>
-            <version>${solr.version}</version>
+            <version>${solr.base.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -68,7 +75,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-clustering</artifactId>
-            <version>${solr.version}</version>
+            <version>${solr.base.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -108,7 +115,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-test-framework</artifactId>
-            <version>${solr.version}</version>
+            <version>${solr.base.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

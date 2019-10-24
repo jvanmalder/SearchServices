@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-search-and-insight-parent</artifactId>
-        <version>1.4.0</version>
+        <version>1.4.1-CONTENTREPL</version>
     </parent>
     <!-- The groupId and version are required by the maven pom extractor plugin on Bamboo - more details in this issue:
     https://bitbucket.org/dehringer/bamboo-maven-pom-extractor-plugin/issues/18/groupid-not-populated-if-using-parent-pom -->
